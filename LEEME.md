@@ -4,7 +4,7 @@ Biblioteca digital de las Sagradas Escrituras en hebreo y español.
 Proyecto y dirección de contenido: **Moreh Gabriel ben Eliyah**
 Autoridad rabínica: **Rab Eliyah ben Eleazar**
 
-Versión 0.1.1 (Etapas 1 y 2 completas; Etapas 3 a 5 parciales).
+Versión 0.2.0 (Etapas 1 y 2 completas; Etapas 3 a 5 parciales).
 
 ---
 
@@ -18,7 +18,9 @@ capacitor.config.json   Preparación para APK Android y app iOS
 css/app.css             Diseño visual (modo claro y oscuro)
 js/books.js             Índice de los 66 libros y sus nombres
 js/app.js               Lógica de la aplicación
-data/b/*.json           Un archivo por libro bíblico: [español, hebreo, numeración hebrea si difiere]
+data/b/*.json           Un archivo por libro: [español RV1909, hebreo, numeración hebrea si difiere]
+data/es/pdt/*.json      Palabra de Dios para ti (un archivo por libro)
+data/es/blm/*.json      Biblia Libre para el Mundo (un archivo por libro)
 data/parashiot.json     Las 54 parashiot: lecturas, aliyot, haftarot y estudio
 data/calendario.json    Parashá de cada Shabat (Israel y diáspora) y fechas de moedim 2025-2036
 data/mensajes.json      Mensajes diarios (se pueden editar sin tocar el código)
@@ -59,7 +61,7 @@ Para leer sin internet: Menú → Configuración → "Leer sin conexión" → Gu
 - **Vocabulario:** `data/vocabulario.json`.
 - **Estudios de parashiot:** `data/parashiot.json` (campos `res`, `per`, `temas`).
 
-Después de publicar cambios en el código, sube el número `VERSION` en `sw.js` (por ejemplo `bh-0.1.1`) para que los teléfonos descarguen la nueva versión.
+Después de publicar cambios en el código, sube el número `VERSION` en `sw.js` (por ejemplo `bh-0.2.1`) para que los teléfonos descarguen la nueva versión. Si cambias los textos bíblicos (`data/b` o `data/es`), cambia también `LIBROS` (por ejemplo `bh-libros-3`).
 
 Códigos de libros: GEN EXO LEV NUM DEU JOS JDG 1SA 2SA 1KI 2KI ISA JER EZK HOS JOL AMO OBA JON MIC NAM HAB ZEP HAG ZEC MAL PSA PRO JOB SNG RUT LAM ECC EST DAN EZR NEH 1CH 2CH MAT MRK LUK JHN ACT ROM 1CO 2CO GAL EPH PHP COL 1TH 2TH 1TI 2TI TIT PHM HEB JAS 1PE 2PE 1JN 2JN 3JN JUD REV.
 
@@ -93,7 +95,11 @@ Verifica los precios y condiciones vigentes antes de empezar; pueden cambiar. Si
 ## 7. Fuentes y licencias
 
 - Tanaj en hebreo: Westminster Leningrad Codex (Códice de Leningrado), dominio público.
-- Español: Reina-Valera 1909, dominio público.
+- Español, a elección del lector (la predeterminada es Palabra de Dios para ti):
+  - Palabra de Dios para ti © 2020 Asociación Bíblica Latinoamericana, licencia Creative Commons CC BY-SA 4.0. Obliga a citar la fuente y a compartir las adaptaciones (como la de nombres) con la misma licencia; la app lo indica en Acerca de.
+  - Biblia Libre para el Mundo, de David Williams y Michael Paul Johnson, CC0 (dominio público). Es un borrador en revisión: faltan Ezequiel 5:17 y 10:13–22, y Ezequiel 5:16 y 10:12 están incompletos; la app lo indica.
+  - Reina-Valera 1909, dominio público.
+- La Reina-Valera 1960 no se incluye porque tiene derechos de autor de las Sociedades Bíblicas Unidas.
 - Brit Hadashá en hebreo: traducción de Franz Delitzsch, texto sin vocales, tomado del corpus de eBible.org (BibleNLP/ebible), que lo publica como dominio público. En algunos pasajes la fuente une o divide versículos de otra manera; la app lo indica junto a la referencia. En 2 Corintios 13:13 y en la última frase de Hechos 19:40 la fuente no trae texto hebreo, y así se indica.
 - Parashiot, aliyot, haftarot y fechas: calendario hebreo tradicional, generados con Hebcal.
 - Correspondencia de versículos hebreo/español: tabla de versificación estándar (inglesa/original).
@@ -101,7 +107,7 @@ Verifica los precios y condiciones vigentes antes de empezar; pueden cambiar. Si
 
 ## 8. Criterio editorial
 
-El texto bíblico se muestra tal como está en sus fuentes. La opción "Nombres hebreos" (activada por defecto, se puede desactivar) adapta en pantalla: Jesús → Yahshua, Jesucristo → Yahshua HaMashíaj, Cristo → Mashíaj, Dios → Elohim, Jehová → Adonay, Espíritu Santo → Ruaj HaKodesh. Las palabras adaptadas aparecen con subrayado punteado. Los nombres de personas y lugares no se modifican. "Ortografía actualizada" solo moderniza acentos de 1909 (á → a, fué → fue).
+El texto bíblico se muestra tal como está en sus fuentes. La opción "Nombres hebreos" (activada por defecto, se puede desactivar) adapta en pantalla, en las tres traducciones: el Nombre (Jehová, Yahvé, YAVÉ) → Adonay; "Señor Jehová/Yahvé" y "ʼAdonay YAVÉ" → Adonay Elohim (lectura tradicional); Dios / ʼElohim → Elohim; Jesús → Yahshua; Jesucristo → Yahshua HaMashíaj; Cristo → Mashíaj; Espíritu Santo → Ruaj HaKodesh. Las palabras adaptadas aparecen con subrayado punteado. Los nombres de personas y lugares no se modifican. "Ortografía actualizada" solo moderniza acentos de 1909 (á → a, fué → fue).
 
 ## 9. Estado del proyecto
 

@@ -1,5 +1,6 @@
 /* Service Worker de Beit Hatzirah: funcionamiento sin conexión */
-const VERSION = 'bh-0.1.1';
+const VERSION = 'bh-0.2.0';
+const LIBROS = 'bh-libros-2'; // cambia este nombre cuando se actualicen los textos bíblicos
 const SHELL = [
   './', 'index.html', 'manifest.webmanifest', 'css/app.css', 'js/books.js', 'js/app.js',
   'img/logo.jpg', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png', 'icons/apple-touch-icon.png', 'icons/favicon-32.png',
@@ -11,14 +12,14 @@ self.addEventListener('install', e => {
   e.waitUntil(caches.open(VERSION).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
 });
 self.addEventListener('activate', e => {
-  e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== VERSION && k !== 'bh-libros').map(k => caches.delete(k)))).then(() => self.clients.claim()));
+  e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== VERSION && k !== LIBROS).map(k => caches.delete(k)))).then(() => self.clients.claim()));
 });
 self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
   if (e.request.method !== 'GET' || url.origin !== location.origin) return;
   // Libros bíblicos: primero la copia guardada, se conservan entre versiones
-  if (url.pathname.includes('/data/b/')) {
-    e.respondWith(caches.open('bh-libros').then(async c => {
+  if (url.pathname.includes('/data/b/') || url.pathname.includes('/data/es/')) {
+    e.respondWith(caches.open(LIBROS).then(async c => {
       const hit = await c.match(e.request); if (hit) return hit;
       const res = await fetch(e.request); if (res.ok) c.put(e.request, res.clone()); return res;
     }));

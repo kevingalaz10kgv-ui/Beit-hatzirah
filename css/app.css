@@ -236,3 +236,5 @@ mark{background:color-mix(in srgb,var(--dorado) 35%,transparent);color:inherit;b
   .hero img{width:128px;height:128px}
   .parasha-name{font-size:3.8rem}
 }
+.ver-btn{height:30px;padding:0 10px;border-radius:999px;border:1px solid var(--accent);color:var(--accent);font-weight:600;font-size:.78rem;letter-spacing:.03em;flex:none}
+.sheet .act[aria-pressed="true"] b{color:var(--accent)}

@@ -2,7 +2,7 @@
    Aplicación principal (JavaScript sin dependencias). */
 (function () {
   'use strict';
-  const VERSION = '0.1.1';
+  const VERSION = '0.2.0';
   const EMBED = window.__BH_EMBED || null;
   const LOGO = (EMBED && EMBED.logo) || 'img/logo.jpg';
   const BOOKS = window.BH_BOOKS;
@@ -16,8 +16,14 @@
     get(k, d) { try { const v = localStorage.getItem('bh:' + k); return v == null ? (k in mem ? mem[k] : d) : JSON.parse(v); } catch (e) { return k in mem ? mem[k] : d; } },
     set(k, v) { mem[k] = v; try { localStorage.setItem('bh:' + k, JSON.stringify(v)); } catch (e) { /* almacenamiento no disponible */ } }
   };
-  const DEF = { theme: 'auto', scale: 1, view: 'ambos', teamim: true, nombres: true, orto: true, cal: 'diaspora', haft: 'ash' };
+  const DEF = { theme: 'auto', scale: 1, view: 'ambos', teamim: true, nombres: true, orto: true, cal: 'diaspora', haft: 'ash', ver: 'pdt' };
+  const VERS = {
+    pdt: { name: 'Palabra de Dios para ti', short: 'PDT', src: 'Palabra de Dios para ti © 2020 Asociación Bíblica Latinoamericana, licencia CC BY-SA 4.0' },
+    blm: { name: 'Biblia Libre para el Mundo', short: 'BLM', src: 'Biblia Libre para el Mundo, de David Williams y Michael Paul Johnson, dominio público (CC0); borrador en revisión' },
+    rv: { name: 'Reina-Valera 1909', short: 'RV1909', src: 'Reina-Valera 1909, dominio público' }
+  };
   const prefs = Object.assign({}, DEF, Store.get('prefs', {}));
+  if (!VERS[prefs.ver]) prefs.ver = 'pdt';
   const savePrefs = () => { Store.set('prefs', prefs); applyPrefs(); };
   function applyPrefs() {
     const r = document.documentElement;
@@ -52,24 +58,68 @@
     try { return await p; } catch (e) { delete cache[k]; throw e; }
   }
 
+  async function getEs(ver, code) {
+    const k = 'es/' + ver + '/' + code;
+    if (cache[k]) return cache[k];
+    let p;
+    if (EMBED && EMBED.books[ver + '/' + code]) p = gunzipB64(EMBED.books[ver + '/' + code]).then(JSON.parse);
+    else p = fetch('data/es/' + ver + '/' + code + '.json').then(r => { if (!r.ok) throw new Error('Sin conexión: esta traducción aún no está guardada en el teléfono.'); return r.json(); });
+    cache[k] = p;
+    try { return await p; } catch (e) { delete cache[k]; throw e; }
+  }
+  /* Libro con el español de la traducción elegida: celdas [español, hebreo, numeración hebrea, nota] */
+  async function getBookV(code) {
+    const ver = prefs.ver; const k = 'v/' + ver + '/' + code;
+    if (cache[k]) return cache[k];
+    const p = (async () => {
+      const base = await getBook(code);
+      if (ver === 'rv') return Object.assign({ es: null }, base);
+      const e = await getEs(ver, code);
+      const c = base.c.map((ch, ci) => ch.map((cell, vi) => {
+        const t = (e.c[ci] || [])[vi] || '';
+        const n = e.n && e.n[(ci + 1) + ':' + (vi + 1)];
+        return [t, cell[1] || '', cell[2] || '', t === '^' ? 'unido' : n === 'inc' ? 'inc' : (!t && cell[0] ? 'falta' : '')];
+      }));
+      return { c, t: base.t, es: e.t || null };
+    })();
+    cache[k] = p;
+    try { return await p; } catch (e) { delete cache[k]; throw e; }
+  }
+
   /* ---------- Texto: hebreo y español ---------- */
   const TEAMIM = /[\u0591-\u05AF\u05C0]/g;
   const heb = h => prefs.teamim ? h : h.replace(TEAMIM, '').replace(/\s{2,}/g, ' ');
   const hebPlain = h => h.replace(/\u05BE/g, ' ').replace(/[\u0591-\u05C7\u034F\u05C3]/g, '').replace(/\s+/g, ' ').trim();
   const L = '\\p{L}';
+  const NB = '(^|[^' + L + 'ʼ])';
+  const NE = '(?=[^' + L + ']|$)';
+  const NOMBRE_DIVINO = new RegExp(NB + '(?:(el|del|al) )?((?:Señor|ʼAdonay) (?:Jehová|Yahvé|YAVÉ|Yavé))' + NE, 'gu');
+  const ART_ADONAY = new RegExp(NB + '(el|del|al) (ʼAdonay|Jehová|Yahvé|YAVÉ|Yavé)' + NE, 'gu');
   const NOMBRES = [
     ['Jesucristo', 'Yahshua HaMashíaj'], ['Jesús', 'Yahshua'], ['Cristos', 'Mashíaj'], ['Cristo', 'Mashíaj'],
-    ['Espíritu Santo', 'Ruaj HaKodesh'], ['Jehová', 'Adonay'], ['Dios', 'Elohim']
-  ].map(([a, b]) => [new RegExp('(^|[^' + L + '])(' + a + ')(?=[^' + L + ']|$)', 'gu'), b, a]);
+    ['Espíritu Santo', 'Ruaj HaKodesh'],
+    ['Jehová', 'Adonay'], ['Yahvé', 'Adonay'], ['YAVÉ', 'Adonay'], ['Yavé', 'Adonay'],
+    ['ʼElohim', 'Elohim'], ['ʼAdonay', 'Adonay'], ['ʼEL', 'El'], ['ʼEl', 'El'], ['Dios', 'Elohim']
+  ].map(([a, b]) => [new RegExp(NB + '(' + a + ')' + NE, 'gu'), b]);
   const ORTO = [['á', 'a'], ['Á', 'A'], ['é', 'e'], ['É', 'E'], ['ó', 'o'], ['Ó', 'O'], ['fué', 'fue'], ['Fué', 'Fue'], ['fuí', 'fui'], ['dió', 'dio'], ['Dió', 'Dio'], ['vió', 'vio'], ['Vió', 'Vio'], ['ví', 'vi'], ['Ví', 'Vi']]
     .map(([a, b]) => [new RegExp('(^|[^' + L + '])' + a + '(?=[^' + L + ']|$)', 'gu'), b]);
+  /* Español: ortografía (RV1909) y nombres hebreos. Las adaptaciones se marcan con fichas
+     para no volver a reemplazar dentro de un nombre ya adaptado. */
   function es(s, html) {
-    let t = html ? esc(s) : s;
-    if (prefs.orto) ORTO.forEach(([re, b]) => { t = t.replace(re, '$1' + b); });
-    if (prefs.nombres) NOMBRES.forEach(([re, b, a]) => {
-      t = t.replace(re, (m, pre) => pre + (html ? '<span class="adapt" title="Reina-Valera 1909: ' + a + '">' + b + '</span>' : b));
+    let t = s || '';
+    if (prefs.orto && prefs.ver === 'rv') ORTO.forEach(([re, b]) => { t = t.replace(re, '$1' + b); });
+    const marks = [];
+    const tok = (orig, b) => { marks.push([orig, b]); return '\uE000' + (marks.length - 1) + '\uE001'; };
+    if (prefs.nombres) {
+      t = t.replace(NOMBRE_DIVINO, (m, pre, art, orig) => pre + (art === 'del' ? 'de ' : art === 'al' ? 'a ' : '') + tok(orig, 'Adonay Elohim'));
+      t = t.replace(ART_ADONAY, (m, pre, art, orig) => pre + (art === 'del' ? 'de ' : art === 'al' ? 'a ' : '') + tok(orig, 'Adonay'));
+      NOMBRES.forEach(([re, b]) => { t = t.replace(re, (m, pre, orig) => pre + tok(orig, b)); });
+    }
+    if (html) t = esc(t);
+    return t.replace(/\uE000(\d+)\uE001/g, (m, i) => {
+      const [orig, b] = marks[+i];
+      return html ? '<span class="adapt" title="' + esc(VERS[prefs.ver].short + ': ' + orig) + '">' + b + '</span>' : b;
     });
-    return t;
   }
   const norm = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   const isHeb = s => /[\u05D0-\u05EA]/.test(s);
@@ -174,7 +224,7 @@
   }
   function shareWA(text) { window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank', 'noopener'); }
   const SIGN = '\n\nBeit Hatzirah — בית הצרעה';
-  const textCredit = () => '(Reina-Valera 1909' + (prefs.nombres ? ', con nombres hebreos' : '') + ')';
+  const textCredit = () => '(' + VERS[prefs.ver].name + (prefs.nombres ? ', con nombres hebreos' : '') + ')';
 
   /* ---------- Favoritos, historial, guardados ---------- */
   const favs = () => Store.get('favs', []);
@@ -195,7 +245,7 @@
     const id = b + '-' + c + '-' + v;
     const hasH = cell.length > 1 && cell[1];
     const isOT = !BY[b].nt;
-    if (!cell[0] && !hasH) return '';
+    if (!cell[0] && !hasH && !cell[3]) return '';
     let h = '';
     if (hasH) h = '<p class="he vh" lang="he" dir="rtl">' + esc(heb(cell[1])) + '</p>';
     else if (cell[2] === '^' || isOT) h = '<p class="missing vh">En el texto hebreo este versículo está unido al versículo anterior.</p>';
@@ -204,10 +254,16 @@
     const fav = isFav(id) ? '<span class="fav" aria-label="Guardado">★</span>' : '';
     return '<article class="v" id="v' + (opt.anchor || v) + '" data-v="' + id + '" tabindex="0">' + h +
       '<p class="ref">' + esc(bookName(b)) + ' ' + c + ':' + v + hn + fav + '</p>' +
-      '<p class="vs" lang="es">' + es(cell[0], true) + '</p></article>';
+      esHTML(cell) + '</article>';
+  }
+  function esHTML(cell) {
+    const st = cell[3];
+    if (st === 'unido') return '<p class="vs missing" lang="es">En esta traducción, este versículo está unido al anterior.</p>';
+    if (st === 'falta') return '<p class="vs missing" lang="es">Este versículo no figura en esta traducción (' + esc(VERS[prefs.ver].short) + ').</p>';
+    return '<p class="vs" lang="es">' + es(cell[0], true) + (st === 'inc' ? ' <span class="missing">[texto incompleto en el borrador de esta traducción]</span>' : '') + '</p>';
   }
   async function verseData(id) {
-    const [b, c, v] = id.split('-'); const d = await getBook(b);
+    const [b, c, v] = id.split('-'); const d = await getBookV(b);
     return { b, c: +c, v: +v, cell: d.c[c - 1][v - 1] };
   }
   async function verseText(id) {
@@ -278,7 +334,7 @@
     const E = await getJSON('estudios.json');
     const today = new Date(); const fRef = FEATURED[dayIndex(today) % FEATURED.length];
     const [fb, fcv] = fRef.split(' '); const { c: fc, v: fv } = parseCV(fcv);
-    const fd = (await getBook(fb)).c[fc - 1][fv - 1];
+    const fd = (await getBookV(fb)).c[fc - 1][fv - 1];
     const M = await getJSON('mensajes.json'); const msg = M[dayIndex(today) % M.length];
     const last = Store.get('last', null);
     let parHTML = '';
@@ -354,25 +410,35 @@
       '<button class="icon-btn" data-act="text-size" aria-label="Tamaño de letra">' + ic('text') + '</button>' +
       (markId ? '<button class="icon-btn" data-act="mark" data-id="' + markId + '" data-label="' + esc(label) + '" aria-pressed="' + m + '" aria-label="' + (m ? 'Quitar marcador' : 'Añadir marcador') + '">' + ic('mark', m ? ' fill="currentColor"' : '') + '</button>' : '');
   }
+  const verBtn = () => '<button class="ver-btn" data-act="ver-sheet" aria-label="Elegir traducción al español">' + VERS[prefs.ver].short + '</button>';
+  const VERDESC = {
+    pdt: 'Traducción latinoamericana que conserva formas hebreas como ʼElohim y el Nombre (YAVÉ). Texto completo.',
+    blm: 'Traducción moderna y literal, de dominio público. Distingue el Nombre (Yahvé). Es un borrador en revisión: faltan algunos versículos de Ezequiel.',
+    rv: 'La traducción clásica de 1909, con lenguaje antiguo («crió», «haz de la tierra»).'
+  };
+  function verSheet() {
+    sheet('<h4>Traducción al español</h4>' + Object.keys(VERS).map(k => '<button class="act" data-act="set-ver" data-v="' + k + '" aria-pressed="' + (prefs.ver === k) + '"><span style="width:22px;color:var(--accent)">' + (prefs.ver === k ? '✓' : '') + '</span><span><b>' + esc(VERS[k].name) + '</b><br><span class="muted" style="font-size:.86rem">' + esc(VERDESC[k]) + '</span></span></button>').join('') +
+      '<p class="muted" style="font-size:.82rem;margin-top:10px">El hebreo es siempre el mismo. Con «Nombres hebreos» activado, los nombres se adaptan en todas las traducciones.</p>');
+  }
   const viewClass = () => prefs.view === 'he' ? 'view-he' : prefs.view === 'es' ? 'view-es' : '';
   async function vLeer(code, c, vSel) {
     const b = BY[code]; if (!b) return vNotFound();
     c = Math.min(Math.max(1, c), b.ch);
     view().innerHTML = top(esc(b.tr) + ' ' + c, { back: 'libro-' + code }) + '<div class="loading">Abriendo ' + esc(b.tr) + '…</div>';
-    let d; try { d = await getBook(code); } catch (e) { view().innerHTML = top(esc(b.tr), { back: 'biblia' }) + '<div class="wrap empty"><p>' + esc(e.message) + '</p></div>'; return; }
+    let d; try { d = await getBookV(code); } catch (e) { view().innerHTML = top(esc(b.tr), { back: 'biblia' }) + '<div class="wrap empty"><p>' + esc(e.message) + '</p></div>'; return; }
     const ch = d.c[c - 1];
-    const title = d.t && d.t[c] ? '<div class="psalm-title"><p class="he" lang="he">' + esc(heb(d.t[c])) + '</p><small>Título del salmo (versículo 1 en el texto hebreo)</small></div>' : '';
+    const title = (d.t && d.t[c]) || (d.es && d.es[c]) ? '<div class="psalm-title">' + (d.t && d.t[c] ? '<p class="he vh" lang="he">' + esc(heb(d.t[c])) + '</p>' : '') + (d.es && d.es[c] ? '<p class="vs" lang="es" style="margin:0;font-style:italic">' + es(d.es[c], true) + '</p>' : '') + '<small>Título del salmo (versículo 1 en el texto hebreo)</small></div>' : '';
     const ctx = await torahContext(code, c);
     const ntNote = '';
     const prev = c > 1 ? { b: code, c: c - 1 } : (() => { const i = BOOKS.indexOf(b); return i > 0 ? { b: BOOKS[i - 1].c, c: BOOKS[i - 1].ch } : null; })();
     const next = c < b.ch ? { b: code, c: c + 1 } : (() => { const i = BOOKS.indexOf(b); return i < BOOKS.length - 1 ? { b: BOOKS[i + 1].c, c: 1 } : null; })();
     const pg = '<nav class="pager">' + (prev ? '<a href="#leer-' + prev.b + '-' + prev.c + '"><small>Anterior</small>' + esc(bookName(prev.b)) + ' ' + prev.c + '</a>' : '<span></span>') +
       (next ? '<a class="next" href="#leer-' + next.b + '-' + next.c + '"><small>Siguiente</small>' + esc(bookName(next.b)) + ' ' + next.c + '</a>' : '<span></span>') + '</nav>';
-    view().innerHTML = top('<button data-act="chapters" data-b="' + code + '" style="font-weight:600">' + esc(b.tr) + ' ' + c + ' ▾</button>', { back: 'libro-' + code, right: readerTools(code + '-' + c, b.tr + ' ' + c) }) +
+    view().innerHTML = top('<button data-act="chapters" data-b="' + code + '" style="font-weight:600">' + esc(b.tr) + ' ' + c + ' ▾</button>', { back: 'libro-' + code, right: verBtn() + readerTools(code + '-' + c, b.tr + ' ' + c) }) +
       '<div class="wrap ' + viewClass() + '">' +
       '<div class="reader-head"><p class="he" lang="he">' + esc(b.he) + '</p><h2>' + esc(b.tr) + ' ' + c + '</h2>' + ctx + '</div>' + ntNote + title +
       '<div class="verses">' + ch.map((cell, i) => verseHTML(code, c, i + 1, cell)).join('') + '</div>' + pg +
-      '<p class="muted" style="font-size:.82rem">' + (b.nt ? 'Hebreo: traducción de Franz Delitzsch, texto sin vocales (eBible.org, dominio público). Español: Reina-Valera 1909 (dominio público).' : 'Hebreo: Códice de Leningrado (Westminster Leningrad Codex, dominio público). Español: Reina-Valera 1909 (dominio público).') + (prefs.nombres ? ' Nombres hebreos: adaptación de nombres activada (subrayado punteado).' : '') + ' Numeración de versículos según la Reina-Valera.</p></div>';
+      '<p class="muted" style="font-size:.82rem">' + (b.nt ? 'Hebreo: traducción de Franz Delitzsch, texto sin vocales (eBible.org, dominio público). ' : 'Hebreo: Códice de Leningrado (Westminster Leningrad Codex, dominio público). ') + 'Español: ' + esc(VERS[prefs.ver].src) + '.' + (prefs.nombres ? ' Nombres hebreos: adaptación de nombres activada (subrayado punteado).' : '') + ' Numeración de versículos según la Reina-Valera.</p></div>';
     pushHistory(code, c);
     if (vSel) { const el = document.getElementById('v' + vSel); if (el) { el.classList.add('hl'); el.scrollIntoView({ block: 'center' }); } }
     else window.scrollTo(0, 0);
@@ -385,7 +451,7 @@
 
   /* ----- Lector de rangos (parashá / haftará) ----- */
   async function rangeHTML(r, aliyot) {
-    const d = await getBook(r.b);
+    const d = await getBookV(r.b);
     const s = parseCV(r.s), e = parseCV(r.e);
     const starts = {}; (aliyot || []).forEach((a, i) => { starts[a.s] = i + 1; });
     let html = '';
@@ -407,7 +473,7 @@
     const ranges = haft ? ((prefs.haft === 'seph' && p.seph) ? p.seph : p.haft) : [p.lec];
     let body = '';
     for (const r of ranges) body += (ranges.length > 1 ? '<p class="aliyah">' + esc(fmtRange(r)) + '</p>' : '') + await rangeHTML(r, haft ? null : p.aliyot);
-    view().innerHTML = top((haft ? 'Haftará de ' : '') + esc(p.tr), { back: 'parasha-' + n, right: readerTools() }) +
+    view().innerHTML = top((haft ? 'Haftará de ' : '') + esc(p.tr), { back: 'parasha-' + n, right: verBtn() + readerTools() }) +
       '<div class="wrap ' + viewClass() + '"><div class="reader-head"><p class="he" lang="he">' + esc(p.he) + '</p><h2>' + (haft ? 'Haftará' : 'Lectura de la Torá') + '</h2>' +
       '<p class="context">' + ranges.map(r => esc(fmtRange(r))).join('; ') + (haft ? '. Costumbre: ' + (prefs.haft === 'seph' && p.seph ? 'sefaradí' : 'ashkenazí') + ' (se cambia en Configuración).' : '') + '</p></div>' +
       '<div class="verses">' + body + '</div>' +
@@ -485,7 +551,7 @@
     if (tab === 'versiculos') {
       const vs = f.filter(x => x.type === 'v');
       if (!vs.length) body = '<div class="empty"><p>Toca cualquier versículo mientras lees y elige «Guardar en favoritos».</p><a class="btn" href="#biblia">Abrir la Biblia</a></div>';
-      else for (const x of vs) { const { b, c, v, cell } = await verseData(x.id); body += '<a class="result" href="#leer-' + b + '-' + c + '-' + v + '"><b>' + esc(bookName(b)) + ' ' + c + ':' + v + '</b>' + (cell[1] ? '<p class="he" lang="he">' + esc(heb(cell[1])) + '</p>' : '') + '<p>' + es(cell[0], true) + '</p></a>'; }
+      else for (const x of vs) { const { b, c, v, cell } = await verseData(x.id); body += '<a class="result" href="#leer-' + b + '-' + c + '-' + v + '"><b>' + esc(bookName(b)) + ' ' + c + ':' + v + '</b>' + (cell[1] ? '<p class="he" lang="he">' + esc(heb(cell[1])) + '</p>' : '') + esHTML(cell) + '</a>'; }
     } else if (tab === 'marcadores') {
       body = marks.length ? '<div class="rows">' + marks.map(m => { const [b, c] = m.id.split('-'); return '<a class="row" href="#leer-' + b + '-' + c + '"><span class="t"><b>' + esc(m.label) + '</b><span>' + esc(fmtDate(new Date(m.t), { day: 'numeric', month: 'short', year: 'numeric' })) + '</span></span><span class="he">' + esc(BY[b].he) + '</span></a>'; }).join('') + '</div>'
         : '<div class="empty"><p>Usa el botón de marcador en la parte superior del lector para marcar un capítulo.</p></div>';
@@ -515,14 +581,14 @@
     const i = idx == null ? di % M.length : idx; const m = M[i]; if (!m) return vNotFound();
     const date = idx == null ? today : null;
     const [b, cv] = m.ref.split(' '); const { c, v } = parseCV(cv);
-    const cell = (await getBook(b)).c[c - 1][v - 1];
+    const cell = (await getBookV(b)).c[c - 1][v - 1];
     const saved = isFav('m-' + i);
     let hist = ''; for (let k = 1; k <= 6; k++) { const j = (di - k) % M.length; const d = new Date(today); d.setDate(d.getDate() - k); hist += '<a class="row" href="#mensaje-' + ((j + M.length) % M.length) + '"><span class="t"><b>' + esc(M[(j + M.length) % M.length].titulo) + '</b><span>' + esc(fmtDate(d, { weekday: 'long', day: 'numeric', month: 'long' })) + '</span></span></a>'; }
     view().innerHTML = top('Mensaje diario', { back: 'inicio' }) + '<div class="wrap study daily">' +
       '<div class="reader-head"><p class="he" lang="he">דְּבַר הַיּוֹם</p>' + (date ? '<p class="date">' + esc(fmtDate(date)) + '<br>' + esc(hebDate(date)) + '</p>' : '') + '<h2>' + esc(m.titulo) + '</h2></div>' +
       (cell[1] ? '<p class="he big" lang="he">' + esc(heb(cell[1])) + '</p>' : '') +
       '<p class="v-ref" style="color:var(--accent);font-weight:600;margin:0 0 6px"><a href="#leer-' + b + '-' + c + '-' + v + '" style="color:inherit">' + esc(bookName(b)) + ' ' + c + ':' + v + '</a></p>' +
-      '<blockquote lang="es">' + es(cell[0], true) + '</blockquote><p class="muted" style="font-size:.82rem">Texto bíblico: Reina-Valera 1909' + (prefs.nombres ? ' con nombres hebreos' : '') + '.</p>' +
+      '<blockquote lang="es">' + es(cell[0], true) + '</blockquote><p class="muted" style="font-size:.82rem">Texto bíblico: ' + esc(VERS[prefs.ver].name) + (prefs.nombres ? ' con nombres hebreos' : '') + '.</p>' +
       '<h2>Reflexión</h2><p>' + esc(m.reflexion) + '</p><h2>Enseñanza práctica</h2><p>' + esc(m.ensenanza) + '</p><h2>Para meditar</h2><p><i>' + esc(m.pregunta) + '</i></p><p style="color:var(--accent)">' + esc(m.cierre) + '</p>' +
       '<p class="muted" style="font-size:.82rem">La reflexión, la enseñanza y la pregunta son comentario de Beit Hatzirah, no texto bíblico.</p>' +
       '<div class="btns"><button class="btn solid" data-act="m-wa" data-i="' + i + '">' + ic('wa') + 'WhatsApp</button><button class="btn" data-act="m-img" data-i="' + i + '">' + ic('image') + 'Imagen</button><button class="btn" data-act="m-copy" data-i="' + i + '">' + ic('copy') + 'Copiar</button><button class="btn" data-act="m-save" data-i="' + i + '">' + ic('star') + (saved ? 'Guardado' : 'Guardar') + '</button></div>' +
@@ -602,11 +668,11 @@
       '<div class="credits"><div><span>Proyecto y dirección de contenido</span><b>Moreh Gabriel ben Eliyah</b></div><div><span>Autoridad rabínica</span><b>Rab Eliyah ben Eleazar</b></div></div>' +
       '<h2>Fuentes de los textos</h2><ul>' +
       '<li><b>Tanaj en hebreo:</b> Westminster Leningrad Codex (texto masorético del Códice de Leningrado), dominio público.</li>' +
-      '<li><b>Escrituras en español:</b> Reina-Valera 1909, dominio público.</li>' +
+      '<li><b>Español, a elección:</b> Palabra de Dios para ti © 2020 Asociación Bíblica Latinoamericana (licencia Creative Commons CC BY-SA 4.0; la adaptación de nombres se comparte bajo la misma licencia); Biblia Libre para el Mundo, de David Williams y Michael Paul Johnson (dominio público, CC0; borrador en revisión); Reina-Valera 1909 (dominio público).</li>' +
       '<li><b>Brit Hadashá en hebreo:</b> traducción de Franz Delitzsch, texto sin vocales tomado del corpus de eBible.org, que lo publica como dominio público. En unos pocos pasajes la fuente une o divide versículos de otra manera; la app lo indica junto a la referencia.</li>' +
       '<li><b>Divisiones de parashiot, aliyot, haftarot y fechas:</b> calendario hebreo tradicional, datos generados con Hebcal.</li>' +
       '<li><b>Tipografías:</b> Noto Serif Hebrew y Spectral, licencia SIL Open Font.</li></ul>' +
-      '<h2>Criterio editorial</h2><p>El texto bíblico se presenta tal como está en sus fuentes. Con la opción «Nombres hebreos» activada, la app adapta en pantalla algunos nombres de la Reina-Valera 1909: Jesús → Yahshua, Jesucristo → Yahshua HaMashíaj, Cristo → Mashíaj, Dios → Elohim, Jehová → Adonay y Espíritu Santo → Ruaj HaKodesh. Estas palabras aparecen con subrayado punteado para distinguir la adaptación de la traducción literal; los nombres de personas y lugares no se modifican. La opción «Ortografía actualizada» solo moderniza acentos de 1909 (á → a, fué → fue).</p>' +
+      '<h2>Criterio editorial</h2><p>El texto bíblico se presenta tal como está en sus fuentes. Con la opción «Nombres hebreos» activada, la app adapta en pantalla los nombres divinos en cualquiera de las traducciones: el Nombre (Jehová, Yahvé o YAVÉ, según la traducción) → Adonay; «Señor Jehová/Yahvé» y «ʼAdonay YAVÉ» → Adonay Elohim, como se lee tradicionalmente; Dios → Elohim; Jesús → Yahshua; Jesucristo → Yahshua HaMashíaj; Cristo → Mashíaj; Espíritu Santo → Ruaj HaKodesh. Estas palabras aparecen con subrayado punteado para distinguir la adaptación de la traducción; los nombres de personas y lugares no se modifican. La opción «Ortografía actualizada» (solo Reina-Valera 1909) moderniza acentos de 1909 (á → a, fué → fue).</p>' +
       '<p>La numeración de versículos sigue la Reina-Valera. Cuando la numeración del texto hebreo es distinta, se indica junto a la referencia.</p>' +
       '<p>Los resúmenes, reflexiones y explicaciones son material educativo de Beit Hatzirah y se distinguen del texto bíblico.</p>' +
       '<p class="muted center" style="font-size:.85rem">Versión ' + VERSION + '. Gratuita, sin registro y sin publicidad.</p></div>';
@@ -623,7 +689,8 @@
       '<div class="opt"><span class="t">Idioma visible<span>Hebreo y español, solo hebreo o solo español</span></span><select data-act="set-view"><option value="ambos"' + (prefs.view === 'ambos' ? ' selected' : '') + '>Ambos</option><option value="he"' + (prefs.view === 'he' ? ' selected' : '') + '>Hebreo</option><option value="es"' + (prefs.view === 'es' ? ' selected' : '') + '>Español</option></select></div>' +
       '<div class="opt"><span class="t">Signos de cantilación<span>Mostrar los te\'amim además de las vocales</span></span>' + sw(prefs.teamim, 'tg-teamim', 'Signos de cantilación') + '</div>' +
       '<div class="opt"><span class="t">Nombres hebreos<span>Adaptación de nombres sobre la Reina-Valera 1909</span></span>' + sw(prefs.nombres, 'tg-nombres', 'Nombres hebreos') + '</div>' +
-      '<div class="opt"><span class="t">Ortografía actualizada<span>Moderniza los acentos de 1909</span></span>' + sw(prefs.orto, 'tg-orto', 'Ortografía actualizada') + '</div>' +
+      '<div class="opt"><span class="t">Traducción al español<span>' + esc(VERDESC[prefs.ver]) + '</span></span><select data-act="set-ver-sel">' + Object.keys(VERS).map(k => '<option value="' + k + '"' + (prefs.ver === k ? ' selected' : '') + '>' + esc(VERS[k].short) + '</option>').join('') + '</select></div>' +
+      (prefs.ver === 'rv' ? '<div class="opt"><span class="t">Ortografía actualizada<span>Moderniza los acentos de 1909</span></span>' + sw(prefs.orto, 'tg-orto', 'Ortografía actualizada') + '</div>' : '') +
       '<div class="group-title"><h3>Apariencia</h3></div>' +
       '<div class="opt"><span class="t">Tema</span><select data-act="set-theme"><option value="auto"' + (prefs.theme === 'auto' ? ' selected' : '') + '>Según el teléfono</option><option value="dark"' + (prefs.theme === 'dark' ? ' selected' : '') + '>Oscuro</option><option value="light"' + (prefs.theme === 'light' ? ' selected' : '') + '>Claro</option></select></div>' +
       '<div class="group-title"><h3>Calendario</h3></div>' +
@@ -631,7 +698,7 @@
       '<div class="opt"><span class="t">Costumbre de la haftará</span><select data-act="set-haft"><option value="ash"' + (prefs.haft === 'ash' ? ' selected' : '') + '>Ashkenazí</option><option value="seph"' + (prefs.haft === 'seph' ? ' selected' : '') + '>Sefaradí</option></select></div>' +
       '<div class="group-title"><h3>Aplicación</h3></div>' +
       (canInstall ? '<div class="opt"><span class="t">Instalar Beit Hatzirah<span>Añade la app a tu pantalla de inicio</span></span><button class="btn solid" data-act="install">Instalar</button></div>' : '') +
-      (swOn ? '<div class="opt"><span class="t">Leer sin conexión<span id="offline-status">Guarda los 66 libros en este teléfono (unos 9 MB)</span></span><button class="btn" data-act="offline">Guardar</button></div>' : '') +
+      (swOn ? '<div class="opt"><span class="t">Leer sin conexión<span id="offline-status">Guarda los 66 libros y las tres traducciones en este teléfono (unos 17 MB)</span></span><button class="btn" data-act="offline">Guardar</button></div>' : '') +
       '<details class="moed"><summary><span class="t"><b>Cómo instalar en Android</b></span></summary><div class="body"><p>Abre la app en Chrome, toca el menú ⋮ y elige «Instalar aplicación» o «Agregar a pantalla principal».</p></div></details>' +
       '<details class="moed"><summary><span class="t"><b>Cómo instalar en iPhone</b></span></summary><div class="body"><p>Abre la app en Safari, toca el botón Compartir y elige «Agregar a pantalla de inicio».</p></div></details>' +
       '<div class="opt"><span class="t">Borrar datos guardados<span>Favoritos, marcadores, historial y preferencias de este teléfono</span></span><button class="btn" data-act="reset">Borrar</button></div>' +
@@ -657,21 +724,21 @@
     out.innerHTML = html + '<p class="loading" id="sprog">Buscando…</p>';
     if (q.length < 3 && !isHeb(q)) { $('#sprog').textContent = 'Escribe al menos 3 letras para buscar palabras.'; return; }
     const H = isHeb(q); const hq = H ? hebPlain(q) : '';
-    let nq = norm(q); QMAP.forEach(([a, b]) => { nq = nq.replace(a, b); });
+    const nq = norm(q);
     const found = []; const MAX = 300;
     for (let i = 0; i < BOOKS.length && found.length < MAX; i++) {
       const b = BOOKS[i];
       const p = $('#sprog'); if (p) p.textContent = 'Buscando en ' + b.tr + '…';
-      let d; try { d = await getBook(b.c); } catch (e) { continue; }
+      let d; try { d = await getBookV(b.c); } catch (e) { continue; }
       if (tok !== searchToken) return;
       d.c.forEach((ch, ci) => ch.forEach((cell, vi) => {
         if (found.length >= MAX) return;
-        if (H ? (cell[1] && hebPlain(cell[1]).includes(hq)) : norm(cell[0]).includes(nq)) found.push([b.c, ci + 1, vi + 1, cell]);
+        if (H ? (cell[1] && hebPlain(cell[1]).includes(hq)) : (cell[0] && norm(es(cell[0])).includes(nq))) found.push([b.c, ci + 1, vi + 1, cell]);
       }));
     }
     if (tok !== searchToken) return;
-    const hlEs = t => { const n = norm(t); const i = n.indexOf(nq); if (i < 0) return es(t, true); return es(t.slice(0, i), true) + '<mark>' + es(t.slice(i, i + nq.length), true) + '</mark>' + es(t.slice(i + nq.length), true); };
-    html += '<p class="muted" style="margin:16px 0 4px">' + (found.length >= MAX ? 'Más de ' + MAX + ' resultados; se muestran los primeros ' + MAX + '.' : found.length + ' resultado' + (found.length === 1 ? '' : 's') + '.') + '</p>';
+    const hlEs = t => { t = es(t); const n = norm(t); const i = n.indexOf(nq); if (i < 0) return esc(t); return esc(t.slice(0, i)) + '<mark>' + esc(t.slice(i, i + nq.length)) + '</mark>' + esc(t.slice(i + nq.length)); };
+    html += '<p class="muted" style="margin:16px 0 4px">' + 'Traducción: ' + esc(VERS[prefs.ver].name) + '. ' + (found.length >= MAX ? 'Más de ' + MAX + ' resultados; se muestran los primeros ' + MAX + '.' : found.length + ' resultado' + (found.length === 1 ? '' : 's') + '.') + '</p>';
     html += found.map(([b, c, v, cell]) => '<a class="result" href="#leer-' + b + '-' + c + '-' + v + '"><b>' + esc(bookName(b)) + ' ' + c + ':' + v + '</b>' + (H ? '<p class="he" lang="he">' + esc(heb(cell[1])) + '</p>' : '') + '<p>' + (H ? es(cell[0], true) : hlEs(cell[0])) + '</p></a>').join('');
     out.innerHTML = html;
   }
@@ -746,6 +813,8 @@
     },
     'v-img': async el => { const { b, c, v, cell } = await verseData(el.dataset.id); shareImage({ he: cell[1] || '', es: es(cell[0]), ref: bookName(b) + ' ' + c + ':' + v }); },
     'img-share': () => shareCanvas(),
+    'ver-sheet': () => verSheet(),
+    'set-ver': el => { prefs.ver = el.dataset.v; savePrefs(); closeSheet(); toast(VERS[prefs.ver].name); route(); },
     'p-done': el => { const s = Store.get('studied', {}); const n = el.dataset.n; if (s[n]) delete s[n]; else s[n] = Date.now(); Store.set('studied', s); toast(s[n] ? 'Marcada como estudiada' : 'Marca quitada'); route(); },
     'p-save': el => { const n = +el.dataset.n; toggleFav({ id: 'p-' + n, type: 'p', n }); route(); },
     'p-share': async el => {
@@ -757,7 +826,7 @@
     'm-save': el => { const i = +el.dataset.i; toggleFav({ id: 'm-' + i, type: 'm', i }); route(); },
     'm-img': async el => {
       const M = await getJSON('mensajes.json'); const m = M[+el.dataset.i]; const [b, cv] = m.ref.split(' '); const { c, v } = parseCV(cv);
-      const cell = (await getBook(b)).c[c - 1][v - 1]; shareImage({ he: cell[1] || '', es: es(cell[0]), ref: bookName(b) + ' ' + c + ':' + v, title: m.titulo });
+      const cell = (await getBookV(b)).c[c - 1][v - 1]; shareImage({ he: cell[1] || '', es: es(cell[0]), ref: bookName(b) + ' ' + c + ':' + v, title: m.titulo });
     },
     'vocab-search': el => { searchQ = el.dataset.q; go('buscar'); },
     'tg-teamim': () => { prefs.teamim = !prefs.teamim; savePrefs(); vAjustes(); },
@@ -766,7 +835,7 @@
     'install': async () => { if (!deferredPrompt) return; deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt = null; vAjustes(); },
     'offline': async el => {
       const st = $('#offline-status'); el.disabled = true; let n = 0;
-      for (const b of BOOKS) { try { await fetch('data/b/' + b.c + '.json'); n++; if (st) st.textContent = 'Guardando… ' + n + ' de 66 libros'; } catch (e) { } }
+      for (const b of BOOKS) { try { await Promise.all([fetch('data/b/' + b.c + '.json'), fetch('data/es/pdt/' + b.c + '.json'), fetch('data/es/blm/' + b.c + '.json')]); n++; if (st) st.textContent = 'Guardando… ' + n + ' de 66 libros'; } catch (e) { } }
       if (st) st.textContent = n === 66 ? 'Listo: los 66 libros están disponibles sin conexión.' : 'Se guardaron ' + n + ' de 66 libros. Vuelve a intentarlo con conexión.';
       el.disabled = false;
     },
@@ -791,6 +860,7 @@
     if (a === 'set-theme') { prefs.theme = e.target.value; savePrefs(); }
     if (a === 'set-cal') { prefs.cal = e.target.value; savePrefs(); }
     if (a === 'set-haft') { prefs.haft = e.target.value; savePrefs(); }
+    if (a === 'set-ver-sel') { prefs.ver = e.target.value; savePrefs(); vAjustes(); }
     if (a === 'cal-year') vCalendario(+e.target.value);
   });
   let vt;
@@ -817,6 +887,7 @@
       });
     }).catch(() => { });
   }
+  if (/[?&]test\b/.test(location.search)) window.__bh = { es, getBookV, prefs };
   window.addEventListener('hashchange', route);
   route();
 })();
