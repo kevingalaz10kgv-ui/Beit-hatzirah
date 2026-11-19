@@ -1,0 +1,8 @@
+{
+  "appId": "org.beithatzirah.app",
+  "appName": "Beit Hatzirah",
+  "webDir": "www",
+  "backgroundColor": "#111111",
+  "android": { "backgroundColor": "#111111" },
+  "ios": { "backgroundColor": "#111111" }
+}
