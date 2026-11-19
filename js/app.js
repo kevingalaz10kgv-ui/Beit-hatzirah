@@ -2,7 +2,7 @@
    Aplicación principal (JavaScript sin dependencias). */
 (function () {
   'use strict';
-  const VERSION = '0.2.0';
+  const VERSION = '0.3.0';
   const EMBED = window.__BH_EMBED || null;
   const LOGO = (EMBED && EMBED.logo) || 'img/logo.jpg';
   const BOOKS = window.BH_BOOKS;
@@ -360,12 +360,14 @@
       '<p class="welcome">Biblioteca digital para estudiar las Sagradas Escrituras en hebreo y español. Shalom, bienvenido.</p>' +
       parHTML +
       (cont ? '<section class="section"><div class="rows">' + cont + '</div></section>' : '') +
+      '<section class="section"><a class="learn-card" href="#aprender"><span class="he" lang="he">אֲנִי לוֹמֵד עִבְרִית עִם הַתּוֹרָה</span><b>Yo aprendo hebreo con la Torá</b><span>Juegos de 3 a 5 minutos: letras, vocales, palabras y versículos reales. Gana XP y mantén tu racha.</span><span class="btn solid" style="align-self:flex-start">Empezar a jugar</span></a></section>' +
       '<section class="section"><h3>Mensaje diario</h3><a class="row" href="#mensaje" style="border-top:1px solid var(--line)"><span class="t"><b>' + esc(msg.titulo) + '</b><span>' + esc(refLabel(msg.ref)) + '</span></span><span class="he">דְּבַר הַיּוֹם</span></a></section>' +
       '<section class="section"><h3>Versículo destacado</h3><div class="verses" style="border-top:1px solid var(--line)">' + verseHTML(fb, fc, fv, fd) + '</div></section>' +
       '<section class="section"><h3>Las Escrituras</h3><div class="rows">' +
       '<a class="row" href="#biblia"><span class="t"><b>Tanaj</b><span>Torá, Neviim y Ketuvim en hebreo y español</span></span><span class="he">תַּנַ״ךְ</span></a>' +
       '<a class="row" href="#biblia-nt"><span class="t"><b>Brit Hadashá</b><span>Los 27 libros en hebreo y español</span></span><span class="he">בְּרִית חֲדָשָׁה</span></a>' +
-      '<a class="row" href="#estudios"><span class="t"><b>Estudios</b><span>Parashiot y biblioteca de estudios</span></span><span class="he">לִמּוּד</span></a></div></section>' +
+      '<a class="row" href="#estudios"><span class="t"><b>Estudios</b><span>Parashiot y biblioteca de estudios</span></span><span class="he">לִמּוּד</span></a>' +
+      '<a class="row" href="#aprender"><span class="t"><b>Aprender hebreo</b><span>Mapa de 12 mundos, desde el Alef Bet hasta Bereshit 1</span></span><span class="he">עִבְרִית</span></a></div></section>' +
       '<section class="section"><h3>Últimas publicaciones</h3><div class="rows">' +
       E.publicaciones.map(p => '<div class="row"><span class="t"><b>' + esc(p.titulo) + '</b><span>' + esc(fmtDate(fromISO(p.fecha), { day: 'numeric', month: 'long', year: 'numeric' })) + '. ' + esc(p.texto) + '</span></span></div>').join('') +
       '</div></section></div>';
@@ -529,7 +531,7 @@
   /* ----- Estudios ----- */
   async function vEstudios() {
     const E = await getJSON('estudios.json');
-    view().innerHTML = top('Estudios') + '<div class="wrap">' +
+    view().innerHTML = top('Estudios', { back: 'menu' }) + '<div class="wrap">' +
       '<div class="reader-head"><p class="he" lang="he">בֵּית מִדְרָשׁ</p><h2>Biblioteca de estudios</h2></div>' +
       '<div class="group-title"><h3>Disponible ahora</h3></div><div class="rows">' +
       '<a class="row" href="#parashiot"><span class="t"><b>Estudios de las parashiot</b><span>54 porciones con resumen, personajes, temas y lectura bilingüe</span></span><span class="pill ok">Disponible</span></a>' +
@@ -569,7 +571,7 @@
 
   /* ----- Menú ----- */
   function vMenu() {
-    const items = [['mensaje', 'day', 'Mensaje diario', 'דְּבַר הַיּוֹם'], ['calendario', 'cal', 'Calendario bíblico', 'לוּחַ'], ['vocabulario', 'alef', 'Vocabulario hebreo', 'מִלּוֹן'], ['historial', 'hist', 'Historial de lectura', ''], ['acerca', 'info', 'Acerca de Beit Hatzirah', ''], ['ajustes', 'gear', 'Configuración', '']];
+    const items = [['estudios', 'study', 'Estudios', 'בֵּית מִדְרָשׁ'], ['aprender', 'alef', 'Yo aprendo hebreo con la Torá', 'עִבְרִית'], ['mensaje', 'day', 'Mensaje diario', 'דְּבַר הַיּוֹם'], ['calendario', 'cal', 'Calendario bíblico', 'לוּחַ'], ['vocabulario', 'alef', 'Diccionario hebreo', 'מִלּוֹן'], ['historial', 'hist', 'Historial de lectura', ''], ['acerca', 'info', 'Acerca de Beit Hatzirah', ''], ['ajustes', 'gear', 'Configuración', '']];
     view().innerHTML = top('Menú', { back: 'inicio' }) + '<div class="wrap"><div class="rows" style="margin-top:12px">' +
       items.map(([r, i, t, h]) => '<a class="row" href="#' + r + '"><span style="color:var(--accent)">' + ic(i, ' width="22" height="22"') + '</span><span class="t"><b>' + t + '</b></span>' + (h ? '<span class="he" lang="he">' + h + '</span>' : '') + '</a>').join('') +
       '</div><p class="muted center" style="font-size:.85rem;margin-top:24px">Versión ' + VERSION + '</p></div>';
@@ -640,13 +642,24 @@
 
   /* ----- Vocabulario ----- */
   async function vVocabulario(q) {
-    const V = await getJSON('vocabulario.json');
+    const V0 = await getJSON('vocabulario.json');
+    let A = null; try { A = await getJSON('aprender.json'); } catch (e) { }
+    const CAT = { 'w-tov': 'adjetivo', 'w-kadosh': 'adjetivo', 'w-ejad': 'numeral' };
+    const seen = new Set(V0.map(w => hebPlain(w.he)));
+    const extra = [];
+    if (A) A.worlds.forEach(wd => wd.units.forEach(u => { if (u.type !== 'words') return; u.items.forEach(it => {
+      if (seen.has(hebPlain(it.he))) return; seen.add(hebPlain(it.he));
+      const verb = wd.id === 'w7';
+      extra.push({ he: it.he, tr: it.tr, es: it.es, pr: '', ref: it.ref, q: hebPlain(it.he), nota: '', cat: verb ? 'verbo' : (CAT[it.id] || 'sustantivo'), raiz: verb ? hebPlain(it.he).split('').join('־') : '', unit: u.id, uname: u.name });
+    }); }));
+    const V = V0.concat(extra);
     const nq = q ? norm(q) : '';
     const list = nq ? V.filter(w => norm(w.tr + ' ' + w.es).includes(nq) || hebPlain(w.he).includes(hebPlain(q))) : V;
-    view().innerHTML = top('Vocabulario hebreo', { back: 'menu' }) + '<div class="wrap">' +
+    view().innerHTML = top('Diccionario hebreo', { back: 'menu' }) + '<div class="wrap">' +
       '<div class="field">' + ic('search') + '<input type="search" placeholder="Buscar palabra (español, transliteración o hebreo)" value="' + esc(q || '') + '" data-act="vocab-q" aria-label="Buscar palabra"></div>' +
-      list.map(w => '<div class="word"><span class="he" lang="he">' + esc(w.he) + '</span><b>' + esc(w.tr) + ' <span class="muted" style="font-weight:400;font-size:.9rem">/' + esc(w.pr) + '/</span></b><span>' + esc(w.es) + '</span><span class="muted" style="font-size:.88rem">' + (w.nota ? esc(w.nota) : 'Aparece en ' + esc(refLabel(w.ref))) + '</span>' +
-        '<div class="actions"><a href="#' + refRoute(w.ref) + '">Ver ' + esc(refLabel(w.ref)) + '</a><button data-act="vocab-search" data-q="' + esc(w.q) + '">Buscar en las Escrituras</button></div></div>').join('') +
+      '<p class="muted" style="font-size:.88rem">' + V.length + ' palabras. Las del curso «Yo aprendo hebreo» se pueden practicar en su unidad.</p>' +
+      list.map(w => '<div class="word"><span class="he" lang="he">' + esc(w.he) + '</span><b>' + esc(w.tr) + (w.pr ? ' <span class="muted" style="font-weight:400;font-size:.9rem">/' + esc(w.pr) + '/</span>' : '') + '</b><span>' + esc(w.es) + '</span><span class="muted" style="font-size:.88rem">' + (w.cat ? esc(w.cat) + (w.raiz ? ', raíz ' + esc(w.raiz) : '') + '. ' : '') + (w.nota ? esc(w.nota) : 'Aparece en ' + esc(refLabel(w.ref))) + '</span>' +
+        '<div class="actions"><a href="#' + refRoute(w.ref) + '">Ver ' + esc(refLabel(w.ref)) + '</a><button data-act="vocab-search" data-q="' + esc(w.q) + '">Buscar en las Escrituras</button>' + (w.unit ? '<a href="#leccion-' + w.unit + '-l">Practicar</a>' : '') + '</div></div>').join('') +
       (list.length ? '' : '<div class="empty">No hay palabras que coincidan.</div>') +
       '<p class="muted" style="font-size:.82rem;margin-top:16px">La pronunciación es orientativa. La búsqueda en las Escrituras encuentra la forma escrita de la palabra (también con prefijos o sufijos).</p></div>';
   }
@@ -746,12 +759,14 @@
   function vNotFound() { view().innerHTML = top('Beit Hatzirah', { back: 'inicio' }) + '<div class="wrap empty"><p>Esta sección no existe.</p><a class="btn" href="#inicio">Ir al inicio</a></div>'; }
 
   /* ============ ENRUTADOR ============ */
-  const TAB = { inicio: 'inicio', biblia: 'biblia', libro: 'biblia', leer: 'biblia', buscar: 'biblia', parashiot: 'parashiot', parasha: 'parashiot', lectura: 'parashiot', haftara: 'parashiot', estudios: 'estudios', guardados: 'guardados' };
+  const EXT = window.BH_EXT || { routes: {}, act: {}, tabs: {} };
+  const TAB = Object.assign({ inicio: 'inicio', biblia: 'biblia', libro: 'biblia', leer: 'biblia', buscar: 'biblia', parashiot: 'parashiot', parasha: 'parashiot', lectura: 'parashiot', haftara: 'parashiot', guardados: 'guardados' }, EXT.tabs);
   let firstRender = true;
   async function route() {
     closeSheet();
     const h = (location.hash || '#inicio').slice(1);
-    const parts = h.split('-'); const r = parts[0];
+    const parts = h.split('-'); const r = EXT.routes[h] ? h : parts[0];
+    if (EXT.leave) EXT.leave();
     document.querySelectorAll('.tabbar a').forEach(a => a.setAttribute('aria-current', a.dataset.tab === (TAB[r] || '') ? 'page' : 'false'));
     try {
       switch (r) {
@@ -773,13 +788,14 @@
         case 'historial': vHistorial(); break;
         case 'acerca': vAcerca(); break;
         case 'ajustes': vAjustes(); break;
-        default: vNotFound();
+        default: if (EXT.routes[r]) await EXT.routes[r](parts); else vNotFound();
       }
     } catch (e) {
       console.error(e);
       view().innerHTML = top('Beit Hatzirah', { back: 'inicio' }) + '<div class="wrap empty"><p>No se pudo abrir esta sección: ' + esc(e.message) + '</p><a class="btn" href="#inicio">Ir al inicio</a></div>';
     }
     if (!['leer', 'buscar'].includes(r)) window.scrollTo(0, 0);
+    if (r === 'aprender' && history.scrollRestoration) { /* el mapa empieza arriba */ }
     if (firstRender) { firstRender = false; hideSplash(); }
   }
   const go = r => { if (location.hash.slice(1) === r) route(); else location.hash = r; };
@@ -847,7 +863,8 @@
     const a = e.target.closest('[data-act],[data-go],.v');
     if (!a) return;
     if (a.dataset.go) { e.preventDefault(); go(a.dataset.go); return; }
-    if (a.dataset.act && ACT[a.dataset.act]) { if (a.tagName !== 'A') e.preventDefault(); ACT[a.dataset.act](a, e); return; }
+    const fn = a.dataset.act && (ACT[a.dataset.act] || EXT.act[a.dataset.act]);
+    if (fn) { if (a.tagName !== 'A') e.preventDefault(); fn(a, e); return; }
     if (a.classList.contains('v') && !e.target.closest('a')) verseSheet(a.dataset.v);
   });
   document.addEventListener('keydown', e => {
@@ -888,6 +905,7 @@
     }).catch(() => { });
   }
   if (/[?&]test\b/.test(location.search)) window.__bh = { es, getBookV, prefs };
+  if (EXT.init) EXT.init({ esc, ic, top, sheet, closeSheet, toast, Store, go, view, getJSON, getBook, getBookV, weekInfo, parseCV, bookName, fmtRange, refRoute, refLabel });
   window.addEventListener('hashchange', route);
   route();
 })();

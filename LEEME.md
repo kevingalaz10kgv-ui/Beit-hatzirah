@@ -4,7 +4,7 @@ Biblioteca digital de las Sagradas Escrituras en hebreo y español.
 Proyecto y dirección de contenido: **Moreh Gabriel ben Eliyah**
 Autoridad rabínica: **Rab Eliyah ben Eleazar**
 
-Versión 0.2.0 (Etapas 1 y 2 completas; Etapas 3 a 5 parciales).
+Versión 0.3.0. Incluye el módulo «Yo aprendo hebreo con la Torá».
 
 ---
 
@@ -17,7 +17,9 @@ sw.js                   Service Worker: funcionamiento sin conexión
 capacitor.config.json   Preparación para APK Android y app iOS
 css/app.css             Diseño visual (modo claro y oscuro)
 js/books.js             Índice de los 66 libros y sus nombres
-js/app.js               Lógica de la aplicación
+js/app.js               Lógica de la aplicación (Biblia, parashiot, calendario, etc.)
+js/aprender.js          Módulo «Yo aprendo hebreo con la Torá» (juegos, niveles, repaso)
+data/aprender.json      Contenido del curso: 12 mundos, 49 unidades, 280 elementos
 data/b/*.json           Un archivo por libro: [español RV1909, hebreo, numeración hebrea si difiere]
 data/es/pdt/*.json      Palabra de Dios para ti (un archivo por libro)
 data/es/blm/*.json      Biblia Libre para el Mundo (un archivo por libro)
@@ -119,3 +121,27 @@ El texto bíblico se muestra tal como está en sus fuentes. La opción "Nombres 
 | 4. Estudios y mensaje diario | Mensaje diario funcionando (18 mensajes). Estudios temáticos pendientes |
 | 5. Calendario y vocabulario | Calendario 2025-2036 y 26 palabras funcionando |
 | 6. Pruebas en dispositivos reales | Pendiente: probar en Android e iPhone reales tras publicar |
+
+## 10. Módulo «Yo aprendo hebreo con la Torá» (אֲנִי לוֹמֵד עִבְרִית עִם הַתּוֹרָה)
+
+Está en la pestaña **Aprender** de la barra inferior.
+
+**Recorrido:** 12 mundos y 49 unidades. Mundo 1: el Alef Bet (22 letras, letras finales, el punto que cambia el sonido y letras parecidas). Mundo 2: las vocalizaciones. Mundos 3 a 8: vocabulario (primeras palabras, la creación, la familia, la naturaleza, verbos y vocabulario de la Torá). Mundo 9: frases bíblicas. Mundo 10: lectura de Bereshit 1:1–5 palabra por palabra. Mundo 11: gramática (prefijos, número, pronombres, sufijos, raíces y vav consecutiva). Mundo 12: análisis del Shemá, de la bendición sacerdotal y de Bereshit 1:1.
+
+**Juegos:** asocia imagen y palabra, selecciona la imagen, relaciona las parejas, construye la palabra (tocando o arrastrando), completa la palabra, escucha y selecciona, reconoce la letra y su sonido, memoria, ordena la frase o el versículo, traduce, detecta el error y contrarreloj de 60 segundos.
+
+**Progreso:** XP y niveles, racha diaria, 5 corazones por lección (se pueden recuperar con monedas o repitiendo la lección gratis), monedas, protector de racha, 13 insignias, examen por unidad (80 % para desbloquear la siguiente), prueba de nivel y elección del punto de partida.
+
+**Repaso inteligente:** cada respuesta actualiza el nivel de dominio de la palabra (cajas de Leitner: 0, 1, 3, 7, 14, 30 y 60 días). Las que se fallan vuelven a los 10 minutos. La sección «Mis palabras por repasar» muestra hebreo, transliteración, significado, audio, dominio y próximo repaso.
+
+**Conexión con la Torá:** cada palabra tiene un versículo verificado donde aparece. «Hebreo de la parashá» busca en el texto hebreo de la parashá de la semana qué palabras del curso aparecen, cuántas veces y dónde, y permite practicarlas.
+
+**Audio:** usa la voz en hebreo del propio teléfono (síntesis de voz, pronunciación israelí moderna), con opción lenta. No es una grabación del hebreo antiguo, y la app lo aclara. Si el teléfono no tiene voz en hebreo, los ejercicios de escuchar se ocultan:
+- iPhone: Ajustes → Accesibilidad → Contenido leído → Voces → Hebreo.
+- Android: Ajustes → Sistema → Idioma → Texto a voz → instalar datos de voz en hebreo.
+
+**Verificación del contenido:** todas las palabras con referencia se comprobaron automáticamente contra el texto hebreo del versículo citado; las frases y versículos de los mundos 9, 10 y 12 se toman directamente del Códice de Leningrado (sin signos de cantilación).
+
+**Agregar unidades:** edita `data/aprender.json`. Cada unidad tiene `id`, `name`, `type` (letters, vowels, read, words, phrases, reading, grammar, analysis), `intro` e `items` (`id`, `he`, `tr`, `es`, y opcionalmente `em` para la imagen y `ref` para el versículo).
+
+**Pendiente:** grabaciones de audio reales, ilustraciones propias (hoy se usan emojis del teléfono), más unidades intermedias y avanzadas, y vocabulario de cada parashá con formas verbales conjugadas.
