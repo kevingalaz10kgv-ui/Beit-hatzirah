@@ -2,7 +2,7 @@
    Aplicación principal (JavaScript sin dependencias). */
 (function () {
   'use strict';
-  const VERSION = '0.3.2';
+  const VERSION = '0.3.3';
   const EMBED = window.__BH_EMBED || null;
   const LOGO = (EMBED && EMBED.logo) || 'img/logo.jpg';
   const BOOKS = window.BH_BOOKS;
@@ -386,7 +386,7 @@
     html += '</div>';
     view().innerHTML = top('Biblia', { right: '<a class="icon-btn" href="#buscar" aria-label="Buscar">' + ic('search') + '</a>' }) +
       '<div class="wrap"><div class="seg" role="group" aria-label="División"><button data-go="biblia" aria-pressed="' + !nt + '">Tanaj</button><button data-go="biblia-nt" aria-pressed="' + !!nt + '">Brit Hadashá</button></div>' +
-      (nt ? '<p class="notice">Brit Hadashá en hebreo (traducción de Franz Delitzsch, sin vocales) y en español (Reina-Valera 1909).</p>' : '') +
+
       html + '</div>';
   }
   function vLibro(code) {
@@ -414,7 +414,7 @@
   }
   const verBtn = () => '<button class="ver-btn" data-act="ver-sheet" aria-label="Elegir traducción al español">' + VERS[prefs.ver].short + '</button>';
   const VERDESC = {
-    pdt: 'Traducción latinoamericana que conserva formas hebreas como ʼElohim y el Nombre (YAVÉ). Texto completo.',
+    pdt: 'Traducción latinoamericana que conserva formas hebreas como ʼElohim y el Nombre (YAVÉ). Texto completo. © 2020 Asociación Bíblica Latinoamericana, CC BY-SA 4.0.',
     blm: 'Traducción moderna y literal, de dominio público. Distingue el Nombre (Yahvé). Es un borrador en revisión: faltan algunos versículos de Ezequiel.',
     rv: 'La traducción clásica de 1909, con lenguaje antiguo («crió», «haz de la tierra»).'
   };
@@ -440,7 +440,7 @@
       '<div class="wrap ' + viewClass() + '">' +
       '<div class="reader-head"><p class="he" lang="he">' + esc(b.he) + '</p><h2>' + esc(b.tr) + ' ' + c + '</h2>' + ctx + '</div>' + ntNote + title +
       '<div class="verses">' + ch.map((cell, i) => verseHTML(code, c, i + 1, cell)).join('') + '</div>' + pg +
-      '<p class="muted" style="font-size:.82rem">' + (b.nt ? 'Hebreo: traducción de Franz Delitzsch, texto sin vocales (eBible.org, dominio público). ' : 'Hebreo: Códice de Leningrado (Westminster Leningrad Codex, dominio público). ') + 'Español: ' + esc(VERS[prefs.ver].src) + '.' + (prefs.nombres ? ' Nombres hebreos: adaptación de nombres activada (subrayado punteado).' : '') + ' Numeración de versículos según la Reina-Valera.</p></div>';
+      '</div>';
     pushHistory(code, c);
     if (vSel) { const el = document.getElementById('v' + vSel); if (el) { el.classList.add('hl'); el.scrollIntoView({ block: 'center' }); } }
     else window.scrollTo(0, 0);
@@ -524,7 +524,7 @@
       '<div class="btns"><button class="btn' + (done ? ' solid' : '') + '" data-act="p-done" data-n="' + n + '">' + ic('check') + (done ? 'Estudiada' : 'Marcar como estudiada') + '</button>' +
       '<button class="btn" data-act="p-save" data-n="' + n + '">' + ic('star') + (saved ? 'Guardada' : 'Guardar') + '</button></div>' +
       '<nav class="pager">' + (prev ? '<a href="#parasha-' + prev.n + '"><small>Anterior</small>' + esc(prev.tr) + '</a>' : '<span></span>') + (next ? '<a class="next" href="#parasha-' + next.n + '"><small>Siguiente</small>' + esc(next.tr) + '</a>' : '<span></span>') + '</nav>' +
-      '<p class="muted" style="font-size:.82rem">Divisiones de lectura y haftarot según el calendario tradicional (datos generados con Hebcal). Referencias en numeración Reina-Valera, con la numeración hebrea entre paréntesis cuando difiere.</p></div>';
+      '</div>';
     window.scrollTo(0, 0);
   }
 
@@ -590,7 +590,7 @@
       '<div class="reader-head"><p class="he" lang="he">דְּבַר הַיּוֹם</p>' + (date ? '<p class="date">' + esc(fmtDate(date)) + '<br>' + esc(hebDate(date)) + '</p>' : '') + '<h2>' + esc(m.titulo) + '</h2></div>' +
       (cell[1] ? '<p class="he big" lang="he">' + esc(heb(cell[1])) + '</p>' : '') +
       '<p class="v-ref" style="color:var(--accent);font-weight:600;margin:0 0 6px"><a href="#leer-' + b + '-' + c + '-' + v + '" style="color:inherit">' + esc(bookName(b)) + ' ' + c + ':' + v + '</a></p>' +
-      '<blockquote lang="es">' + es(cell[0], true) + '</blockquote><p class="muted" style="font-size:.82rem">Texto bíblico: ' + esc(VERS[prefs.ver].name) + (prefs.nombres ? ' con nombres hebreos' : '') + '.</p>' +
+      '<blockquote lang="es">' + es(cell[0], true) + '</blockquote>' +
       '<h2>Reflexión</h2><p>' + esc(m.reflexion) + '</p><h2>Enseñanza práctica</h2><p>' + esc(m.ensenanza) + '</p><h2>Para meditar</h2><p><i>' + esc(m.pregunta) + '</i></p><p style="color:var(--accent)">' + esc(m.cierre) + '</p>' +
       '<p class="muted" style="font-size:.82rem">La reflexión, la enseñanza y la pregunta son comentario de Beit Hatzirah, no texto bíblico.</p>' +
       '<div class="btns"><button class="btn solid" data-act="m-wa" data-i="' + i + '">' + ic('wa') + 'WhatsApp</button><button class="btn" data-act="m-img" data-i="' + i + '">' + ic('image') + 'Imagen</button><button class="btn" data-act="m-copy" data-i="' + i + '">' + ic('copy') + 'Copiar</button><button class="btn" data-act="m-save" data-i="' + i + '">' + ic('star') + (saved ? 'Guardado' : 'Guardar') + '</button></div>' +

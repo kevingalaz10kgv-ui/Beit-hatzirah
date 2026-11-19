@@ -4,7 +4,7 @@ Biblioteca digital de las Sagradas Escrituras en hebreo y español.
 Proyecto y dirección de contenido: **Moreh Gabriel ben Eliyah**
 Autoridad rabínica: **Rab Eliyah ben Eleazar**
 
-Versión 0.3.2. Incluye el módulo «Yo aprendo hebreo con la Torá».
+Versión 0.3.3. Incluye el módulo «Yo aprendo hebreo con la Torá».
 
 ---
 
