@@ -4,7 +4,7 @@ Biblioteca digital de las Sagradas Escrituras en hebreo y español.
 Proyecto y dirección de contenido: **Moreh Gabriel ben Eliyah**
 Autoridad rabínica: **Rab Eliyah ben Eleazar**
 
-Versión 0.3.0. Incluye el módulo «Yo aprendo hebreo con la Torá».
+Versión 0.3.1. Incluye el módulo «Yo aprendo hebreo con la Torá».
 
 ---
 
@@ -106,10 +106,6 @@ Verifica los precios y condiciones vigentes antes de empezar; pueden cambiar. Si
 - Parashiot, aliyot, haftarot y fechas: calendario hebreo tradicional, generados con Hebcal.
 - Correspondencia de versículos hebreo/español: tabla de versificación estándar (inglesa/original).
 - Tipografías: Noto Serif Hebrew y Spectral, SIL Open Font License.
-
-## 8. Criterio editorial
-
-El texto bíblico se muestra tal como está en sus fuentes. La opción "Nombres hebreos" (activada por defecto, se puede desactivar) adapta en pantalla, en las tres traducciones: el Nombre (Jehová, Yahvé, YAVÉ) → Adonay; "Señor Jehová/Yahvé" y "ʼAdonay YAVÉ" → Adonay Elohim (lectura tradicional); Dios / ʼElohim → Elohim; Jesús → Yahshua; Jesucristo → Yahshua HaMashíaj; Cristo → Mashíaj; Espíritu Santo → Ruaj HaKodesh. Las palabras adaptadas aparecen con subrayado punteado. Los nombres de personas y lugares no se modifican. "Ortografía actualizada" solo moderniza acentos de 1909 (á → a, fué → fue).
 
 ## 9. Estado del proyecto
 

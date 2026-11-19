@@ -2,7 +2,7 @@
    Aplicación principal (JavaScript sin dependencias). */
 (function () {
   'use strict';
-  const VERSION = '0.3.0';
+  const VERSION = '0.3.1';
   const EMBED = window.__BH_EMBED || null;
   const LOGO = (EMBED && EMBED.logo) || 'img/logo.jpg';
   const BOOKS = window.BH_BOOKS;
@@ -674,20 +674,25 @@
 
   /* ----- Acerca ----- */
   function vAcerca() {
-    view().innerHTML = top('Acerca de Beit Hatzirah', { back: 'menu' }) + '<div class="wrap study">' +
+    view().innerHTML = top('Acerca de Beit Hatzirah', { back: 'menu' }) + '<div class="wrap study about">' +
       '<img class="about-logo" src="' + LOGO + '" alt="Logotipo oficial de Beit Hatzirah">' +
-      '<div class="center"><p class="he" lang="he" style="font-size:2.2rem;margin:0;color:var(--accent)">בית הצרעה</p><h2 style="margin:0">Beit Hatzirah</h2><p class="muted">Biblioteca digital de las Sagradas Escrituras</p></div>' +
-      '<p>Beit Hatzirah es una biblioteca digital dedicada al estudio, la enseñanza y la profundización de las Sagradas Escrituras desde una perspectiva hebrea, poniendo a disposición de toda la comunidad las Escrituras en hebreo y español, estudios de Torá, parashiot y material educativo.</p>' +
-      '<div class="credits"><div><span>Proyecto y dirección de contenido</span><b>Moreh Gabriel ben Eliyah</b></div><div><span>Autoridad rabínica</span><b>Rab Eliyah ben Eleazar</b></div></div>' +
+      '<div class="about-name"><p class="he" lang="he">בית הצרעה</p><h2>BEIT HATZIRAH</h2></div>' +
+      '<div class="about-text">' +
+      '<p>Beit Hatzirah es el Centro de Investigación Torática de la Kehilat Shivateinu Bayit, dirigido por el Ha’Roeh Eliyah ben Eleazar.</p>' +
+      '<p>Nuestra misión es traer a la existencia el Reino en nuestras vidas, poniendo en ejecución y práctica toda la base torática. No buscamos que la Torá sea solamente conocimiento, lectura o teoría, sino que se convierta en una realidad vivida: una forma de caminar, actuar, pensar y manifestar los principios del Reino en nuestra vida cotidiana.</p>' +
+      '<p>Beit Hatzirah busca profundizar en la medida espiritual y en el nivel de obediencia, entrega y compromiso que alcanzaron hombres de las Escrituras como Yahoshua y Shimshon, comprendiendo sus caminos, sus acciones y las enseñanzas que podemos extraer de sus vidas.</p>' +
+      '<p>Todo este proceso debe desarrollarse bajo un principio fundamental: la honra al liderazgo establecido. Reconocemos la importancia del orden, la autoridad espiritual, la instrucción y la honra hacia quienes han sido puestos para guiar y enseñar a la comunidad.</p>' +
+      '<p>Este centro existe para investigar, estudiar, comprender y llevar a la práctica los fundamentos de la Torá, procurando que cada enseñanza produzca una transformación real en nuestras vidas y en nuestra comunidad.</p>' +
+      '<p class="about-quote">La Toráh no es solamente para ser estudiada; es para ser vivida y puesta en ejecución.</p>' +
+      '<div class="about-sign"><b>Moreh Gabriel ben Eliyah</b><span>Proyecto y dirección de contenido — Beit Hatzirah</span></div>' +
+      '</div><div class="about-sources">' +
       '<h2>Fuentes de los textos</h2><ul>' +
       '<li><b>Tanaj en hebreo:</b> Westminster Leningrad Codex (texto masorético del Códice de Leningrado), dominio público.</li>' +
       '<li><b>Español, a elección:</b> Palabra de Dios para ti © 2020 Asociación Bíblica Latinoamericana (licencia Creative Commons CC BY-SA 4.0; la adaptación de nombres se comparte bajo la misma licencia); Biblia Libre para el Mundo, de David Williams y Michael Paul Johnson (dominio público, CC0; borrador en revisión); Reina-Valera 1909 (dominio público).</li>' +
       '<li><b>Brit Hadashá en hebreo:</b> traducción de Franz Delitzsch, texto sin vocales tomado del corpus de eBible.org, que lo publica como dominio público. En unos pocos pasajes la fuente une o divide versículos de otra manera; la app lo indica junto a la referencia.</li>' +
       '<li><b>Divisiones de parashiot, aliyot, haftarot y fechas:</b> calendario hebreo tradicional, datos generados con Hebcal.</li>' +
       '<li><b>Tipografías:</b> Noto Serif Hebrew y Spectral, licencia SIL Open Font.</li></ul>' +
-      '<h2>Criterio editorial</h2><p>El texto bíblico se presenta tal como está en sus fuentes. Con la opción «Nombres hebreos» activada, la app adapta en pantalla los nombres divinos en cualquiera de las traducciones: el Nombre (Jehová, Yahvé o YAVÉ, según la traducción) → Adonay; «Señor Jehová/Yahvé» y «ʼAdonay YAVÉ» → Adonay Elohim, como se lee tradicionalmente; Dios → Elohim; Jesús → Yahshua; Jesucristo → Yahshua HaMashíaj; Cristo → Mashíaj; Espíritu Santo → Ruaj HaKodesh. Estas palabras aparecen con subrayado punteado para distinguir la adaptación de la traducción; los nombres de personas y lugares no se modifican. La opción «Ortografía actualizada» (solo Reina-Valera 1909) moderniza acentos de 1909 (á → a, fué → fue).</p>' +
-      '<p>La numeración de versículos sigue la Reina-Valera. Cuando la numeración del texto hebreo es distinta, se indica junto a la referencia.</p>' +
-      '<p>Los resúmenes, reflexiones y explicaciones son material educativo de Beit Hatzirah y se distinguen del texto bíblico.</p>' +
+      '</div>' +
       '<p class="muted center" style="font-size:.85rem">Versión ' + VERSION + '. Gratuita, sin registro y sin publicidad.</p></div>';
   }
 
