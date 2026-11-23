@@ -25,10 +25,13 @@
   }
   const QUALITY = /premium|enhanced|mejorad|natural|neural|google|siri/i;
   function voicesFor(l) { return VOICES.filter(v => l === 'he' ? /^(he|iw)/i.test(v.lang) : /^es/i.test(v.lang)); }
+  // Voces hebreas masculinas conocidas (nativas de Israel): Avri y Asaf (Microsoft)
+  const MALE_HE = /avri|asaf/i;
+  const isMale = v => /^(he|iw)/i.test(v.lang) && MALE_HE.test(v.name);
   function voiceFor(l) {
     const list = voicesFor(l); if (!list.length) return null;
     const want = prefs()[l === 'he' ? 'vHe' : 'vEs'];
-    return list.find(v => v.name === want) || list.find(v => QUALITY.test(v.name) && v.localService) || list.find(v => QUALITY.test(v.name)) || list.find(v => v.localService) || list[0];
+    return list.find(v => v.name === want) || (l === 'he' && (list.find(v => isMale(v) && QUALITY.test(v.name)) || list.find(isMale))) || list.find(v => QUALITY.test(v.name) && v.localService) || list.find(v => QUALITY.test(v.name)) || list.find(v => v.localService) || list[0];
   }
 
   /* ---------- Grabaciones reales (opcional) ---------- */
@@ -294,8 +297,8 @@
       seekVerse(i, P.playing);
     },
     'au-voices': () => {
-      const row = (l, label) => { const list = voicesFor(l); const cur = voiceFor(l); return '<h4>' + label + '</h4>' + (list.length ? list.map(v => '<button class="act" data-act="au-setvoice" data-l="' + l + '" data-n="' + esc(v.name) + '">' + (cur && cur.name === v.name ? '✓ ' : '') + esc(v.name) + ' <span class="muted" style="font-size:.8rem">' + esc(v.lang) + (v.localService ? '' : ', requiere internet') + '</span></button>').join('') : '<p class="muted">No hay voces instaladas para este idioma.</p>'); };
-      B.sheet(row('es', 'Voz en español') + row('he', 'Voz en hebreo') + '<p class="muted" style="font-size:.85rem;margin-top:10px">Las voces dependen del teléfono. Las marcadas como «mejorada», «premium» o «natural» suenan mejor; en iPhone se descargan en Ajustes → Accesibilidad → Contenido leído → Voces.</p>');
+      const row = (l, label) => { const list = voicesFor(l); const cur = voiceFor(l); return '<h4>' + label + '</h4>' + (list.length ? list.map(v => '<button class="act" data-act="au-setvoice" data-l="' + l + '" data-n="' + esc(v.name) + '">' + (cur && cur.name === v.name ? '✓ ' : '') + esc(v.name) + ' <span class="muted" style="font-size:.8rem">' + esc(v.lang) + (isMale(v) ? ', voz masculina' : '') + (v.localService ? '' : ', requiere internet') + '</span></button>').join('') : '<p class="muted">No hay voces instaladas para este idioma.</p>'); };
+      B.sheet(row('es', 'Voz en español') + row('he', 'Voz en hebreo') + (voicesFor('he').length && !voicesFor('he').some(isMale) ? '<p class="notice" style="font-size:.85rem">Este dispositivo no tiene una voz hebrea masculina identificada. Puedes probar cada voz con el botón y elegir la que prefieras.</p>' : '') + '<p class="muted" style="font-size:.85rem;margin-top:10px">Las voces dependen del teléfono. Las marcadas como «mejorada», «premium» o «natural» suenan mejor; en iPhone se descargan en Ajustes → Accesibilidad → Contenido leído → Voces.</p>');
     },
     'au-setvoice': el => {
       setPref(el.dataset.l === 'he' ? 'vHe' : 'vEs', el.dataset.n); B.closeSheet(); renderPlayer();
