@@ -66,7 +66,7 @@
     const errVerbs = [...new Set(due.map(([k]) => k.split('-')[1]))];
     const list = (ids, empty) => ids.length ? '<div class="rows">' + ids.map(id => BYID[id]).filter(Boolean).map(rowHTML).join('') + '</div>' : '<p class="muted" style="font-size:.9rem">' + empty + '</p>';
     B.view().innerHTML = B.top('PEALIM', { back: 'menu' }) + '<div class="wrap">' +
-      '<div class="lx-hero"><p class="he" lang="he" style="font-size:2.4rem">פְּעָלִים</p><h2>Buscador y analizador de verbos hebreos</h2><p class="muted" style="margin:0">' + IDX.length + ' verbos del Tanaj con todas sus formas atestiguadas</p></div>' +
+      '<div class="lx-hero"><img class="sec-logo" src="' + B.LOGO + '" alt=""><p class="he" lang="he" style="font-size:2.4rem">פְּעָלִים</p><h2>Buscador y analizador de verbos hebreos</h2><p class="muted" style="margin:0">' + IDX.length + ' verbos del Tanaj con todas sus formas atestiguadas</p></div>' +
       '<div class="field">' + B.ic('search') + '<input type="search" id="pq" data-act="pq" placeholder="Hebreo, transliteración, español o raíz" value="' + esc(Q) + '" aria-label="Buscar verbo" autocomplete="off"></div>' +
       '<div id="presults"></div>' +
       '<div id="phome"' + (Q ? ' hidden' : '') + '>' +

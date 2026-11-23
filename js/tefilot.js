@@ -59,7 +59,7 @@
     const used = Object.entries(s.uses).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([id]) => by(id)).filter(Boolean);
     const row = t => '<a class="row" href="#tefilot-t-' + t.id + '"><span class="t"><b>' + esc(t.es) + '</b><span>' + esc(t.momento) + '</span></span><span class="he" lang="he">' + esc(t.he) + '</span></a>';
     B.view().innerHTML = top('Tefilot', 'menu') + '<div class="wrap tf">' +
-      '<div class="tf-hero"><p class="he" lang="he">תְּפִלּוֹת</p><h2>TEFILOT</h2><p>Oraciones y bendiciones hebreas</p></div>' +
+      '<div class="tf-hero"><img class="sec-logo" src="' + B.LOGO + '" alt=""><p class="he" lang="he">תְּפִלּוֹת</p><h2>TEFILOT</h2><p>Oraciones y bendiciones hebreas</p></div>' +
       '<div class="field">' + B.ic('search') + '<input type="search" id="tfq" placeholder="Buscar: Netilat Yadáyim, Shabat, mañana, pan…" aria-label="Buscar una tefilá" autocomplete="off"></div><div id="tfres"></div>' +
       '<div class="tf-cats">' + D.cats.map(c => { const n = D.tefilot.filter(t => t.cat === c.id).length; return '<a class="tf-cat" href="#tefilot-c-' + c.id + '"><span class="tf-ci">' + c.ic + '</span><b>' + esc(c.es) + '</b><span class="he" lang="he">' + esc(c.he) + '</span><small>' + (n ? n + ' tefilot' : 'Próxima etapa') + '</small></a>'; }).join('') +
       '<a class="tf-cat" href="#tefilot-guia"><span class="tf-ci">🍎</span><b>¿Qué bendición digo?</b><span class="he" lang="he">מַה מְּבָרְכִים</span><small>Guía de alimentos</small></a></div>' +

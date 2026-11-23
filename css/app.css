@@ -46,7 +46,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .icon-btn:hover{background:var(--surface)}
 .icon-btn svg{width:22px;height:22px}
 .top .brand{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
-.top .brand img{width:34px;height:34px;border-radius:8px}
+.top .brand img{width:34px;height:auto}
 .top .brand span{font-weight:600;letter-spacing:.02em}
 
 /* Navegación inferior */
@@ -61,14 +61,15 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 #splash{position:fixed;inset:0;z-index:100;background:#111111;display:grid;place-items:center;transition:opacity .5s ease}
 #splash.out{opacity:0;pointer-events:none}
 #splash .in{text-align:center;color:var(--marfil)}
-#splash img{width:min(52vw,240px);height:auto;margin:0 auto 22px;border-radius:22px}
+#splash img{width:min(56vw,250px);height:auto;margin:0 auto 22px;filter:drop-shadow(0 12px 30px rgba(198,161,91,.25));animation:splashin 1s ease-out both}
+@keyframes splashin{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:none}}
 #splash .he{color:var(--dorado-claro);font-size:2rem;line-height:1.4}
 #splash p{margin:4px 0 0;letter-spacing:.08em;color:var(--dorado)}
 @media (prefers-reduced-motion:reduce){#splash{transition:none}}
 
 /* Inicio */
 .hero{padding:28px 0 8px;display:grid;grid-template-columns:96px 1fr;gap:18px;align-items:center}
-.hero img{width:96px;height:96px;border-radius:18px}
+.hero img{width:96px;height:auto;filter:drop-shadow(0 6px 14px rgba(0,0,0,.18))}
 .hero .he{font-size:2.15rem;line-height:1.3;color:var(--accent)}
 .hero h2{margin:0;font-size:1.25rem;font-weight:600;letter-spacing:.03em}
 .welcome{margin:14px 0 0;color:var(--muted)}
@@ -218,7 +219,7 @@ mark{background:color-mix(in srgb,var(--dorado) 35%,transparent);color:inherit;b
 .moed .body{padding:0 0 16px}
 
 /* Acerca */
-.about-logo{width:min(70vw,300px);margin:28px auto 16px;border-radius:24px}
+.about-logo{width:min(70vw,300px);height:auto;margin:28px auto 16px}
 .center{text-align:center}
 .credits{margin:22px 0;display:grid;gap:14px}
 .credits div span{display:block;color:var(--muted);font-size:.9rem}
@@ -640,3 +641,21 @@ body.au-on main{padding-bottom:calc(330px + env(safe-area-inset-bottom,0px))}
 .tf-gi{display:block;background:var(--surface);border-radius:14px;padding:12px 14px;text-decoration:none;border-left:4px solid var(--dorado)}
 .tf-gi>div{display:flex;justify-content:space-between;align-items:baseline}.tf-gi .he{font-size:1.2rem;color:var(--accent)}
 .tf-gi p{margin:4px 0;font-size:.92rem}.tf-gi small{color:var(--muted)}
+
+/* ===== Identidad: logotipo oficial ===== */
+.hdr-logo{flex:none;display:inline-flex;align-items:center;margin-right:2px}
+.hdr-logo img{width:30px;height:auto;display:block}
+.top .brand + .hdr-logo{display:none}
+.menu-brand{display:flex;align-items:center;gap:16px;padding:20px 0 8px}
+.menu-brand img{width:96px;height:auto;filter:drop-shadow(0 6px 14px rgba(0,0,0,.2))}
+.menu-brand .he{font-size:1.8rem;color:var(--accent);margin:0}
+.menu-brand b{font-size:1.2rem;letter-spacing:.06em}
+.sec-logo{display:block;width:86px;height:auto;margin:6px auto 8px;filter:drop-shadow(0 6px 14px rgba(0,0,0,.18))}
+.reader-head.sec-head{text-align:center}.reader-head.sec-head .he{text-align:center}
+.lx-hero .sec-logo,.bs-hero .sec-logo,.tf-hero .sec-logo,.au-head .sec-logo{width:78px}
+.loading::before{content:"";display:block;width:64px;height:67px;margin:0 auto 12px;background:var(--logo) center/contain no-repeat;animation:logopulse 1.4s ease-in-out infinite}
+@keyframes logopulse{50%{opacity:.55;transform:scale(.94)}}
+@media (prefers-reduced-motion:reduce){.loading::before,#splash img{animation:none}}
+/* En el lector el encabezado tiene muchas herramientas: se prioriza el título */
+.top .wrap:has(.ver-btn) .hdr-logo{display:none}
+@media (max-width:359px){.hdr-logo{display:none}}

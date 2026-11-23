@@ -601,7 +601,7 @@
       map += '</div></section>';
     });
     B.view().innerHTML = B.top('Aprender hebreo', { right: '<a class="icon-btn" href="#perfil-hebreo" aria-label="Mi perfil">👤</a>' }) +
-      '<div class="wrap lx-home"><div class="lx-hero"><p class="he" lang="he">אֲנִי לוֹמֵד עִבְרִית עִם הַתּוֹרָה</p><h2>Yo aprendo hebreo con la Torá</h2>' + stats(s) + '</div>' +
+      '<div class="wrap lx-home"><div class="lx-hero"><img class="sec-logo" src="' + B.LOGO + '" alt=""><p class="he" lang="he">אֲנִי לוֹמֵד עִבְרִית עִם הַתּוֹרָה</p><h2>Yo aprendo hebreo con la Torá</h2>' + stats(s) + '</div>' +
       '<div class="lx-actions"><button class="lx-big" data-act="lx-unit" data-u="' + nx.id + '" style="--wc:' + nx.world.color + '"><span>Continuar</span><b>' + esc(nx.name) + '</b><small>' + (nx.world.theme ? 'Mundo temático' : 'Mundo ' + nx.world.n) + '. 3 a 5 minutos</small></button>' +
       '<div class="lx-mini"><a href="#repaso" class="' + (due ? 'hot' : '') + '">🔁<b>Repasar</b><span>' + due + ' por repasar</span></a><a href="#parasha-hebreo">📜<b>Hebreo de la parashá</b><span>Vocabulario de esta semana</span></a><a href="#contrarreloj">⚡<b>Contrarreloj</b><span>60 segundos</span></a><a href="#mis-palabras">🗂️<b>Mis palabras</b><span>Dominio y próximo repaso</span></a></div></div>' +
       (hasVoice() ? '' : '<p class="notice">Este teléfono no tiene una voz en hebreo instalada, así que los ejercicios de escuchar están ocultos. En iPhone: Ajustes → Accesibilidad → Contenido leído → Voces → Hebreo. En Android: Ajustes → Texto a voz → instala el idioma hebreo.</p>') +
@@ -651,7 +651,7 @@
   /* ----- Nivel inicial y prueba ----- */
   async function vNivel() {
     await data(); const s = S();
-    B.view().innerHTML = B.top('Aprender hebreo', { back: 'aprender' }) + '<div class="wrap"><div class="lx-hero"><p class="he" lang="he">אֲנִי לוֹמֵד עִבְרִית עִם הַתּוֹרָה</p><h2>¿Cuánto hebreo sabes?</h2><p class="muted">Elige tu punto de partida. Siempre podrás repasar las unidades anteriores.</p></div><div class="rows">' +
+    B.view().innerHTML = B.top('Aprender hebreo', { back: 'aprender' }) + '<div class="wrap"><div class="lx-hero"><img class="sec-logo" src="' + B.LOGO + '" alt=""><p class="he" lang="he">אֲנִי לוֹמֵד עִבְרִית עִם הַתּוֹרָה</p><h2>¿Cuánto hebreo sabes?</h2><p class="muted">Elige tu punto de partida. Siempre podrás repasar las unidades anteriores.</p></div><div class="rows">' +
       LVLS.map(([k, l]) => '<button class="row" data-act="lx-setlvl" data-l="' + k + '"><span class="t"><b>' + esc(l) + '</b><span>Empiezas en el Mundo ' + START[k].slice(1) + ': ' + esc(DATA.worlds.find(w => w.id === START[k]).name) + '</span></span>' + (s.lvl === k ? '<span class="pill ok">Actual</span>' : '') + '</button>').join('') +
       '</div><div class="btns" style="margin-top:20px"><a class="btn solid" href="#prueba-nivel">Hacer la prueba de nivel (2 minutos)</a></div></div>';
   }

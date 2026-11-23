@@ -2,9 +2,11 @@
    Aplicación principal (JavaScript sin dependencias). */
 (function () {
   'use strict';
-  const VERSION = '0.7.0';
+  const VERSION = '0.8.0';
   const EMBED = window.__BH_EMBED || null;
-  const LOGO = (EMBED && EMBED.logo) || 'img/logo.jpg';
+  const LOGO = (EMBED && EMBED.logo) || 'img/logo.webp';
+  const LOGO_SM = (EMBED && (EMBED.logoSm || EMBED.logo)) || 'img/logo-sm.webp';
+  window.BH_LOGO = LOGO; document.documentElement.style.setProperty('--logo', 'url("' + new URL(LOGO_SM, location.href).href + '")');
   const BOOKS = window.BH_BOOKS;
   const BY = Object.fromEntries(BOOKS.map(b => [b.c, b]));
   const $ = (s, el = document) => el.querySelector(s);
@@ -203,7 +205,7 @@
   function top(title, opts = {}) {
     const back = opts.back ? '<button class="icon-btn" data-act="back" data-fallback="' + opts.back + '" aria-label="Volver">' + ic('back') + '</button>' : '';
     const right = (opts.right || '');
-    return '<header class="top"><div class="wrap">' + back + '<h1>' + title + '</h1>' + right + '</div></header>';
+    return '<header class="top"><div class="wrap">' + back + '<a class="hdr-logo" href="#inicio" aria-label="Inicio"><img src="' + LOGO_SM + '" alt="" width="30" height="31"></a><h1>' + title + '</h1>' + right + '</div></header>';
   }
   function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), 2200); }
   function sheet(html) {
@@ -374,7 +376,7 @@
     x.fillStyle = '#111111'; x.fillRect(0, 0, W, H);
     x.fillStyle = '#C6A15B'; x.fillRect(60, 60, 8, H - 120); x.fillRect(W - 68, 60, 8, H - 120);
     const lg = await loadLogo();
-    if (lg) x.drawImage(lg, W / 2 - 90, 110, 180, 180);
+    if (lg) { const h = 190, w = h * lg.naturalWidth / lg.naturalHeight; x.drawImage(lg, W / 2 - w / 2, 100, w, h); }
     const HE_F = '700 54px "BH Hebrew", "Noto Serif Hebrew", serif';
     const esSize = esTxt.length < 140 ? 46 : esTxt.length < 260 ? 40 : 34; const ES_F = '400 ' + esSize + 'px "BH Serif", Georgia, serif'; const esLH = Math.round(esSize * 1.45);
     x.font = HE_F; x.direction = 'rtl'; const hl = he ? wrapLines(x, he.replace(TEAMIM, ''), W - 220).slice(0, 6) : []; x.direction = 'ltr';
@@ -430,11 +432,11 @@
     }
     const cont = last ? '<a class="row" href="#leer-' + last.b + '-' + last.c + '"><span class="t"><b>Continuar leyendo</b><span>' + esc(bookName(last.b)) + ' ' + last.c + '</span></span><span class="he">' + esc(BY[last.b].he) + '</span><span class="chev">' + ic('chev', ' width="18" height="18"') + '</span></a>' : '';
     view().innerHTML =
-      '<header class="top"><div class="wrap"><div class="brand"><span>Beit Hatzirah</span></div>' +
+      '<header class="top"><div class="wrap"><div class="brand"><img src="' + LOGO_SM + '" alt="" width="34" height="36"><span>Beit Hatzirah</span></div>' +
       '<a class="icon-btn" href="#buscar" aria-label="Buscar">' + ic('search') + '</a>' +
       '<a class="icon-btn" href="#menu" aria-label="Menú">' + ic('menu') + '</a></div></header>' +
       '<div class="wrap">' +
-      '<div class="hero"><img src="' + LOGO + '" alt="Logotipo de Beit Hatzirah" width="128" height="128"><div><p class="he" lang="he" style="margin:0">בית הצרעה</p><h2>Beit Hatzirah</h2></div></div>' +
+      '<div class="hero"><img src="' + LOGO + '" alt="Logotipo de Beit Hatzirah" width="122" height="128"><div><p class="he" lang="he" style="margin:0">בית הצרעה</p><h2>Beit Hatzirah</h2></div></div>' +
       '<p class="welcome">Biblioteca digital para estudiar las Sagradas Escrituras en hebreo y español. Shalom, bienvenido.</p>' +
       parHTML +
       (cont ? '<section class="section"><div class="rows">' + cont + '</div></section>' : '') +
@@ -580,7 +582,7 @@
       html += '</div>';
     }
     view().innerHTML = top('Parashiot') + '<div class="wrap">' +
-      '<div class="reader-head"><p class="he" lang="he">פָּרָשׁוֹת הַשָּׁבוּעַ</p><h2>Las 54 parashiot</h2><p class="muted" style="margin:0">Ciclo anual de lectura de la Torá. Calendario: ' + (prefs.cal === 'israel' ? 'Israel' : 'diáspora') + '.</p></div>' +
+      '<div class="reader-head sec-head"><img class="sec-logo" src="' + LOGO + '" alt=""><p class="he" lang="he">פָּרָשׁוֹת הַשָּׁבוּעַ</p><h2>Las 54 parashiot</h2><p class="muted" style="margin:0">Ciclo anual de lectura de la Torá. Calendario: ' + (prefs.cal === 'israel' ? 'Israel' : 'diáspora') + '.</p></div>' +
       '<p style="margin:12px 0 0;font-size:.92rem">Tu progreso: ' + nd + ' de 54 estudiadas</p><div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="54" aria-valuenow="' + nd + '"><i style="width:' + (nd / 54 * 100) + '%"></i></div>' +
       html + '</div>';
   }
@@ -613,7 +615,7 @@
   async function vEstudios() {
     const E = await getJSON('estudios.json');
     view().innerHTML = top('Estudios', { back: 'menu' }) + '<div class="wrap">' +
-      '<div class="reader-head"><p class="he" lang="he">בֵּית מִדְרָשׁ</p><h2>Biblioteca de estudios</h2></div>' +
+      '<div class="reader-head sec-head"><img class="sec-logo" src="' + LOGO + '" alt=""><p class="he" lang="he">בֵּית מִדְרָשׁ</p><h2>Biblioteca de estudios</h2></div>' +
       '<div class="group-title"><h3>Disponible ahora</h3></div><div class="rows">' +
       '<a class="row" href="#parashiot"><span class="t"><b>Estudios de las parashiot</b><span>54 porciones con resumen, personajes, temas y lectura bilingüe</span></span><span class="pill ok">Disponible</span></a>' +
       '<a class="row" href="#vocabulario"><span class="t"><b>Estudios de palabras hebreas</b><span>Vocabulario con referencias verificadas</span></span><span class="pill ok">Disponible</span></a>' +
@@ -693,7 +695,7 @@
   /* ----- Menú ----- */
   function vMenu() {
     const items = [['tefilot', 'book', 'Tefilot: oraciones y bendiciones', 'תְּפִלּוֹת'], ['besora', 'scroll', 'Besorá: evangelización y raíces hebreas', 'בְּשׂוֹרָה'], ['audio', 'play', 'Audio libro', 'ספר שמע'], ['estudios', 'study', 'Estudios', 'בֵּית מִדְרָשׁ'], ['aprender', 'alef', 'Yo aprendo hebreo con la Torá', 'עִבְרִית'], ['pealim', 'text', 'PEALIM: verbos hebreos', 'פְּעָלִים'], ['guardados-destacados', 'star', 'Mis versículos destacados', ''], ['guardados-notas', 'copy', 'Mis notas bíblicas', ''], ['mensaje', 'day', 'Mensaje diario', 'דְּבַר הַיּוֹם'], ['calendario', 'cal', 'Calendario bíblico', 'לוּחַ'], ['vocabulario', 'alef', 'Diccionario hebreo', 'מִלּוֹן'], ['historial', 'hist', 'Historial de lectura', ''], ['acerca', 'info', 'Acerca de Beit Hatzirah', ''], ['ajustes', 'gear', 'Configuración', '']];
-    view().innerHTML = top('Menú', { back: 'inicio' }) + '<div class="wrap"><div class="rows" style="margin-top:12px">' +
+    view().innerHTML = top('Menú', { back: 'inicio' }) + '<div class="wrap"><div class="menu-brand"><img src="' + LOGO + '" alt="Logotipo de Beit Hatzirah" width="110" height="115"><div><p class="he" lang="he">בית הצרעה</p><b>Beit Hatzirah</b></div></div><div class="rows" style="margin-top:12px">' +
       items.map(([r, i, t, h]) => '<a class="row" href="#' + r + '"><span style="color:var(--accent)">' + ic(i, ' width="22" height="22"') + '</span><span class="t"><b>' + t + '</b></span>' + (h ? '<span class="he" lang="he">' + h + '</span>' : '') + '</a>').join('') +
       '</div><p class="muted center" style="font-size:.85rem;margin-top:24px">Versión ' + VERSION + '</p></div>';
   }
@@ -1042,7 +1044,7 @@
     }).catch(() => { });
   }
   if (/[?&]test\b/.test(location.search)) window.__bh = { es, getBookV, prefs };
-  if (EXT.init) EXT.init({ esc, ic, top, sheet, closeSheet, toast, Store, go, view, getJSON, getBook, getBookV, weekInfo, parseCV, bookName, fmtRange, refRoute, refLabel, decodeSeg, STEM, VTYPE, PRON, heb, hebPlain, norm, BOOKS, BY, es });
+  if (EXT.init) EXT.init({ esc, ic, top, sheet, closeSheet, toast, Store, go, view, getJSON, getBook, getBookV, weekInfo, parseCV, bookName, fmtRange, refRoute, refLabel, decodeSeg, STEM, VTYPE, PRON, heb, hebPlain, norm, BOOKS, BY, es, LOGO, LOGO_SM });
   window.addEventListener('hashchange', route);
   route();
 })();

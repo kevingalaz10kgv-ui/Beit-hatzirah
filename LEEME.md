@@ -4,7 +4,7 @@ Biblioteca digital de las Sagradas Escrituras en hebreo y español.
 Proyecto y dirección de contenido: **Moreh Gabriel ben Eliyah**
 Autoridad rabínica: **Rab Eliyah ben Eleazar**
 
-Versión 0.7.0. Incluye el módulo «Yo aprendo hebreo con la Torá».
+Versión 0.8.0. Incluye el módulo «Yo aprendo hebreo con la Torá».
 
 ---
 
@@ -41,7 +41,7 @@ data/mensajes.json      Mensajes diarios (se pueden editar sin tocar el código)
 data/moedim.json        Contenido de las fiestas bíblicas
 data/vocabulario.json   Vocabulario hebreo
 data/estudios.json      Publicaciones, categorías y futuros estudios temáticos
-img/, icons/            Logotipo oficial e iconos de la app
+img/, icons/            Logotipo oficial (logo.png original recortado; logo.webp y logo-sm.webp optimizados) e íconos de la app (192, 512, 1024, enmascarable, Apple y favicon)
 fonts/                  Tipografías (Noto Serif Hebrew y Spectral, licencia OFL)
 ```
 
@@ -222,3 +222,9 @@ Menú → Tefilot, la tarjeta del inicio, o «Tefilot de Shabat» en cada parash
 **Audio:** voz sintética del dispositivo, indicada como tal. No se presenta como grabación de pronunciación tradicional. Se puede reemplazar por grabaciones verificadas en una próxima etapa.
 
 **Próximas etapas:** tefilot personales y familiares (composiciones devocionales identificadas como tales), versión completa de Birkat HaMazón, más cánticos de Shabat (Lejá Dodí, etc.) y variantes sefaradíes completas.
+
+## 15. Identidad visual (versión 0.8)
+
+El logotipo oficial es el archivo entregado por Beit Hatzirah (fondo transparente). Solo se recortó el margen vacío y se redujo de tamaño: no se modificó el dibujo, los colores ni las proporciones. Como es plateado con contornos oscuros sobre fondo transparente, se ve bien tanto en modo claro como en modo oscuro sin versiones alteradas.
+
+Aparece en: pantalla de bienvenida, encabezado de todas las pantallas (en el lector se oculta para dar espacio al título), inicio, menú, pantallas de carga, Audio libro, Estudios, Parashiot, Aprender hebreo, PEALIM, Besorá, Tefilot y la imagen para compartir versículos. Los íconos de la app usan el logo sobre fondo negro #111111 (paleta oficial); el ícono enmascarable deja el margen de seguridad para Android.

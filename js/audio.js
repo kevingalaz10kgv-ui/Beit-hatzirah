@@ -269,7 +269,7 @@
     }).join('');
     B.view().innerHTML = B.top('Audio libro', { back: 'inicio', right: '<button class="icon-btn" data-act="au-voices" aria-label="Voces">🗣️</button>' }) +
       '<div class="wrap au">' +
-      '<div class="au-head"><p class="he" lang="he">ספר שמע</p><div class="seg" role="group" aria-label="División"><button data-act="au-div" data-nt="0" aria-pressed="' + !bk.nt + '">Tanaj</button><button data-act="au-div" data-nt="1" aria-pressed="' + !!bk.nt + '">Brit Hadashá</button></div>' +
+      '<div class="au-head"><img class="sec-logo" src="' + B.LOGO + '" alt=""><p class="he" lang="he">ספר שמע</p><div class="seg" role="group" aria-label="División"><button data-act="au-div" data-nt="0" aria-pressed="' + !bk.nt + '">Tanaj</button><button data-act="au-div" data-nt="1" aria-pressed="' + !!bk.nt + '">Brit Hadashá</button></div>' +
       '<div class="au-sel"><label><span>Libro</span><select data-act="au-book" aria-label="Libro">' + books.map(x => '<option value="' + x.c + '"' + (x.c === b ? ' selected' : '') + '>' + esc(x.tr) + (x.tr !== x.es ? ' (' + esc(x.es) + ')' : '') + '</option>').join('') + '</select></label>' +
       '<label><span>Capítulo</span><select data-act="au-ch" aria-label="Capítulo">' + Array.from({ length: bk.ch }, (_, k) => '<option' + (k + 1 === c ? ' selected' : '') + '>' + (k + 1) + '</option>').join('') + '</select></label>' +
       '<label><span>Pasuq</span><select data-act="au-vsel" aria-label="Versículo">' + ch.map((_, k) => '<option value="' + k + '"' + (k === P.v ? ' selected' : '') + '>' + (k + 1) + '</option>').join('') + '</select></label></div>' +
