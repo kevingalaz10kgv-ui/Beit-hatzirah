@@ -2,7 +2,7 @@
    Aplicación principal (JavaScript sin dependencias). */
 (function () {
   'use strict';
-  const VERSION = '0.4.0';
+  const VERSION = '0.5.0';
   const EMBED = window.__BH_EMBED || null;
   const LOGO = (EMBED && EMBED.logo) || 'img/logo.jpg';
   const BOOKS = window.BH_BOOKS;
@@ -193,7 +193,8 @@
     info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/>',
     gear: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/>',
     mark: '<path d="M7 3h10v18l-5-3.5L7 21Z"/><path d="M10 8h4"/>',
-    bilingual: '<path d="M4 6h9M4 12h6M4 18h9"/><path d="M20 6h-3M20 12h-5M20 18h-3"/>'
+    bilingual: '<path d="M4 6h9M4 12h6M4 18h9"/><path d="M20 6h-3M20 12h-5M20 18h-3"/>',
+    play: '<path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="3" y="14" width="4" height="6" rx="1.5"/><rect x="17" y="14" width="4" height="6" rx="1.5"/>'
   };
   const ic = (n, extra) => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"' + (extra || '') + '>' + I[n] + '</svg>';
 
@@ -437,6 +438,7 @@
       '<p class="welcome">Biblioteca digital para estudiar las Sagradas Escrituras en hebreo y español. Shalom, bienvenido.</p>' +
       parHTML +
       (cont ? '<section class="section"><div class="rows">' + cont + '</div></section>' : '') +
+      (() => { const al = Store.get('audio:last', null); return '<section class="section"><a class="audio-card" href="#audio' + (al && BY[al.b] ? '-' + al.b + '-' + al.c + '-' + al.v : '') + '"><span class="au-ic" aria-hidden="true">🎧</span><span><b>Audio libro</b><span class="he" lang="he">ספר שמע</span><small>' + (al && BY[al.b] ? 'Continuar escuchando ' + esc(bookName(al.b)) + ' ' + al.c + ':' + al.v : 'Escucha las Escrituras en hebreo y en español') + '</small></span></a></section>'; })() +
       '<section class="section"><a class="learn-card" href="#aprender"><span class="he" lang="he">אֲנִי לוֹמֵד עִבְרִית עִם הַתּוֹרָה</span><b>Yo aprendo hebreo con la Torá</b><span>Juegos de 3 a 5 minutos: letras, vocales, palabras y versículos reales. Gana XP y mantén tu racha.</span><span class="btn solid" style="align-self:flex-start">Empezar a jugar</span></a></section>' +
       '<section class="section"><h3>Mensaje diario</h3><a class="row" href="#mensaje" style="border-top:1px solid var(--line)"><span class="t"><b>' + esc(msg.titulo) + '</b><span>' + esc(refLabel(msg.ref)) + '</span></span><span class="he">דְּבַר הַיּוֹם</span></a></section>' +
       '<section class="section"><h3>Versículo destacado</h3><div class="verses" style="border-top:1px solid var(--line)">' + verseHTML(fb, fc, fv, fd) + '</div></section>' +
@@ -513,7 +515,7 @@
     const next = c < b.ch ? { b: code, c: c + 1 } : (() => { const i = BOOKS.indexOf(b); return i < BOOKS.length - 1 ? { b: BOOKS[i + 1].c, c: 1 } : null; })();
     const pg = '<nav class="pager">' + (prev ? '<a href="#leer-' + prev.b + '-' + prev.c + '"><small>Anterior</small>' + esc(bookName(prev.b)) + ' ' + prev.c + '</a>' : '<span></span>') +
       (next ? '<a class="next" href="#leer-' + next.b + '-' + next.c + '"><small>Siguiente</small>' + esc(bookName(next.b)) + ' ' + next.c + '</a>' : '<span></span>') + '</nav>';
-    view().innerHTML = top('<button data-act="chapters" data-b="' + code + '" style="font-weight:600">' + esc(b.tr) + ' ' + c + ' ▾</button>', { back: 'libro-' + code, right: verBtn() + readerTools(code + '-' + c, b.tr + ' ' + c) }) +
+    view().innerHTML = top('<button data-act="chapters" data-b="' + code + '" style="font-weight:600">' + esc(b.tr) + ' ' + c + ' ▾</button>', { back: 'libro-' + code, right: '<a class="icon-btn" href="#audio-' + code + '-' + c + '" aria-label="Escuchar este capítulo">🎧</a>' + verBtn() + readerTools(code + '-' + c, b.tr + ' ' + c) }) +
       '<div class="wrap ' + viewClass() + '">' +
       '<div class="reader-head"><p class="he" lang="he">' + esc(b.he) + '</p><h2>' + esc(b.tr) + ' ' + c + '</h2>' + ctx + '</div>' + ntNote + title +
       '<div class="verses">' + ch.map((cell, i) => verseHTML(code, c, i + 1, cell)).join('') + '</div>' + pg +
@@ -688,7 +690,7 @@
 
   /* ----- Menú ----- */
   function vMenu() {
-    const items = [['estudios', 'study', 'Estudios', 'בֵּית מִדְרָשׁ'], ['aprender', 'alef', 'Yo aprendo hebreo con la Torá', 'עִבְרִית'], ['pealim', 'text', 'PEALIM: verbos hebreos', 'פְּעָלִים'], ['guardados-destacados', 'star', 'Mis versículos destacados', ''], ['guardados-notas', 'copy', 'Mis notas bíblicas', ''], ['mensaje', 'day', 'Mensaje diario', 'דְּבַר הַיּוֹם'], ['calendario', 'cal', 'Calendario bíblico', 'לוּחַ'], ['vocabulario', 'alef', 'Diccionario hebreo', 'מִלּוֹן'], ['historial', 'hist', 'Historial de lectura', ''], ['acerca', 'info', 'Acerca de Beit Hatzirah', ''], ['ajustes', 'gear', 'Configuración', '']];
+    const items = [['audio', 'play', 'Audio libro', 'ספר שמע'], ['estudios', 'study', 'Estudios', 'בֵּית מִדְרָשׁ'], ['aprender', 'alef', 'Yo aprendo hebreo con la Torá', 'עִבְרִית'], ['pealim', 'text', 'PEALIM: verbos hebreos', 'פְּעָלִים'], ['guardados-destacados', 'star', 'Mis versículos destacados', ''], ['guardados-notas', 'copy', 'Mis notas bíblicas', ''], ['mensaje', 'day', 'Mensaje diario', 'דְּבַר הַיּוֹם'], ['calendario', 'cal', 'Calendario bíblico', 'לוּחַ'], ['vocabulario', 'alef', 'Diccionario hebreo', 'מִלּוֹן'], ['historial', 'hist', 'Historial de lectura', ''], ['acerca', 'info', 'Acerca de Beit Hatzirah', ''], ['ajustes', 'gear', 'Configuración', '']];
     view().innerHTML = top('Menú', { back: 'inicio' }) + '<div class="wrap"><div class="rows" style="margin-top:12px">' +
       items.map(([r, i, t, h]) => '<a class="row" href="#' + r + '"><span style="color:var(--accent)">' + ic(i, ' width="22" height="22"') + '</span><span class="t"><b>' + t + '</b></span>' + (h ? '<span class="he" lang="he">' + h + '</span>' : '') + '</a>').join('') +
       '</div><p class="muted center" style="font-size:.85rem;margin-top:24px">Versión ' + VERSION + '</p></div>';
@@ -1038,7 +1040,7 @@
     }).catch(() => { });
   }
   if (/[?&]test\b/.test(location.search)) window.__bh = { es, getBookV, prefs };
-  if (EXT.init) EXT.init({ esc, ic, top, sheet, closeSheet, toast, Store, go, view, getJSON, getBook, getBookV, weekInfo, parseCV, bookName, fmtRange, refRoute, refLabel, decodeSeg, STEM, VTYPE, PRON, heb, hebPlain, norm, BOOKS, BY });
+  if (EXT.init) EXT.init({ esc, ic, top, sheet, closeSheet, toast, Store, go, view, getJSON, getBook, getBookV, weekInfo, parseCV, bookName, fmtRange, refRoute, refLabel, decodeSeg, STEM, VTYPE, PRON, heb, hebPlain, norm, BOOKS, BY, es });
   window.addEventListener('hashchange', route);
   route();
 })();

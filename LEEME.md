@@ -4,7 +4,7 @@ Biblioteca digital de las Sagradas Escrituras en hebreo y español.
 Proyecto y dirección de contenido: **Moreh Gabriel ben Eliyah**
 Autoridad rabínica: **Rab Eliyah ben Eleazar**
 
-Versión 0.4.0. Incluye el módulo «Yo aprendo hebreo con la Torá».
+Versión 0.5.0. Incluye el módulo «Yo aprendo hebreo con la Torá».
 
 ---
 
@@ -21,6 +21,8 @@ js/app.js               Lógica de la aplicación (Biblia, parashiot, calendario
 js/aprender.js          Módulo «Yo aprendo hebreo con la Torá» (juegos, niveles, repaso)
 data/aprender.json      Contenido del curso: 15 mundos + 12 temáticos, 68 unidades, 374 elementos
 js/pealim.js            PEALIM: buscador y analizador de verbos
+js/audio.js             AUDIO LIBRO: lectura en voz alta sincronizada
+data/audio/indice.json  Lista de grabaciones reales (vacía por ahora)
 data/pealim/            1.534 verbos bíblicos con todas sus formas atestiguadas
 data/morph/             Análisis de cada palabra del Tanaj (por libro)
 data/lexico.json        Léxico hebreo (8.638 entradas) con significados en español
@@ -163,3 +165,20 @@ Está en la pestaña **Aprender** de la barra inferior.
 **Fuentes de datos lingüísticos:** Open Scriptures Hebrew Bible (morfología, CC BY 4.0) y léxico de Strong (dominio público). Los significados en español de 508 palabras (los 250 verbos más frecuentes y las palabras más comunes) los redactó Beit Hatzirah; cubren el 72 % de las palabras del texto hebreo.
 
 **Pendiente:** significado en español para el resto del léxico, ilustraciones propias y grabaciones de audio.
+
+## 12. Audio libro (ספר שמע)
+
+Pestaña **Audio** de la barra inferior, botón 🎧 en cada capítulo de la Biblia y tarjeta «Continuar escuchando» en el inicio.
+
+**Qué hace:** selección de Tanaj o Brit Hadashá, libro, capítulo y pasuq; lectura en español, en hebreo o en ambos (cada pasuq en hebreo y luego en español); texto visible en hebreo, español o ambos; el pasuq que se escucha se resalta y la pantalla lo sigue; tocar un pasuq empieza la lectura desde allí. Reproductor con reproducir/pausar, pasuq anterior y siguiente, barra de progreso (tocándola se salta a esa parte), tiempo transcurrido y total, velocidad 0.75x a 1.5x, volumen, repetir pasuq, repetir capítulo, modo «Solo este pasuq», paso automático al capítulo siguiente, favoritos y reanudación desde el último punto.
+
+**De dónde sale la voz:** por ahora, de la voz del propio teléfono (síntesis de voz), leyendo el texto bíblico: el español de la traducción elegida y el hebreo original con nikud. No se usa una voz española para el hebreo ni transliteraciones. El Nombre יהוה se lee «Adonay» (o «Elohim» cuando lleva esas vocales). La voz hebrea tiene pronunciación israelí moderna; no es la lectura cantada con te’amim. Si el teléfono no tiene voz en un idioma, la app lo avisa y no reproduce nada. Con voces sintéticas el tiempo es aproximado (≈) y, en iPhone, la lectura puede detenerse con la pantalla bloqueada.
+
+**Agregar grabaciones reales:** sube archivos de audio por capítulo (por ejemplo `data/audio/he/GEN-1.mp3`) y regístralos en `data/audio/indice.json` con el segundo en que empieza cada pasuq:
+
+```json
+{ "he": { "GEN-1": { "src": "data/audio/he/GEN-1.mp3", "t": [0, 6.2, 14.8] } },
+  "es": { "GEN-1": { "src": "data/audio/es/GEN-1.mp3", "t": [0, 4.1, 9.5] } } }
+```
+
+La app usará la grabación en ese capítulo, con tiempo exacto y la misma sincronización por pasuq. Las grabaciones deben tener derechos de uso (por ejemplo, grabadas por la comunidad).
