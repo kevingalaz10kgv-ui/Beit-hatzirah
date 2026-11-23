@@ -4,7 +4,7 @@ Biblioteca digital de las Sagradas Escrituras en hebreo y español.
 Proyecto y dirección de contenido: **Moreh Gabriel ben Eliyah**
 Autoridad rabínica: **Rab Eliyah ben Eleazar**
 
-Versión 0.5.2. Incluye el módulo «Yo aprendo hebreo con la Torá».
+Versión 0.6.0. Incluye el módulo «Yo aprendo hebreo con la Torá».
 
 ---
 
@@ -22,6 +22,8 @@ js/aprender.js          Módulo «Yo aprendo hebreo con la Torá» (juegos, nive
 data/aprender.json      Contenido del curso: 15 mundos + 12 temáticos, 68 unidades, 374 elementos
 js/pealim.js            PEALIM: buscador y analizador de verbos
 js/audio.js             AUDIO LIBRO: lectura en voz alta sincronizada
+js/besora.js            BESORÁ: evangelización, apologética y raíces hebreas
+data/besora.json        Contenido de Besorá (temas, profecías, raíces, fiestas, preguntas, simulador)
 data/audio/indice.json  Lista de grabaciones reales (vacía por ahora)
 data/pealim/            1.534 verbos bíblicos con todas sus formas atestiguadas
 data/morph/             Análisis de cada palabra del Tanaj (por libro)
@@ -184,3 +186,20 @@ Pestaña **Audio** de la barra inferior, botón 🎧 en cada capítulo de la Bib
 La app usará la grabación en ese capítulo, con tiempo exacto y la misma sincronización por pasuq. Las grabaciones deben tener derechos de uso (por ejemplo, grabadas por la comunidad).
 
 **Voz neuronal masculina (como la de ChatGPT):** el programa `herramientas/generar_audio.py` genera un MP3 por pasuq con la voz de OpenAI y lo registra en `data/audio/indice.json` con este formato: `{"he": {"GEN-1": {"voz": "…", "v": [{"s": "data/audio/he/GEN/1/1.mp3", "d": 5.2}, …]}}}`. Instrucciones completas en `herramientas/COMO_GENERAR_EL_AUDIO.md`.
+
+## 13. Besorá (בְּשׂוֹרָה): evangelización, apologética y raíces hebreas
+
+Menú → Besorá, o la tarjeta del inicio.
+
+- **¿Con quién voy a conversar?** 35 temas: judío tradicional o secular (15), Testigo de Jehová (6), evangélico (6), católico (4) y ateo o agnóstico (4). Cada tema tiene respuesta breve, desarrollo bíblico, los textos (hebreo y español, tomados del texto de la app), palabras hebreas, las distintas interpretaciones con sus textos, preguntas que pueden surgir, una respuesta respetuosa y preguntas para continuar.
+- **Profecías del Mashíaj:** 28 profecías en dos columnas (Tanaj y Escrituras apostólicas), organizadas por tema, con un indicador que distingue cumplimiento explícito, interpretación mesiánica, tipología, cumplimiento parcial y expectativa futura.
+- **Shabat y fiestas bíblicas:** las ocho fiestas de Levítico 23 con su mandato, historia, celebración, significado espiritual y relación mesiánica (presentada como interpretación), y «¿Por qué estudiar las fiestas?».
+- **Raíces hebreas:** 14 conceptos con pronunciación (audio), raíz, primera aparición en el Tanaj (calculada sobre el texto hebreo), pasajes, aplicación y relación con el Mashíaj. Se aclara cuando un término es posterior a la Biblia (Shejiná, kedushá).
+- **El misterio del Alef-Tav:** función gramatical de אֵת, su lectura simbólica mesiánica, y la distinción clara entre ambas.
+- **Preguntas difíciles:** 15 preguntas con los siete apartados pedidos.
+- **Simulador:** 10 escenarios en tres niveles; el usuario escribe su respuesta y recibe una evaluación automática orientativa (referencias, contexto, términos hebreos, claridad y respeto) y una respuesta modelo.
+- **Evangelización rápida:** persona y pregunta → respuesta preparada con texto hebreo, traducción, contexto, interpretaciones y respuesta respetuosa, con audio.
+
+Incluye buscador, favoritos, historial y progreso. Todas las referencias se verifican automáticamente al generar `data/besora.json`.
+
+**Pendiente:** los temas restantes de la lista original (por ejemplo, el Reino de Elohim y la resurrección para Testigos de Jehová, la oración para católicos, el origen de la creación para ateos) y más escenarios para el simulador. El contenido debe ser revisado por la autoridad rabínica y la dirección de contenido.

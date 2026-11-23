@@ -2,7 +2,7 @@
    Aplicación principal (JavaScript sin dependencias). */
 (function () {
   'use strict';
-  const VERSION = '0.5.2';
+  const VERSION = '0.6.0';
   const EMBED = window.__BH_EMBED || null;
   const LOGO = (EMBED && EMBED.logo) || 'img/logo.jpg';
   const BOOKS = window.BH_BOOKS;
@@ -439,6 +439,7 @@
       parHTML +
       (cont ? '<section class="section"><div class="rows">' + cont + '</div></section>' : '') +
       (() => { const al = Store.get('audio:last', null); return '<section class="section"><a class="audio-card" href="#audio' + (al && BY[al.b] ? '-' + al.b + '-' + al.c + '-' + al.v : '') + '"><span class="au-ic" aria-hidden="true">🎧</span><span><b>Audio libro</b><span class="he" lang="he">ספר שמע</span><small>' + (al && BY[al.b] ? 'Continuar escuchando ' + esc(bookName(al.b)) + ' ' + al.c + ':' + al.v : 'Escucha las Escrituras en hebreo y en español') + '</small></span></a></section>'; })() +
+      '<section class="section"><a class="besora-card" href="#besora"><span class="he" lang="he">בְּשׂוֹרָה</span><b>Besorá</b><span>La Buena Noticia desde las Escrituras: prepárate para conversar con judíos, evangélicos, católicos, Testigos de Jehová y ateos, con fundamento bíblico y respeto.</span></a></section>' +
       '<section class="section"><a class="learn-card" href="#aprender"><span class="he" lang="he">אֲנִי לוֹמֵד עִבְרִית עִם הַתּוֹרָה</span><b>Yo aprendo hebreo con la Torá</b><span>Juegos de 3 a 5 minutos: letras, vocales, palabras y versículos reales. Gana XP y mantén tu racha.</span><span class="btn solid" style="align-self:flex-start">Empezar a jugar</span></a></section>' +
       '<section class="section"><h3>Mensaje diario</h3><a class="row" href="#mensaje" style="border-top:1px solid var(--line)"><span class="t"><b>' + esc(msg.titulo) + '</b><span>' + esc(refLabel(msg.ref)) + '</span></span><span class="he">דְּבַר הַיּוֹם</span></a></section>' +
       '<section class="section"><h3>Versículo destacado</h3><div class="verses" style="border-top:1px solid var(--line)">' + verseHTML(fb, fc, fv, fd) + '</div></section>' +
@@ -690,7 +691,7 @@
 
   /* ----- Menú ----- */
   function vMenu() {
-    const items = [['audio', 'play', 'Audio libro', 'ספר שמע'], ['estudios', 'study', 'Estudios', 'בֵּית מִדְרָשׁ'], ['aprender', 'alef', 'Yo aprendo hebreo con la Torá', 'עִבְרִית'], ['pealim', 'text', 'PEALIM: verbos hebreos', 'פְּעָלִים'], ['guardados-destacados', 'star', 'Mis versículos destacados', ''], ['guardados-notas', 'copy', 'Mis notas bíblicas', ''], ['mensaje', 'day', 'Mensaje diario', 'דְּבַר הַיּוֹם'], ['calendario', 'cal', 'Calendario bíblico', 'לוּחַ'], ['vocabulario', 'alef', 'Diccionario hebreo', 'מִלּוֹן'], ['historial', 'hist', 'Historial de lectura', ''], ['acerca', 'info', 'Acerca de Beit Hatzirah', ''], ['ajustes', 'gear', 'Configuración', '']];
+    const items = [['besora', 'scroll', 'Besorá: evangelización y raíces hebreas', 'בְּשׂוֹרָה'], ['audio', 'play', 'Audio libro', 'ספר שמע'], ['estudios', 'study', 'Estudios', 'בֵּית מִדְרָשׁ'], ['aprender', 'alef', 'Yo aprendo hebreo con la Torá', 'עִבְרִית'], ['pealim', 'text', 'PEALIM: verbos hebreos', 'פְּעָלִים'], ['guardados-destacados', 'star', 'Mis versículos destacados', ''], ['guardados-notas', 'copy', 'Mis notas bíblicas', ''], ['mensaje', 'day', 'Mensaje diario', 'דְּבַר הַיּוֹם'], ['calendario', 'cal', 'Calendario bíblico', 'לוּחַ'], ['vocabulario', 'alef', 'Diccionario hebreo', 'מִלּוֹן'], ['historial', 'hist', 'Historial de lectura', ''], ['acerca', 'info', 'Acerca de Beit Hatzirah', ''], ['ajustes', 'gear', 'Configuración', '']];
     view().innerHTML = top('Menú', { back: 'inicio' }) + '<div class="wrap"><div class="rows" style="margin-top:12px">' +
       items.map(([r, i, t, h]) => '<a class="row" href="#' + r + '"><span style="color:var(--accent)">' + ic(i, ' width="22" height="22"') + '</span><span class="t"><b>' + t + '</b></span>' + (h ? '<span class="he" lang="he">' + h + '</span>' : '') + '</a>').join('') +
       '</div><p class="muted center" style="font-size:.85rem;margin-top:24px">Versión ' + VERSION + '</p></div>';
