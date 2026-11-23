@@ -4,7 +4,7 @@ Biblioteca digital de las Sagradas Escrituras en hebreo y español.
 Proyecto y dirección de contenido: **Moreh Gabriel ben Eliyah**
 Autoridad rabínica: **Rab Eliyah ben Eleazar**
 
-Versión 0.6.0. Incluye el módulo «Yo aprendo hebreo con la Torá».
+Versión 0.7.0. Incluye el módulo «Yo aprendo hebreo con la Torá».
 
 ---
 
@@ -23,6 +23,8 @@ data/aprender.json      Contenido del curso: 15 mundos + 12 temáticos, 68 unida
 js/pealim.js            PEALIM: buscador y analizador de verbos
 js/audio.js             AUDIO LIBRO: lectura en voz alta sincronizada
 js/besora.js            BESORÁ: evangelización, apologética y raíces hebreas
+js/tefilot.js           TEFILOT: sidur digital
+data/tefilot.json       Textos de las tefilot (hebreo, transliteración, traducción, fuente y estado)
 data/besora.json        Contenido de Besorá (temas, profecías, raíces, fiestas, preguntas, simulador)
 data/audio/indice.json  Lista de grabaciones reales (vacía por ahora)
 data/pealim/            1.534 verbos bíblicos con todas sus formas atestiguadas
@@ -203,3 +205,20 @@ Menú → Besorá, o la tarjeta del inicio.
 Incluye buscador, favoritos, historial y progreso. Todas las referencias se verifican automáticamente al generar `data/besora.json`.
 
 **Pendiente:** los temas restantes de la lista original (por ejemplo, el Reino de Elohim y la resurrección para Testigos de Jehová, la oración para católicos, el origen de la creación para ateos) y más escenarios para el simulador. El contenido debe ser revisado por la autoridad rabínica y la dirección de contenido.
+
+## 14. Tefilot (תְּפִלּוֹת): sidur digital
+
+Menú → Tefilot, la tarjeta del inicio, o «Tefilot de Shabat» en cada parashá.
+
+**Primera etapa (38 tefilot):** diarias (Modé Aní, Netilat Yadáyim, Asher Yatzar, Elohai Neshamá, Birkot HaShajar, Tefilat HaDérej, Hashkivénu, Adón Olam, Aleinu); Shemá (versículo, tres secciones completas, Vehavtá, Vayómer); bendiciones de alimentos (Hamotzí, Mezonot, Hagafen, HaEtz, HaAdamá, Shehakol, Al Hamijiá, Boré Nefashot, Birkat HaMazón) con la guía «¿Qué bendición digo?»; Shabat (velas, Shalom Aleijem, Éshet Jáyil, Kidush de la noche y del día, Hamotzí con dos panes, agregados de Birkat HaMazón, Havdalá); estudio de Torá (Birkot HaTorá, Birkat Kohanim, bendiciones de la aliyá, Gal einai); momentos especiales (Mi Sheberaj por los enfermos, Shehejeyanu, HaTov VehaMetiv, Birkat HaGomel).
+
+**Cada tefilá** muestra nombre en hebreo y español, texto hebreo con nikud en letra grande, transliteración, traducción, explicación, momento, instrucciones, fuente y estado. Se puede mostrar u ocultar cada columna, cambiar el tamaño de letra, usar «Lectura cómoda», escuchar (todo o desde un párrafo, lento, repetir párrafo, en hebreo o español, con el párrafo resaltado), marcar como favorita o aprendida, agregar una nota, copiar el hebreo, la transliteración o la traducción por separado y compartir por WhatsApp. «Estudiar palabras» permite tocar una palabra para ver su significado, ir a PEALIM o guardarla para repasar. Hay buscador (nombre en español o hebreo, palabra, categoría, momento, festividad; tolera distintas transliteraciones), favoritas, más usadas e historial.
+
+**Estado de los textos (importante):**
+- *Texto bíblico* (verde): partes tomadas del Códice de Leningrado de la app (Shemá, Éshet Jáyil, Vayejulú, Kidush del día, Birkat Kohanim, Salmos). Las frases litúrgicas añadidas se marcan como «Texto litúrgico».
+- *Dominio público* (azul): Havdalá y Birkat HaMazón, de una fuente CC0 (github.com/marcstober/siddur-text), con erratas evidentes corregidas. La Birkat HaMazón es la versión breve (zimún y cuatro bendiciones, sin los Harajamán).
+- *Por verificar* (naranja): transcripciones del nusaj tradicional Ashkenaz hechas por Beit Hatzirah, porque no hubo acceso a un sidur con licencia abierta. Deben compararse con un sidur impreso. Cuando la autoridad rabínica las revise, se marcan como verificadas cambiando `"verificado": false` por `"verificado": true` en `data/tefilot.json`.
+
+**Audio:** voz sintética del dispositivo, indicada como tal. No se presenta como grabación de pronunciación tradicional. Se puede reemplazar por grabaciones verificadas en una próxima etapa.
+
+**Próximas etapas:** tefilot personales y familiares (composiciones devocionales identificadas como tales), versión completa de Birkat HaMazón, más cánticos de Shabat (Lejá Dodí, etc.) y variantes sefaradíes completas.

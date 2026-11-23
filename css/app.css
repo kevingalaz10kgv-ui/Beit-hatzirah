@@ -598,3 +598,45 @@ body.au-on main{padding-bottom:calc(330px + env(safe-area-inset-bottom,0px))}
 .bs-rsel select{font:inherit;font-size:1rem;color:var(--text);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px}
 .bs-quick{background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:6px 14px 14px;margin:12px 0}
 .bs-quick h2{font-size:1.2rem}.bs-quick h3{font-size:.95rem;color:var(--accent);margin:16px 0 4px}
+
+/* ===== Tefilot ===== */
+.tefilot-card{display:flex;flex-direction:column;gap:4px;padding:20px 22px;border-radius:18px;text-decoration:none;background:linear-gradient(135deg,#F6F1E7,#E4C989);color:#111;border:1px solid #C6A15B}
+.tefilot-card .he{font-size:1.8rem;text-align:right;color:#6E5220}.tefilot-card b{font-size:1.25rem}.tefilot-card span:last-child{font-size:.92rem;color:#3a3326}
+.tf-hero{text-align:center;padding:22px 0 8px}
+.tf-hero .he{font-size:3rem;color:var(--accent);margin:0;text-align:center}
+.tf-hero h2{margin:0;letter-spacing:.3em;padding-left:.3em;font-size:1.3rem}.tf-hero p{color:var(--muted);margin:4px 0}
+.tf-hero.small .he{font-size:2rem}.tf-hero.small h2{letter-spacing:0;padding:0}
+.tf-cats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}
+.tf-cat{display:flex;flex-direction:column;gap:2px;padding:14px;border-radius:16px;background:var(--surface);text-decoration:none;border:1px solid var(--line)}
+.tf-cat b{font-size:.98rem;line-height:1.25}.tf-cat .he{font-size:1.05rem;color:var(--accent);text-align:right}.tf-cat small{color:var(--muted);font-size:.78rem}
+.tf-ci{font-size:1.6rem}
+.tf-legend{margin:24px 0;font-size:.85rem;color:var(--muted)}.tf-legend p{margin:6px 0}
+.tf-badge{display:inline-block;font-size:.74rem;font-weight:600;border-radius:999px;padding:3px 10px;margin-top:6px}
+.tf-ok{background:#3D9970;color:#fff}.tf-cc0{background:#2E86AB;color:#fff}.tf-warn{background:#F2A541;color:#111}
+.tf-head{text-align:center;padding:18px 0 4px}
+.tf-name{font-size:calc(2.6rem * var(--tfs,1));color:var(--accent);margin:0;text-align:center;line-height:1.4}
+.tf-head h1{font-size:1.4rem;margin:2px 0}
+.tf-instr{background:var(--surface);border-radius:12px;padding:10px 14px;margin:10px 0;font-size:.94rem}.tf-instr p{margin:4px 0 0}
+.tf-tools{position:sticky;top:calc(env(safe-area-inset-top,0px) + 56px);z-index:5;background:var(--bg);padding:6px 0;border-bottom:1px solid var(--line)}
+.tf-tools .chips{margin:4px 0}
+.tf-row{display:flex;gap:6px;flex-wrap:wrap}.tf-row .btn{padding:7px 12px;font-size:.85rem}
+.tf-row .btn[aria-pressed="true"]{background:var(--accent);color:var(--bg)}
+.tf-player{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0}
+.tf-player .btn{padding:8px 14px;font-size:.9rem}.tf-player .btn[aria-pressed="true"]{background:var(--accent);color:var(--bg)}
+.tf-al{display:inline-grid;margin:0;width:auto;grid-template-columns:1fr 1fr}.tf-al button{padding:6px 12px;font-size:.85rem}
+.tf-note{font-size:.78rem;color:var(--muted);margin:4px 0;width:100%}
+.tf-p{padding:14px 10px;border-radius:12px;border:2px solid transparent;margin:6px 0;cursor:pointer;transition:background .25s,border-color .25s}
+.tf-p.on{background:color-mix(in srgb,var(--dorado) 18%,var(--bg));border-color:var(--dorado)}
+.tf-he{font-size:calc(1.75rem * var(--tfs,1));line-height:2;margin:0 0 6px;text-align:right}
+.tf-tr{font-size:calc(1.02rem * var(--tfs,1));font-style:italic;color:var(--accent);margin:0 0 4px;line-height:1.6}
+.tf-es{font-size:calc(1.02rem * var(--tfs,1));margin:0;line-height:1.65}
+.tf-ref{font-size:.75rem;color:var(--muted);margin:4px 0 0}.tf-ref a{color:var(--accent)}
+.tf.comfy .tf-he{font-size:calc(2.2rem * var(--tfs,1));line-height:2.2}
+.tf.comfy .tf-tools,.tf.comfy .tf-player,.tf.comfy .tf-instr,.tf.comfy .meta{display:none}
+.tf.comfy .tf-p{border-bottom:1px solid var(--line);border-radius:0}
+.study-words .tf-w{border-bottom:2px dotted var(--accent);cursor:help}
+.tf-actions{margin:20px 0}
+.tf-guide{display:grid;gap:10px;margin:12px 0}
+.tf-gi{display:block;background:var(--surface);border-radius:14px;padding:12px 14px;text-decoration:none;border-left:4px solid var(--dorado)}
+.tf-gi>div{display:flex;justify-content:space-between;align-items:baseline}.tf-gi .he{font-size:1.2rem;color:var(--accent)}
+.tf-gi p{margin:4px 0;font-size:.92rem}.tf-gi small{color:var(--muted)}

@@ -2,7 +2,7 @@
    Aplicación principal (JavaScript sin dependencias). */
 (function () {
   'use strict';
-  const VERSION = '0.6.0';
+  const VERSION = '0.7.0';
   const EMBED = window.__BH_EMBED || null;
   const LOGO = (EMBED && EMBED.logo) || 'img/logo.jpg';
   const BOOKS = window.BH_BOOKS;
@@ -439,6 +439,7 @@
       parHTML +
       (cont ? '<section class="section"><div class="rows">' + cont + '</div></section>' : '') +
       (() => { const al = Store.get('audio:last', null); return '<section class="section"><a class="audio-card" href="#audio' + (al && BY[al.b] ? '-' + al.b + '-' + al.c + '-' + al.v : '') + '"><span class="au-ic" aria-hidden="true">🎧</span><span><b>Audio libro</b><span class="he" lang="he">ספר שמע</span><small>' + (al && BY[al.b] ? 'Continuar escuchando ' + esc(bookName(al.b)) + ' ' + al.c + ':' + al.v : 'Escucha las Escrituras en hebreo y en español') + '</small></span></a></section>'; })() +
+      '<section class="section"><a class="tefilot-card" href="#tefilot"><span class="he" lang="he">תְּפִלּוֹת</span><b>Tefilot</b><span>Sidur digital: Modé Aní, Shemá, bendiciones de alimentos, Shabat y más, en hebreo, transliteración y español.</span></a></section>' +
       '<section class="section"><a class="besora-card" href="#besora"><span class="he" lang="he">בְּשׂוֹרָה</span><b>Besorá</b><span>La Buena Noticia desde las Escrituras: prepárate para conversar con judíos, evangélicos, católicos, Testigos de Jehová y ateos, con fundamento bíblico y respeto.</span></a></section>' +
       '<section class="section"><a class="learn-card" href="#aprender"><span class="he" lang="he">אֲנִי לוֹמֵד עִבְרִית עִם הַתּוֹרָה</span><b>Yo aprendo hebreo con la Torá</b><span>Juegos de 3 a 5 minutos: letras, vocales, palabras y versículos reales. Gana XP y mantén tu racha.</span><span class="btn solid" style="align-self:flex-start">Empezar a jugar</span></a></section>' +
       '<section class="section"><h3>Mensaje diario</h3><a class="row" href="#mensaje" style="border-top:1px solid var(--line)"><span class="t"><b>' + esc(msg.titulo) + '</b><span>' + esc(refLabel(msg.ref)) + '</span></span><span class="he">דְּבַר הַיּוֹם</span></a></section>' +
@@ -595,7 +596,7 @@
       '<dl class="meta"><dt>Libro</dt><dd>' + esc(BY[p.lec.b].tr) + ' (' + esc(BY[p.lec.b].es) + ')</dd>' +
       '<dt>Lectura</dt><dd><a href="#lectura-' + n + '">' + esc(fmtRange(p.lec)) + '</a></dd>' +
       '<dt>Haftará</dt><dd>' + haft.map(r => '<a href="#haftara-' + n + '">' + esc(fmtRange(r)) + '</a>').join('; ') + (p.seph ? '<br><span class="muted" style="font-size:.85rem">Costumbre ' + (prefs.haft === 'seph' ? 'sefaradí' : 'ashkenazí') + '</span>' : '') + '</dd></dl>' +
-      '<div class="btns"><a class="btn solid" href="#lectura-' + n + '">' + ic('scroll') + 'Leer la parashá</a><a class="btn" href="#haftara-' + n + '">Haftará</a><a class="btn" href="#vocabparasha-' + n + '">' + ic('alef') + 'Hebreo de esta parashá</a></div>' +
+      '<div class="btns"><a class="btn solid" href="#lectura-' + n + '">' + ic('scroll') + 'Leer la parashá</a><a class="btn" href="#haftara-' + n + '">Haftará</a><a class="btn" href="#vocabparasha-' + n + '">' + ic('alef') + 'Hebreo de esta parashá</a><a class="btn" href="#tefilot-c-shabat">🕯️ Tefilot de Shabat</a></div>' +
       '<h2>Resumen</h2><p>' + esc(p.res) + '</p>' +
       '<h2>Personajes principales</h2><p>' + p.per.map(esc).join(', ') + '.</p>' +
       '<h2>Temas centrales</h2><ul>' + p.temas.map(t => '<li>' + esc(t) + '</li>').join('') + '</ul>' +
@@ -691,7 +692,7 @@
 
   /* ----- Menú ----- */
   function vMenu() {
-    const items = [['besora', 'scroll', 'Besorá: evangelización y raíces hebreas', 'בְּשׂוֹרָה'], ['audio', 'play', 'Audio libro', 'ספר שמע'], ['estudios', 'study', 'Estudios', 'בֵּית מִדְרָשׁ'], ['aprender', 'alef', 'Yo aprendo hebreo con la Torá', 'עִבְרִית'], ['pealim', 'text', 'PEALIM: verbos hebreos', 'פְּעָלִים'], ['guardados-destacados', 'star', 'Mis versículos destacados', ''], ['guardados-notas', 'copy', 'Mis notas bíblicas', ''], ['mensaje', 'day', 'Mensaje diario', 'דְּבַר הַיּוֹם'], ['calendario', 'cal', 'Calendario bíblico', 'לוּחַ'], ['vocabulario', 'alef', 'Diccionario hebreo', 'מִלּוֹן'], ['historial', 'hist', 'Historial de lectura', ''], ['acerca', 'info', 'Acerca de Beit Hatzirah', ''], ['ajustes', 'gear', 'Configuración', '']];
+    const items = [['tefilot', 'book', 'Tefilot: oraciones y bendiciones', 'תְּפִלּוֹת'], ['besora', 'scroll', 'Besorá: evangelización y raíces hebreas', 'בְּשׂוֹרָה'], ['audio', 'play', 'Audio libro', 'ספר שמע'], ['estudios', 'study', 'Estudios', 'בֵּית מִדְרָשׁ'], ['aprender', 'alef', 'Yo aprendo hebreo con la Torá', 'עִבְרִית'], ['pealim', 'text', 'PEALIM: verbos hebreos', 'פְּעָלִים'], ['guardados-destacados', 'star', 'Mis versículos destacados', ''], ['guardados-notas', 'copy', 'Mis notas bíblicas', ''], ['mensaje', 'day', 'Mensaje diario', 'דְּבַר הַיּוֹם'], ['calendario', 'cal', 'Calendario bíblico', 'לוּחַ'], ['vocabulario', 'alef', 'Diccionario hebreo', 'מִלּוֹן'], ['historial', 'hist', 'Historial de lectura', ''], ['acerca', 'info', 'Acerca de Beit Hatzirah', ''], ['ajustes', 'gear', 'Configuración', '']];
     view().innerHTML = top('Menú', { back: 'inicio' }) + '<div class="wrap"><div class="rows" style="margin-top:12px">' +
       items.map(([r, i, t, h]) => '<a class="row" href="#' + r + '"><span style="color:var(--accent)">' + ic(i, ' width="22" height="22"') + '</span><span class="t"><b>' + t + '</b></span>' + (h ? '<span class="he" lang="he">' + h + '</span>' : '') + '</a>').join('') +
       '</div><p class="muted center" style="font-size:.85rem;margin-top:24px">Versión ' + VERSION + '</p></div>';
