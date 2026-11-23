@@ -15,13 +15,16 @@
 
   /* ---------- Datos ---------- */
   let DATA = null; const ITEMS = {}; const UNITS = []; const UNIT = {};
+  const MAIN = [], THEME = [];
   async function data() {
     if (DATA) return DATA;
     DATA = await B.getJSON('aprender.json');
     DATA.worlds.forEach(w => w.units.forEach(u => {
-      u.world = w; UNITS.push(u); UNIT[u.id] = u;
+      u.world = w; UNITS.push(u); UNIT[u.id] = u; (w.theme ? THEME : MAIN).push(u);
       u.items.forEach(it => { if (!ITEMS[it.id]) ITEMS[it.id] = Object.assign({ kind: u.type, w: w.id }, it); });
     }));
+    const cu = (B.Store.get('learn', {}) || {}).custom || {};
+    Object.entries(cu).forEach(([id, it]) => { if (!ITEMS[id]) ITEMS[id] = Object.assign({ kind: it.kind || 'words', id }, it); });
     return DATA;
   }
 
@@ -31,15 +34,18 @@
   const save = s => B.Store.set('learn', s);
   const levelOf = xp => Math.floor(Math.sqrt(xp / 40)) + 1;
   const xpFor = l => 40 * (l - 1) * (l - 1);
-  const START = { abs: 'w1', alef: 'w2', leer: 'w3', inter: 'w5', gram: 'w11' };
+  const START = { abs: 'm1', alef: 'm3', leer: 'm6', inter: 'm7', gram: 'm10' };
   const LVLS = [['abs', 'Soy principiante absoluto'], ['alef', 'Conozco el Alef Bet'], ['leer', 'Puedo leer hebreo'], ['inter', 'Tengo conocimientos intermedios'], ['gram', 'Quiero estudiar gramática avanzada']];
+  const passed = (s, u) => !!(s.units[u.id] && s.units[u.id].passed);
+  function themesOpen(s) { const gate = MAIN.filter(u => u.world.n <= 5); return MAIN.indexOf(MAIN.find(x => x.world.id === START[s.lvl || 'abs'])) >= MAIN.indexOf(gate[gate.length - 1]) || gate.every(u => passed(s, u)); }
   function unlocked(s, u) {
-    const i = UNITS.indexOf(u); if (i === 0) return true;
-    const start = UNIT[UNITS.find(x => x.world.id === START[s.lvl || 'abs']).id];
-    if (i <= UNITS.indexOf(start)) return true;
-    const prev = UNITS[i - 1]; return !!(s.units[prev.id] && s.units[prev.id].passed);
+    if (u.world.theme) { if (!themesOpen(s)) return false; const k = u.world.units.indexOf(u); return k === 0 || passed(s, u.world.units[k - 1]); }
+    const i = MAIN.indexOf(u); if (i === 0) return true;
+    const start = MAIN.find(x => x.world.id === START[s.lvl || 'abs']);
+    if (start && i <= MAIN.indexOf(start)) return true;
+    return passed(s, MAIN[i - 1]);
   }
-  const nextUnit = s => UNITS.find(u => unlocked(s, u) && !(s.units[u.id] && s.units[u.id].passed)) || UNITS[UNITS.length - 1];
+  const nextUnit = s => MAIN.find(u => unlocked(s, u) && !passed(s, u)) || THEME.find(u => unlocked(s, u) && !passed(s, u)) || MAIN[MAIN.length - 1];
 
   /* ---------- Repetición espaciada (cajas de Leitner) ---------- */
   const INTERVAL = [0, 1, 3, 7, 14, 30, 60];
@@ -65,20 +71,27 @@
     xp2000: ['🌟', '2000 XP', 'Reúne 2000 puntos de experiencia'],
     repaso: ['🔁', 'Constante', 'Completa 10 repasos'],
     rapido: ['⚡', 'Veloz', 'Logra 15 aciertos en el contrarreloj'],
-    parasha: ['📜', 'Hebreo de la parashá', 'Practica el vocabulario de la parashá']
+    parasha: ['📜', 'Hebreo de la parashá', 'Practica el vocabulario de la parashá'],
+    diario: ['📅', 'Constancia diaria', 'Completa 7 desafíos diarios'],
+    semana: ['🏅', 'Semana completa', 'Cumple las cuatro metas de una semana'],
+    verbos: ['💬', 'Conjugador', 'Practica las conjugaciones de un verbo en PEALIM'],
+    temas: ['🗺️', 'Explorador', 'Aprueba un mundo temático completo']
   };
   function award(s, id) { if (s.badges[id]) return; s.badges[id] = Date.now(); setTimeout(() => B.toast('Insignia: ' + BADGES[id][1] + ' ' + BADGES[id][0]), 600); }
   function checkBadges(s) {
     if (s.st.lessons >= 1) award(s, 'first');
     const worldDone = w => DATA.worlds.find(x => x.id === w).units.every(u => s.units[u.id] && s.units[u.id].passed);
-    if (worldDone('w1')) award(s, 'alefbet');
-    if (worldDone('w2')) award(s, 'nikud');
-    if (s.units.w10u1 && s.units.w10u1.passed) award(s, 'bereshit');
+    if (worldDone('m1') && worldDone('m2')) award(s, 'alefbet');
+    if (worldDone('m3')) award(s, 'nikud');
+    if (s.units.m12u1 && s.units.m12u1.passed) award(s, 'bereshit');
     if (s.streak.n >= 3) award(s, 'r3'); if (s.streak.n >= 7) award(s, 'r7'); if (s.streak.n >= 30) award(s, 'r30');
     if (s.xp >= 500) award(s, 'xp500'); if (s.xp >= 2000) award(s, 'xp2000');
     if (s.st.reviews >= 10) award(s, 'repaso');
     if (s.st.speed >= 15) award(s, 'rapido');
     if (s.st.parasha >= 1) award(s, 'parasha');
+    if ((s.st.daily || 0) >= 7) award(s, 'diario');
+    if ((s.st.verbs || 0) >= 1) award(s, 'verbos');
+    if (DATA.worlds.some(w => w.theme && w.units.every(u => passed(s, u)))) award(s, 'temas');
   }
   function touchStreak(s) {
     const t = todayKey(); const last = s.streak.last;
@@ -101,6 +114,7 @@
     pick(); speechSynthesis.onvoiceschanged = pick;
   }
   const hasVoice = () => !!voice;
+  EXT.speak = t => speak(t);
   function speak(text, slow) {
     if (!('speechSynthesis' in window)) { B.toast('Este navegador no tiene voz'); return; }
     if (!voice) { B.toast('Tu teléfono no tiene una voz en hebreo instalada'); return; }
@@ -129,13 +143,18 @@
   const isGlyph = it => it.kind === 'letters' || it.kind === 'vowels' || it.kind === 'read';
   function pool(it, n, key) {
     key = key || 'es';
+    if (SES && SES.poolItems) {
+      const seen0 = new Set([it[key], it.he]); const o = [];
+      for (const c of shuffle(SES.poolItems)) { if (seen0.has(c[key]) || seen0.has(c.he) || !c[key]) continue; seen0.add(c[key]); seen0.add(c.he); o.push(c); if (o.length >= n) return o; }
+      if (o.length >= Math.min(n, 2)) return o;
+    }
     const same = UNITS.find(u => u.items.some(x => x.id === it.id));
     let cands = (same ? same.items : []).concat(...(same ? same.world.units.map(u => u.items) : []));
     if (cands.length < 8) cands = cands.concat(Object.values(ITEMS).filter(x => x.kind === it.kind));
     const seen = new Set([it[key], it.he]); const out = [];
     for (const c of shuffle(cands)) { if (seen.has(c[key]) || seen.has(c.he) || !c[key]) continue; seen.add(c[key]); seen.add(c.he); out.push(ITEMS[c.id] || c); if (out.length >= n) break; }
     if (it.kind === 'letters' && UNITS.some(u => u.sim)) { // letras parecidas: usar el grupo como distractor
-      const g = (UNIT.w1u8.sim || []).find(gr => gr.includes(it.id));
+      const g = ((UNIT.m1u6 && UNIT.m1u6.sim) || []).find(gr => gr.includes(it.id));
       if (g) g.filter(id => id !== it.id).forEach(id => { if (!out.some(o => o.id === id)) out.unshift(ITEMS[id]); });
       return out.slice(0, n);
     }
@@ -143,7 +162,8 @@
   }
   function typesFor(it, unit) {
     switch (it.kind) {
-      case 'letters': return ['letter', 'sound', 'letterRev', 'pairs', 'memory', 'listen', 'error'];
+      case 'letters': return ['letter', 'sound', 'letterRev', 'pairs', 'memory', 'listen', 'error'].concat(it.he.length === 1 ? ['trace', 'trace'] : []);
+      case 'conj': return ['he2es', 'es2he', 'he2es', 'error'];
       case 'vowels': return ['letter', 'sound', 'letterRev', 'pairs', 'listen'];
       case 'read': return ['sound', 'letterRev', 'pairs', 'listen'].concat(clusters(it.he).length >= 2 ? ['missing'] : []);
       case 'words': return ['he2es', 'es2he', 'pairs', 'memory', 'error', 'listen'].concat(it.em ? ['img2he', 'he2img', 'img2he'] : []).concat(clusters(it.he).length >= 2 && clusters(it.he).length <= 7 ? ['build', 'missing'] : []);
@@ -182,6 +202,7 @@
       SES.q = opt.q;
     } else {
       items.forEach(it => SES.q.push(makeEx(it)));
+      if (opt.mode === 'free') shuffle(items).forEach(it => SES.q.push(makeEx(it, null, ['pairs', 'memory'])));
       if (opt.mode === 'parasha') { SES.q = items.map(it => ({ t: 'intro', it })).concat(shuffle(items).map(it => makeEx(it)), shuffle(items).map(it => makeEx(it, null, ['pairs', 'memory']))); }
     }
     SES.total = SES.q.length;
@@ -229,8 +250,14 @@
           '<div class="lx-card intro">' + (it.em ? '<div class="lx-emoji" aria-hidden="true">' + it.em + '</div>' : '') +
           he(it.he, isG ? 'lx-glyph' : (it.kind === 'phrases' ? 'lx-phrase' : 'lx-word')) +
           '<div class="lx-tr">' + esc(it.tr || '') + (it.name && it.kind !== 'read' ? ' · ' + he(it.name, 'lx-name') : '') + '</div>' +
-          '<div class="lx-es">' + esc(it.kind === 'letters' ? 'Sonido: ' + it.es : it.kind === 'vowels' ? 'Sonido: ' + it.es : it.es) + '</div>' + audioBtns(it) +
-          (it.ref ? '<a class="lx-ref" href="#' + B.refRoute(it.ref) + '" data-act="lx-ref">Aparece en ' + esc(B.refLabel(it.ref)) + '</a>' : '') + '</div>' +
+          (it.alt ? '<div class="lx-alt">También se llama: ' + esc(it.alt) + '</div>' : '') +
+          '<div class="lx-es">' + esc(it.kind === 'letters' || it.kind === 'vowels' ? 'Sonido: ' + it.es : it.es) + '</div>' +
+          (it.snd ? '<p class="lx-snd">' + esc(it.snd) + '</p>' : '') +
+          (it.fin ? '<div class="lx-forms"><span>Forma normal ' + he(it.he, 'lx-glyph-s') + '</span><span>Forma final ' + he(it.fin, 'lx-glyph-s') + '</span></div>' : (it.kind === 'letters' && it.he.length === 1 && !/[ךםןףץ]/.test(it.he) ? '<p class="lx-snd muted">Se escribe igual al comienzo, en medio y al final de la palabra.</p>' : '')) +
+          audioBtns(it) +
+          (it.ex ? '<div class="lx-ex"><span>Ejemplo en la Torá</span>' + he(it.ex.he, 'lx-opt-he') + '<b>' + esc(it.ex.tr) + '</b> = ' + esc(it.ex.es) + ' <a href="#' + B.refRoute(it.ex.ref) + '" data-act="lx-ref">' + esc(B.refLabel(it.ex.ref)) + '</a></div>' : '') +
+          (it.ref ? '<a class="lx-ref" href="#' + B.refRoute(it.ref) + '" data-act="lx-ref">Aparece en ' + esc(B.refLabel(it.ref)) + '</a>' : '') +
+          (it.lm ? '<a class="lx-ref" href="#lema-' + it.lm + '" data-act="lx-ref">Raíz, palabras relacionadas y apariciones</a>' : '') + '</div>' +
           '<button class="btn solid lx-next" data-act="lx-next">Entendido</button>';
         if (hasVoice()) setTimeout(() => speak(sayText(it)), 250);
         break;
@@ -303,6 +330,11 @@
           '<div class="lx-tiles words" id="lx-tiles" dir="rtl">' + ex.tiles.map((t, j) => '<button class="lx-tile he" data-act="lx-tile" data-j="' + j + '">' + esc(t.c) + '</button>').join('') + '</div>';
         break;
       }
+      case 'trace': {
+        body = '<p class="lx-q">Escribe la letra <b>' + esc(it.tr) + '</b> siguiendo el modelo</p><div class="lx-trace"><canvas id="lx-cv" width="280" height="280" aria-label="Área para trazar la letra ' + esc(it.tr) + '"></canvas></div>' +
+          '<div class="btns" style="justify-content:center"><button class="btn" data-act="lx-tclear">Borrar</button><button class="btn solid" data-act="lx-tcheck">Comprobar</button></div><p class="lx-hint">Traza encima de la letra gris con el dedo o el ratón.</p>';
+        break;
+      }
       case 'pairs': case 'memory': {
         const group = [it].concat(pool(it, ex.t === 'memory' ? 2 : 3));
         ex.group = group; ex.matched = 0; ex.sel = null; ex.miss = 0;
@@ -331,6 +363,7 @@
     }
     B.view().innerHTML = '<div class="lx" style="--wc:' + SES.color + '">' + header() + '<div class="lx-body">' + body + '</div><div id="lx-fb"></div></div>';
     if (ex.t === 'build' || ex.t === 'order' || ex.t === 'orderVerse') enableDrag(ex);
+    if (ex.t === 'trace') setupTrace(ex);
     startTick();
   }
 
@@ -340,11 +373,11 @@
     if (ex.t !== 'intro' && ex.t !== 'orderVerse') srsUpdate(s, ex.it.id, ok);
     if (ex.t === 'orderVerse') (SES.unit.items || []).forEach(x => srsUpdate(s, x.id, ok));
     SES.tot++; s.st.tot++;
-    if (ok) { SES.ok++; s.st.ok++; SES.xp += SES.mode === 'review' ? 5 : 10; SES.coins += 1; }
+    if (ok) { SES.ok++; s.st.ok++; week(s).ok++; SES.xp += SES.mode === 'review' ? 5 : 10; SES.coins += 1; xpFloat(SES.mode === 'review' ? 5 : 10); }
     else {
       SES.wrongIds.add(ex.it.id);
       if (SES.mode === 'lesson') SES.hearts--;
-      if ((SES.mode === 'lesson' || SES.mode === 'review' || SES.mode === 'parasha') && SES.requeue < 4) { SES.q.push(makeEx(ex.it, null, [ex.t])); SES.requeue++; }
+      if (['lesson', 'review', 'parasha', 'free', 'daily'].includes(SES.mode) && SES.requeue < 4) { SES.q.push(makeEx(ex.it, null, [ex.t])); SES.requeue++; }
     }
     save(s); beep(ok);
     const fb = document.getElementById('lx-fb');
@@ -361,6 +394,7 @@
     }
   }
   function next() { if (!SES) return; SES.i++; renderEx(); }
+  function xpFloat(n) { const f = document.createElement('div'); f.className = 'lx-xpf'; f.textContent = '+' + n + ' XP'; document.body.appendChild(f); setTimeout(() => f.remove(), 1100); }
   function outOfHearts() {
     const s = S();
     B.view().innerHTML = '<div class="lx" style="--wc:' + SES.color + '">' + header() + '<div class="lx-body center"><div class="lx-emoji big">💔</div><h2>Te quedaste sin corazones</h2><p class="muted">Repasa con calma: los errores también enseñan. Puedes seguir usando 10 monedas o repetir la lección gratis.</p>' +
@@ -447,6 +481,56 @@
     } else { ex.miss++; ex.lock = true; setTimeout(() => { a.classList.remove('open'); el.classList.remove('open'); ex.lock = false; }, 800); }
   };
 
+  /* ---------- Trazado de letras ---------- */
+  function setupTrace(ex) {
+    const cv = document.getElementById('lx-cv'); if (!cv) return; const g = cv.getContext('2d');
+    const css = getComputedStyle(document.documentElement);
+    const font = '700 200px ' + (css.getPropertyValue('--hebrew') || 'serif');
+    const drawGuide = () => { g.clearRect(0, 0, 280, 280); g.fillStyle = 'rgba(128,128,128,.28)'; g.font = font; g.textAlign = 'center'; g.textBaseline = 'middle'; g.direction = 'rtl'; g.fillText(ex.it.he, 140, 150); };
+    drawGuide();
+    const m = document.createElement('canvas'); m.width = m.height = 280; const mg = m.getContext('2d'); mg.font = font; mg.textAlign = 'center'; mg.textBaseline = 'middle'; mg.direction = 'rtl'; mg.fillStyle = '#000'; mg.fillText(ex.it.he, 140, 150);
+    const ink = document.createElement('canvas'); ink.width = ink.height = 280; const ig = ink.getContext('2d');
+    ig.lineCap = ig.lineJoin = 'round'; ig.lineWidth = 24; ig.strokeStyle = '#000';
+    ex.trace = { cv, g, m, ink, ig, drawGuide };
+    let drawing = false, last = null;
+    const pos = e => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * 280 / r.width, (e.clientY - r.top) * 280 / r.height]; };
+    const color = getComputedStyle(cv).getPropertyValue('--wc') || '#C6A15B';
+    cv.addEventListener('pointerdown', e => { drawing = true; last = pos(e); cv.setPointerCapture(e.pointerId); e.preventDefault(); });
+    cv.addEventListener('pointermove', e => {
+      if (!drawing) return; const p = pos(e);
+      [[g, color, 18], [ig, '#000', 24]].forEach(([c, col, w]) => { c.strokeStyle = col; c.lineWidth = w; c.lineCap = 'round'; c.beginPath(); c.moveTo(last[0], last[1]); c.lineTo(p[0], p[1]); c.stroke(); });
+      last = p; e.preventDefault();
+    });
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach(t => cv.addEventListener(t, () => { drawing = false; }));
+  }
+  EXT.act['lx-tclear'] = () => { const ex = SES && SES.q[SES.i]; if (!ex || !ex.trace) return; ex.trace.drawGuide(); ex.trace.ig.clearRect(0, 0, 280, 280); };
+  EXT.act['lx-tcheck'] = () => {
+    const ex = SES && SES.q[SES.i]; if (!ex || !ex.trace) return;
+    const A = ex.trace.m.getContext('2d').getImageData(0, 0, 280, 280).data, I = ex.trace.ig.getImageData(0, 0, 280, 280).data;
+    let glyph = 0, covered = 0, ink = 0, outside = 0;
+    for (let k = 3; k < A.length; k += 16) { const a = A[k] > 60, i = I[k] > 60; if (a) { glyph++; if (i) covered++; } if (i) { ink++; if (!a) outside++; } }
+    if (!ink) { B.toast('Primero traza la letra'); return; }
+    const cov = covered / Math.max(1, glyph), out = outside / ink;
+    answer(cov >= 0.5 && out <= 0.6, cov < 0.5 ? 'Intenta cubrir más la forma de ' + he(ex.it.he, 'lx-glyph-s') : 'Traza más cerca de la forma de ' + he(ex.it.he, 'lx-glyph-s'));
+  };
+
+  /* ---------- API para otras secciones (Biblia, PEALIM) ---------- */
+  EXT.saveWord = it => {
+    const s = S(); s.custom = s.custom || {}; const id = it.id;
+    s.custom[id] = { he: it.he, tr: it.tr || '', es: it.es, ref: it.ref || '', kind: 'words' };
+    if (!s.srs[id]) s.srs[id] = { b: 0, due: Date.now(), err: 0, ok: 0 };
+    save(s); ITEMS[id] = Object.assign({ id, kind: 'words' }, s.custom[id]);
+    B.toast('Guardada en «Mis palabras por repasar»');
+  };
+  EXT.practice = async (items, title, color, onDone) => {
+    await data(); items.forEach(it => { ITEMS[it.id] = Object.assign({ kind: 'conj' }, it); });
+    const s = S(); s.st.verbs = (s.st.verbs || 0) + 1; save(s);
+    startSession({ mode: 'free', items: items.map(i => ITEMS[i.id]), poolItems: items.map(i => ITEMS[i.id]), color: color || '#9C6ADE', title, onDone });
+  };
+  function weekKey(d) { d = d || new Date(); const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); const day = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - day); const y = new Date(Date.UTC(t.getUTCFullYear(), 0, 1)); return t.getUTCFullYear() + '-' + Math.ceil(((t - y) / DAY + 1) / 7); }
+  function week(s) { const k = weekKey(); if (!s.week || s.week.k !== k) s.week = { k, lessons: 0, ok: 0, daily: 0, parasha: 0, claimed: [] }; return s.week; }
+  const GOALS = [['lessons', 'Completa 5 lecciones', 5, 30], ['ok', 'Responde bien 100 preguntas', 100, 30], ['daily', 'Haz 3 desafíos diarios', 3, 30], ['parasha', 'Practica el hebreo de la parashá', 1, 20]];
+
   /* ---------- Fin de la sesión ---------- */
   function finish() {
     clearInterval(tick);
@@ -454,17 +538,19 @@
     const pct = o.tot ? Math.round(o.ok / o.tot * 100) : 100;
     let msg = '', extra = '';
     if (o.mode === 'lesson') {
-      s.st.lessons++; const u = s.units[o.unit.id] = s.units[o.unit.id] || {}; u.learned = true;
+      s.st.lessons++; week(s).lessons++; const u = s.units[o.unit.id] = s.units[o.unit.id] || {}; u.learned = true;
       if (o.wrongIds.size === 0) { s.st.perfect++; award(s, 'perfect'); o.xp += 20; }
       msg = 'Lección completada'; s.last = o.unit.id;
     } else if (o.mode === 'exam') {
       const u = s.units[o.unit.id] = s.units[o.unit.id] || {};
       u.best = Math.max(u.best || 0, pct);
-      if (pct >= 80) { u.passed = true; u.learned = true; o.xp += 50; o.coins += 10; msg = '¡Examen aprobado!'; const nx = UNITS[UNITS.indexOf(o.unit) + 1]; if (nx) extra = '<p>Se desbloqueó: <b>' + esc(nx.name) + '</b></p>'; }
+      if (pct >= 80) { u.passed = true; u.learned = true; o.xp += 50; o.coins += 10; msg = '¡Examen aprobado!'; const nx = o.unit.world.theme ? o.unit.world.units[o.unit.world.units.indexOf(o.unit) + 1] : MAIN[MAIN.indexOf(o.unit) + 1]; if (nx) extra = '<p>Se desbloqueó: <b>' + esc(nx.name) + '</b></p>'; extra += '<div class="confetti" aria-hidden="true">' + '<i></i>'.repeat(24) + '</div>'; }
       else msg = 'Necesitas 80 % para aprobar';
     } else if (o.mode === 'review') { s.st.reviews++; msg = 'Repaso completado'; }
+    else if (o.mode === 'free') { msg = 'Práctica completada'; if (o.onDone) try { o.onDone(pct); } catch (e) { } }
+    else if (o.mode === 'daily') { s.daily = { d: todayKey(), done: true }; s.st.daily = (s.st.daily || 0) + 1; week(s).daily++; o.xp += 30; o.coins += 5; msg = 'Desafío diario completado'; extra = '<p>Bonificación: +30 XP y +5 monedas</p>'; }
     else if (o.mode === 'speed') { s.st.speed = Math.max(s.st.speed, o.ok); msg = 'Contrarreloj: ' + o.ok + ' aciertos'; extra = '<p class="muted">Tu mejor marca: ' + s.st.speed + '</p>'; }
-    else if (o.mode === 'parasha') { s.st.parasha++; msg = 'Vocabulario de la parashá practicado'; }
+    else if (o.mode === 'parasha') { s.st.parasha++; week(s).parasha++; msg = 'Vocabulario de la parashá practicado'; }
     else if (o.mode === 'placement') {
       const tiers = ['abs', 'alef', 'leer', 'inter', 'gram']; let lvl = 'abs';
       for (let k = 0; k < 4; k++) { const qs = o.q.filter(x => x.tier === k); const okk = qs.filter(x => x.ok).length; if (okk >= qs.length - 0) lvl = tiers[k + 1]; else break; }
@@ -497,9 +583,16 @@
     if (!s.lvl) return vNivel();
     const nx = nextUnit(s); const due = dueItems(s).length;
     let map = '';
+    const wk = week(s); save(s);
+    const dailyDone = s.daily && s.daily.d === todayKey();
+    const goals = GOALS.map(([k, t, n, r]) => { const v = Math.min(n, wk[k] || 0); const done = v >= n, cl = wk.claimed.includes(k); return '<div class="lx-goal"><div><b>' + esc(t) + '</b><div class="progress"><i style="width:' + Math.round(v / n * 100) + '%"></i></div><span>' + v + ' / ' + n + '</span></div>' + (cl ? '<span class="pill ok">✓</span>' : done ? '<button class="btn solid" data-act="lx-claim" data-g="' + k + '">+' + r + ' 🪙</button>' : '<span class="muted">+' + r + ' 🪙</span>') + '</div>'; }).join('');
+    map += '<div class="lx-challenges"><button class="lx-daily' + (dailyDone ? ' done' : '') + '" data-act="lx-daily"' + (dailyDone ? ' disabled' : '') + '><span class="lx-dicon">' + (dailyDone ? '✅' : '🎯') + '</span><span><b>Desafío diario</b><small>' + (dailyDone ? 'Completado hoy. Vuelve mañana.' : '8 preguntas · +30 XP y +5 monedas') + '</small></span></button>' +
+      '<details class="lx-week"><summary><b>Metas de la semana</b><span>' + wk.claimed.length + ' de 4</span></summary>' + goals + '</details></div>';
+    let themeHeader = false;
     DATA.worlds.forEach(w => {
+      if (w.theme && !themeHeader) { themeHeader = true; map += '<div class="lx-themes-h"><h3>Mundos temáticos</h3><p class="muted">' + (themesOpen(s) ? 'Vocabulario por temas: creación, naturaleza, animales, familia, acciones, lugares, tiempo, pacto, mandamientos, Shabat, moedim y vida espiritual.' : '🔒 Se abren al aprobar el Mundo 5 (lectura de palabras).') + '</p></div>'; }
       const done = w.units.filter(u => s.units[u.id] && s.units[u.id].passed).length;
-      map += '<section class="lx-world" style="--wc:' + w.color + '"><div class="lx-wh"><span class="lx-wicon" aria-hidden="true">' + esc(w.icon) + '</span><div><b>Mundo ' + w.n + ': ' + esc(w.name) + '</b><span>' + done + ' de ' + w.units.length + ' unidades</span></div>' + he(w.he, 'lx-whe') + '</div><div class="lx-path">';
+      map += '<section class="lx-world" style="--wc:' + w.color + '"><div class="lx-wh"><span class="lx-wicon" aria-hidden="true">' + esc(w.icon) + '</span><div><b>' + (w.theme ? '' : 'Mundo ' + w.n + ': ') + esc(w.name) + '</b><span>' + done + ' de ' + w.units.length + ' unidades</span></div>' + he(w.he, 'lx-whe') + '</div><div class="lx-path">';
       w.units.forEach((u, k) => {
         const st = s.units[u.id] || {}; const open = unlocked(s, u);
         const cls = st.passed ? 'passed' : st.learned ? 'learned' : open ? 'open' : 'locked';
@@ -509,11 +602,18 @@
     });
     B.view().innerHTML = B.top('Aprender hebreo', { right: '<a class="icon-btn" href="#perfil-hebreo" aria-label="Mi perfil">👤</a>' }) +
       '<div class="wrap lx-home"><div class="lx-hero"><p class="he" lang="he">אֲנִי לוֹמֵד עִבְרִית עִם הַתּוֹרָה</p><h2>Yo aprendo hebreo con la Torá</h2>' + stats(s) + '</div>' +
-      '<div class="lx-actions"><button class="lx-big" data-act="lx-unit" data-u="' + nx.id + '" style="--wc:' + nx.world.color + '"><span>Continuar</span><b>' + esc(nx.name) + '</b><small>Mundo ' + nx.world.n + '. 3 a 5 minutos</small></button>' +
+      '<div class="lx-actions"><button class="lx-big" data-act="lx-unit" data-u="' + nx.id + '" style="--wc:' + nx.world.color + '"><span>Continuar</span><b>' + esc(nx.name) + '</b><small>' + (nx.world.theme ? 'Mundo temático' : 'Mundo ' + nx.world.n) + '. 3 a 5 minutos</small></button>' +
       '<div class="lx-mini"><a href="#repaso" class="' + (due ? 'hot' : '') + '">🔁<b>Repasar</b><span>' + due + ' por repasar</span></a><a href="#parasha-hebreo">📜<b>Hebreo de la parashá</b><span>Vocabulario de esta semana</span></a><a href="#contrarreloj">⚡<b>Contrarreloj</b><span>60 segundos</span></a><a href="#mis-palabras">🗂️<b>Mis palabras</b><span>Dominio y próximo repaso</span></a></div></div>' +
       (hasVoice() ? '' : '<p class="notice">Este teléfono no tiene una voz en hebreo instalada, así que los ejercicios de escuchar están ocultos. En iPhone: Ajustes → Accesibilidad → Contenido leído → Voces → Hebreo. En Android: Ajustes → Texto a voz → instala el idioma hebreo.</p>') +
       map + '<p class="muted" style="font-size:.82rem;margin:20px 0">Las palabras se presentan en hebreo bíblico, con vocales. La voz es sintética, del propio teléfono, y usa la pronunciación israelí moderna; no es una grabación del hebreo antiguo.</p></div>';
   }
+  EXT.act['lx-claim'] = el => { const s = S(); const wk = week(s); const g = GOALS.find(x => x[0] === el.dataset.g); if (!g || wk.claimed.includes(g[0]) || (wk[g[0]] || 0) < g[2]) return; wk.claimed.push(g[0]); s.coins += g[3]; if (wk.claimed.length === 4) award(s, 'semana'); save(s); B.toast('+' + g[3] + ' monedas 🪙'); vAprender(); };
+  EXT.act['lx-daily'] = async () => {
+    await data(); const s = S(); if (s.daily && s.daily.d === todayKey()) return;
+    let ids = dueItems(s).slice(0, 8);
+    if (ids.length < 8) { const pool0 = UNITS.filter(u => unlocked(s, u)).flatMap(u => u.items.map(i => i.id)); shuffle(pool0).forEach(id => { if (ids.length < 8 && !ids.includes(id)) ids.push(id); }); }
+    startSession({ mode: 'daily', items: ids.map(id => ITEMS[id]), color: '#C6A15B', title: 'Desafío diario' });
+  };
   EXT.act['lx-unit'] = async el => {
     await data(); const s = S(); const u = UNIT[el.dataset.u]; const st = s.units[u.id] || {};
     if (!unlocked(s, u)) { B.sheet('<h4>' + esc(u.name) + '</h4><p>🔒 Aprueba el examen de la unidad anterior para desbloquear esta unidad.</p>'); return; }
@@ -522,13 +622,14 @@
       '<div class="lx-preview">' + u.items.slice(0, 8).map(it => he(it.he, isGlyph(it) ? 'lx-glyph-s' : 'lx-opt-he')).join('') + '</div>' +
       '<p class="muted" style="font-size:.88rem">' + (st.passed ? 'Aprobada ★ (mejor nota ' + (st.best || 0) + '%)' : st.learned ? 'Lección hecha. Falta el examen.' : 'Unidad nueva') + '</p>' +
       '<a class="act" href="#leccion-' + u.id + '-l">▶️ <span><b>Lección</b><br><span class="muted" style="font-size:.86rem">3 a 5 minutos, con presentación de cada elemento</span></span></a>' +
-      '<a class="act" href="#leccion-' + u.id + '-e">📝 <span><b>Examen</b><br><span class="muted" style="font-size:.86rem">Aprueba con 80 % para desbloquear la siguiente unidad</span></span></a></div>');
+      '<a class="act" href="#leccion-' + u.id + '-e">📝 <span><b>Examen</b><br><span class="muted" style="font-size:.86rem">Aprueba con 80 % para desbloquear la siguiente unidad</span></span></a>' +
+      '<a class="act" href="#leccion-' + u.id + '-f">🎯 <span><b>Práctica libre</b><br><span class="muted" style="font-size:.86rem">Repite los ejercicios sin corazones, todas las veces que quieras</span></span></a></div>');
   };
   async function vLeccion(parts) {
     await data(); const u = UNIT[parts[1]]; if (!u) return B.go('aprender');
     const s = S(); if (!unlocked(s, u)) return B.go('aprender');
     const items = u.items.map(it => ITEMS[it.id]);
-    startSession({ mode: parts[2] === 'e' ? 'exam' : 'lesson', items, unit: u, color: u.world.color, title: u.name });
+    startSession({ mode: parts[2] === 'e' ? 'exam' : parts[2] === 'f' ? 'free' : 'lesson', items, unit: u, color: u.world.color, title: u.name });
   }
   async function vRepaso() {
     await data(); const s = S(); const ids = dueItems(s).slice(0, 12);
@@ -541,8 +642,8 @@
   async function vContrarreloj() {
     await data(); const s = S();
     const known = Object.keys(s.srs).map(id => ITEMS[id]).filter(x => x && !isGlyph(x) && x.kind !== 'phrases');
-    const items = known.length >= 8 ? known : UNITS.filter(u => u.type === 'words').slice(0, 4).flatMap(u => u.items.map(i => ITEMS[i.id]));
-    B.view().innerHTML = B.top('Contrarreloj', { back: 'aprender' }) + '<div class="wrap center" style="padding-top:40px"><div class="lx-emoji big">⚡</div><h2>Desafío contrarreloj</h2><p>Responde todas las preguntas que puedas en 60 segundos.</p><p class="muted">Tu mejor marca: ' + s.st.speed + ' aciertos.' + (known.length < 8 ? ' Como todavía has estudiado pocas palabras, se usan las del Mundo 3 y 4.' : '') + '</p><button class="btn solid" data-act="lx-speed">Comenzar</button></div>';
+    const items = known.length >= 8 ? known.filter(x => x.kind !== 'conj') : UNITS.filter(u => u.type === 'words').slice(0, 4).flatMap(u => u.items.map(i => ITEMS[i.id]));
+    B.view().innerHTML = B.top('Contrarreloj', { back: 'aprender' }) + '<div class="wrap center" style="padding-top:40px"><div class="lx-emoji big">⚡</div><h2>Desafío contrarreloj</h2><p>Responde todas las preguntas que puedas en 60 segundos.</p><p class="muted">Tu mejor marca: ' + s.st.speed + ' aciertos.' + (known.length < 8 ? ' Como todavía has estudiado pocas palabras, se usan las primeras del curso.' : '') + '</p><button class="btn solid" data-act="lx-speed">Comenzar</button></div>';
     EXT._speedItems = items;
   }
   EXT.act['lx-speed'] = () => startSession({ mode: 'speed', items: EXT._speedItems, color: '#F2A541', title: 'Contrarreloj' });
@@ -559,10 +660,10 @@
     await data();
     const pick = (w, n) => shuffle(DATA.worlds.find(x => x.id === w).units.flatMap(u => u.items.map(i => ITEMS[i.id]))).slice(0, n);
     const q = [].concat(
-      pick('w1', 3).map(it => ({ t: 'letter', it, tier: 0 })),
-      pick('w2', 3).map(it => ({ t: it.kind === 'vowels' ? 'sound' : 'sound', it, tier: 1 })),
-      pick('w4', 3).map(it => ({ t: 'he2es', it, tier: 2 })),
-      pick('w11', 3).map(it => ({ t: 'he2es', it, tier: 3 })));
+      pick('m1', 3).map(it => ({ t: 'letter', it, tier: 0 })),
+      pick('m3', 3).map(it => ({ t: 'sound', it, tier: 1 })),
+      pick('m6', 3).map(it => ({ t: 'he2es', it, tier: 2 })),
+      pick('m10', 3).map(it => ({ t: 'he2es', it, tier: 3 })));
     startSession({ mode: 'placement', q, items: [], color: '#C6A15B', title: 'Prueba de nivel' });
   }
   const _answer = answer;
@@ -585,7 +686,8 @@
   async function vPerfil() {
     await data(); const s = S(); const lv = levelOf(s.xp); const a = xpFor(lv), b = xpFor(lv + 1);
     const words = Object.keys(s.srs).filter(id => ITEMS[id] && !isGlyph(ITEMS[id]) && s.srs[id].b >= 1).length;
-    const letters = Object.keys(s.srs).filter(id => ITEMS[id] && ITEMS[id].kind === 'letters' && s.srs[id].b >= 3).length;
+    const LETIDS = new Set(['m1u1', 'm1u2', 'm1u3', 'm1u4', 'm1u5', 'm2u1'].flatMap(u => UNIT[u] ? UNIT[u].items.map(i => i.id) : []));
+    const letters = Object.keys(s.srs).filter(id => LETIDS.has(id) && s.srs[id].b >= 3).length;
     const passed = Object.values(s.units).filter(u => u.passed).length;
     const acc = s.st.tot ? Math.round(s.st.ok / s.st.tot * 100) : 0;
     const cont = s.last && UNIT[s.last] ? UNIT[s.last] : nextUnit(s);
@@ -602,53 +704,45 @@
   EXT.act['lx-freeze'] = () => { const s = S(); if (s.coins < 50) return; s.coins -= 50; s.freeze++; save(s); B.toast('Protector de racha obtenido 🛡️'); vPerfil(); };
   EXT.act['lx-reset'] = () => { if (!confirm('¿Reiniciar todo tu progreso de aprendizaje?')) return; B.Store.set('learn', fresh()); B.go('aprender'); };
 
-  /* ----- Hebreo de la parashá ----- */
-  const PREF = /^[והבלמכש]{1,2}/;
-  const normV = x => x.replace(/[\u05BC\u0591-\u05AF\u05BD]/g, '').replace(/([\u05D0-\u05EA])([\u05B0-\u05C7]+)/g, (m, l, mk) => l + mk.split('').sort().join(''));
-  async function vParashaHebreo() {
+  /* ----- Hebreo de la parashá (según los lemas del texto hebreo) ----- */
+  const SKIP = ['prep', 'conj', 'prt', 'p', 'd', 'i', 'r', 'inj', 'adv', 'dp', 'np'];
+  async function vParashaHebreo(parts) {
     await data();
-    B.view().innerHTML = B.top('Hebreo de la parashá', { back: 'aprender' }) + '<div class="loading">Buscando las palabras en la parashá…</div>';
-    const w = await B.weekInfo(); if (!w) return;
-    const p = w.list[0]; const d = await B.getBook(p.lec.b);
-    const s = B.parseCV(p.lec.s), e = B.parseCV(p.lec.e);
-    const counts = {}; const first = {};
-    const lemmas = {}; Object.values(ITEMS).filter(x => x.kind === 'words').forEach(x => { lemmas[plain(x.he).replace(/[ךםןףץ]$/, m => m)] = x; });
-    for (let c = s.c; c <= e.c; c++) {
-      const ch = d.c[c - 1]; const v0 = c === s.c ? s.v : 1; const v1 = c === e.c ? e.v : ch.length;
-      for (let v = v0; v <= v1; v++) {
-        const h = ch[v - 1][1] || '';
-        const raw = h.replace(/[\u0591-\u05AF\u05BD\u05C0\u05C3\u034F\u05BC]/g, '').split(/[\s\u05BE]+/);
-        raw.forEach(rt => {
-          const t = plain(rt); if (!t) return;
-          const cands = [[t, rt]]; const m = t.match(PREF);
-          if (m) { const pv = rt.match(/^([\u05D0-\u05EA][\u05B0-\u05BB\u05C1\u05C2]*){1,2}/); cands.push([t.slice(1), rt.replace(/^[\u05D0-\u05EA][\u05B0-\u05BB\u05C1\u05C2]*/, '')]); if (m[0].length > 1) cands.push([t.slice(2), rt.replace(/^([\u05D0-\u05EA][\u05B0-\u05BB\u05C1\u05C2]*){2}/, '')]); }
-          for (const [c2, v2] of cands) {
-            const it = lemmas[c2]; if (!it) continue;
-            // palabras de 1 o 2 letras: se exige la misma vocalización (distingue שֵׁם «nombre» de שָׁם «allí»)
-            // y solo los prefijos ו y ה (evita contar לבן «Laván» como בן «hijo»)
-            if (c2.length <= 2) { if (normV(v2) !== normV(it.he)) continue; if (c2 !== t && !/^[וה]{1,2}$/.test(t.slice(0, t.length - c2.length))) continue; }
-            counts[it.id] = (counts[it.id] || 0) + 1; first[it.id] = first[it.id] || (p.lec.b + ' ' + c + ':' + v); break;
-          }
-        });
-      }
-    }
-    const ids = Object.keys(counts).sort((a, b) => counts[b] - counts[a]);
-    EXT._parashaItems = ids.slice(0, 10).map(id => ITEMS[id]);
+    let p;
+    if (parts && parts[0] === 'vocabparasha' && parts[1]) { const P = await B.getJSON('parashiot.json'); p = P[+parts[1] - 1]; }
+    else { const w = await B.weekInfo(); p = w && w.list[0]; }
+    if (!p) return B.go('aprender');
+    B.view().innerHTML = B.top('Hebreo de la parashá', { back: 'aprender' }) + '<div class="loading">Analizando el texto hebreo de la parashá…</div>';
+    const [M, LX, H2E, PI] = await Promise.all([B.getJSON('morph/' + p.lec.b + '.json'), B.getJSON('lexico.json'), B.getJSON('h2e.json'), B.getJSON('pealim/indice.json')]);
+    const TR = {}; PI.forEach(v => { TR[v.id] = v.tr; }); Object.values(ITEMS).forEach(it => { if (it.lm && it.tr && !TR[it.lm]) TR[it.lm] = it.tr; });
+    const [hs, he1] = [p.lec.hs, p.lec.he].map(x => x.split(':').map(Number));
+    const inR = (c, v) => (c > hs[0] || (c === hs[0] && v >= hs[1])) && (c < he1[0] || (c === he1[0] && v <= he1[1]));
+    const cnt = {}, first = {};
+    Object.entries(M).forEach(([cv, ws]) => {
+      const [c, v] = cv.split(':').map(Number); if (!inR(c, v)) return;
+      ws.forEach(([t, lemma]) => lemma.split('/').forEach(lm => {
+        if (!/^\d/.test(lm)) return; const k = lm.replace(/\D/g, ''); const L = LX[k];
+        if (!L || !L[3] || SKIP.includes(L[2]) || L[2].startsWith('n-pr') || k === '3068') return;
+        cnt[k] = (cnt[k] || 0) + 1; if (!first[k]) { const sp = H2E[p.lec.b + ' ' + cv]; first[k] = p.lec.b + ' ' + (sp || cv); }
+      }));
+    });
+    const ids = Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a]).slice(0, 15);
+    const items = ids.map(k => { const L = LX[k]; const it = { id: 'lx-' + k, he: L[0], tr: TR[k] || L[1], es: L[3], ref: first[k], kind: 'words', lm: k }; if (!ITEMS[it.id]) ITEMS[it.id] = it; return ITEMS[it.id]; });
+    EXT._parashaItems = items;
     B.view().innerHTML = B.top('Hebreo de la parashá', { back: 'aprender' }) + '<div class="wrap">' +
       '<div class="lx-hero"><p class="he" lang="he" style="font-size:2.4rem">' + esc(p.he) + '</p><h2>' + esc(p.tr) + '</h2><p class="muted" style="margin:0">' + esc(p.sig) + '. ' + esc(B.fmtRange(p.lec)) + '</p></div>' +
-      (ids.length ? '<p>Estas palabras del vocabulario de Beit Hatzirah aparecen en la parashá de esta semana:</p>' +
-        ids.map(id => { const it = ITEMS[id]; return '<div class="word"><span class="he" lang="he">' + esc(it.he) + '</span><b>' + esc(it.tr) + ' ' + (it.em || '') + '</b><span>' + esc(it.es) + '</span><span class="muted" style="font-size:.85rem">Aparece ' + counts[id] + (counts[id] === 1 ? ' vez' : ' veces') + '</span><div class="actions">' + audioBtns(it) + '<a href="#' + B.refRoute(first[id]) + '">Ver ' + esc(B.refLabel(first[id])) + '</a></div></div>'; }).join('') +
-        '<div class="btns" style="margin:20px 0"><button class="btn solid" data-act="lx-parasha">Practicar estas palabras</button></div>'
-        : '<div class="empty"><p>Ninguna palabra del vocabulario actual aparece en esta parashá. A medida que se agreguen mundos, habrá más coincidencias.</p></div>') +
-      '<p class="muted" style="font-size:.82rem">La búsqueda reconoce cada palabra también con prefijos (ו ה ב ל מ כ ש). Las formas verbales conjugadas todavía no se detectan.</p></div>';
+      '<p>Las 15 palabras con más presencia en el texto hebreo de esta parashá (sin contar partículas ni nombres propios):</p>' +
+      items.map(it => '<div class="word"><span class="he" lang="he">' + esc(it.he) + '</span><b>' + esc(it.tr) + '</b><span>' + esc(it.es) + '</span><span class="muted" style="font-size:.85rem">Aparece ' + cnt[it.lm] + (cnt[it.lm] === 1 ? ' vez' : ' veces') + ' en la parashá</span><div class="actions">' + audioBtns(it) + '<a href="#' + B.refRoute(it.ref) + '">' + esc(B.refLabel(it.ref)) + '</a><a href="#' + (PI.some(v => v.id === it.lm) ? 'pealim-' : 'lema-') + it.lm + '">Raíz y conjugaciones</a></div></div>').join('') +
+      '<div class="btns" style="margin:20px 0"><button class="btn solid" data-act="lx-parasha">Practicar estas palabras</button></div>' +
+      '</div>';
   }
-  EXT.act['lx-parasha'] = () => { if (EXT._parashaItems && EXT._parashaItems.length) startSession({ mode: 'parasha', items: EXT._parashaItems, color: '#B8892F', title: 'Hebreo de la parashá' }); };
+  EXT.act['lx-parasha'] = () => { const it = EXT._parashaItems; if (it && it.length) startSession({ mode: 'parasha', items: it, poolItems: it, color: '#B8892F', title: 'Hebreo de la parashá' }); };
 
   /* ---------- Registro de rutas ---------- */
   Object.assign(EXT.routes, {
     'aprender': vAprender, 'leccion': vLeccion, 'repaso': vRepaso, 'contrarreloj': vContrarreloj,
-    'nivel-hebreo': vNivel, 'prueba-nivel': vPrueba, 'mis-palabras': vMisPalabras, 'perfil-hebreo': vPerfil, 'parasha-hebreo': vParashaHebreo
+    'nivel-hebreo': vNivel, 'prueba-nivel': vPrueba, 'mis-palabras': vMisPalabras, 'perfil-hebreo': vPerfil, 'parasha-hebreo': vParashaHebreo, 'vocabparasha': vParashaHebreo
   });
-  ['aprender', 'leccion', 'repaso', 'contrarreloj', 'nivel-hebreo', 'prueba-nivel', 'mis-palabras', 'perfil-hebreo', 'parasha-hebreo'].forEach(r => { EXT.tabs[r] = 'aprender'; });
+  ['aprender', 'leccion', 'repaso', 'contrarreloj', 'nivel-hebreo', 'prueba-nivel', 'mis-palabras', 'perfil-hebreo', 'parasha-hebreo', 'vocabparasha'].forEach(r => { EXT.tabs[r] = 'aprender'; });
   EXT.leave = () => { if (SES) { SES = null; clearInterval(tick); } document.body.classList.remove('in-lesson'); };
 })();

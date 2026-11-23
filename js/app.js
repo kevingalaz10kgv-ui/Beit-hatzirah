@@ -2,7 +2,7 @@
    Aplicación principal (JavaScript sin dependencias). */
 (function () {
   'use strict';
-  const VERSION = '0.3.3';
+  const VERSION = '0.4.0';
   const EMBED = window.__BH_EMBED || null;
   const LOGO = (EMBED && EMBED.logo) || 'img/logo.jpg';
   const BOOKS = window.BH_BOOKS;
@@ -44,6 +44,7 @@
     if (cache[name]) return cache[name];
     let p;
     if (EMBED && EMBED.json[name]) p = Promise.resolve(EMBED.json[name]);
+    else if (EMBED && EMBED.gz && EMBED.gz[name]) p = gunzipB64(EMBED.gz[name]).then(JSON.parse);
     else p = fetch('data/' + name).then(r => { if (!r.ok) throw new Error('No se pudo cargar ' + name); return r.json(); });
     cache[name] = p;
     try { return await p; } catch (e) { delete cache[name]; throw e; }
@@ -240,6 +241,76 @@
     const r = Store.get('readch', {}); r[b + c] = 1; Store.set('readch', r);
   }
 
+  /* ---------- Colores y notas personales ---------- */
+  const COLORS = [['celeste', 'Celeste'], ['verde', 'Verde'], ['amarillo', 'Amarillo'], ['naranjo', 'Naranjo'], ['rosado', 'Rosado'], ['morado', 'Morado'], ['rojo', 'Rojo']];
+  const HL = () => Store.get('hl', {}) || {};
+  const NOTES = () => Store.get('notes', {}) || {};
+  const noteHTML = n => '<div class="v-note" lang="es"><span class="v-note-l">Mi nota</span>' + esc(n.t).replace(/\n/g, '<br>') + '</div>';
+  const refOfId = id => { const [b, c, v] = id.split('-'); return bookName(b) + ' ' + c + ':' + v; };
+  const idOrder = id => { const [b, c, v] = id.split('-'); return BOOKS.findIndex(x => x.c === b) * 1e6 + (+c) * 1e3 + (+v); };
+  function refreshVerse(id) {
+    const el = document.querySelector('[data-v="' + id + '"]'); if (!el) return;
+    verseData(id).then(({ b, c, v, cell }) => { const tmp = document.createElement('div'); tmp.innerHTML = verseHTML(b, c, v, cell, { anchor: el.id.slice(1) }); const n = tmp.firstElementChild; if (n) el.replaceWith(n); });
+  }
+  function noteSheet(id) {
+    const n = NOTES()[id];
+    sheet('<h4>Mi nota: ' + esc(refOfId(id)) + '</h4><p class="muted" style="font-size:.85rem;margin:0 0 8px">Tu nota se guarda solo en este teléfono y no modifica el texto bíblico.</p>' +
+      '<textarea class="note-ta" id="note-ta" rows="7" placeholder="Escribe tu reflexión, enseñanza o comentario…">' + esc(n ? n.t : '') + '</textarea>' +
+      '<div class="btns"><button class="btn solid" data-act="note-save" data-id="' + id + '">Guardar nota</button>' + (n ? '<button class="btn" data-act="note-del" data-id="' + id + '">Eliminar</button>' : '') + '</div>');
+    setTimeout(() => { const t = document.getElementById('note-ta'); if (t) t.focus(); }, 250);
+  }
+
+  /* ---------- Análisis morfológico (Open Scriptures Hebrew Bible) ---------- */
+  const STEM = { q: 'Qal', N: 'Nifal', p: 'Piel', P: 'Pual', h: 'Hifil', H: 'Hofal', t: 'Hitpael', o: 'Polel', O: 'Polal', r: 'Hitpolel', m: 'Poel', M: 'Poal', k: 'Palel', K: 'Pulal', Q: 'Qal pasivo', l: 'Pilpel', L: 'Polpal', f: 'Hitpalpel', D: 'Nitpael', j: 'Pealal', i: 'Pilel', u: 'Hotpaal', c: 'Tifil', v: 'Hishtafel', w: 'Nitpalel', y: 'Nitpoel', z: 'Hitpoel' };
+  const VTYPE = { p: 'pasado (perfecto, qatal)', q: 'perfecto con vav (weqatal)', i: 'futuro / imperfecto (yiqtol)', w: 'pasado narrativo (wayyiqtol)', h: 'cohortativo', j: 'yusivo', v: 'imperativo', r: 'participio activo', s: 'participio pasivo', a: 'infinitivo absoluto', c: 'infinitivo constructo' };
+  const PER = { 1: '1.ª', 2: '2.ª', 3: '3.ª' }, GEN = { m: 'masc.', f: 'fem.', c: 'común', b: 'masc./fem.' }, NUM = { s: 'sing.', p: 'plural', d: 'dual' }, STATE = { a: '', c: 'constructo', d: 'determinado' };
+  const PRON = { '3ms': 'él', '3fs': 'ella', '2ms': 'tú (m.)', '2fs': 'tú (f.)', '1cs': 'yo', '3mp': 'ellos', '3fp': 'ellas', '3cp': 'ellos/ellas', '2mp': 'vosotros', '2fp': 'vosotras', '1cp': 'nosotros' };
+  function pgn(x) { const k = x.slice(0, 3); return (PRON[k] ? PRON[k] + ' (' : '') + [PER[x[0]], GEN[x[1]], NUM[x[2]]].filter(Boolean).join(' ') + (PRON[k] ? ')' : ''); }
+  function decodeSeg(m, lang) {
+    if (!m) return '';
+    const p = m[0], r = m.slice(1);
+    if (p === 'V') {
+      if (lang === 'A') return 'verbo (arameo)';
+      const st = STEM[r[0]] || r[0], ty = r[1]; let t = 'verbo ' + st + ', ' + (VTYPE[ty] || ty);
+      if (ty === 'r' || ty === 's') t += ', ' + [GEN[r[2]], NUM[r[3]], STATE[r[4]]].filter(Boolean).join(' ');
+      else if (r.length >= 5) t += ', ' + pgn(r.slice(2));
+      return t;
+    }
+    if (p === 'N') { if (r[0] === 'p') return 'nombre propio'; return (r[0] === 'g' ? 'gentilicio' : 'sustantivo') + ' ' + [GEN[r[1]], NUM[r[2]], STATE[r[3]]].filter(Boolean).join(' '); }
+    if (p === 'A') return ({ a: 'adjetivo', c: 'número cardinal', g: 'gentilicio', o: 'número ordinal' }[r[0]] || 'adjetivo') + ' ' + [GEN[r[1]], NUM[r[2]], STATE[r[3]]].filter(Boolean).join(' ');
+    if (p === 'C') return 'conjunción («y»)';
+    if (p === 'D') return 'adverbio';
+    if (p === 'R') return r[0] === 'd' ? 'preposición con artículo' : 'preposición';
+    if (p === 'P') return ({ d: 'pronombre demostrativo', f: 'pronombre indefinido', i: 'pronombre interrogativo', p: 'pronombre personal', r: 'pronombre relativo' }[r[0]] || 'pronombre') + (r.length > 2 && /\d/.test(r[1]) ? ', ' + pgn(r.slice(1)) : '');
+    if (p === 'S') return r[0] === 'p' ? 'sufijo pronominal, ' + pgn(r.slice(1)) : ({ d: 'he direccional («hacia»)', h: 'he paragógica', n: 'nun paragógica' }[r[0]] || 'sufijo');
+    if (p === 'T') return ({ a: 'partícula de afirmación', d: 'artículo «el, la»', e: 'partícula de exhortación', i: 'partícula interrogativa', j: 'interjección', m: 'partícula demostrativa', n: 'negación', o: 'marca del objeto directo', r: 'partícula relativa' }[r[0]] || 'partícula');
+    return m;
+  }
+  const PREFIX = { c: 'וְ «y»', d: 'הַ «el, la»', b: 'בְּ «en»', l: 'לְ «a, para»', k: 'כְּ «como»', m: 'מִ «de, desde»', i: 'הֲ interrogativa', s: 'שֶׁ «que»' };
+  async function verseWords(id) {
+    const [b, c, v] = id.split('-'); const d = await getBookV(b); const cell = d.c[c - 1][v - 1];
+    const href = cell[2] && /^\d+:\d+/.test(cell[2]) ? cell[2].split('–')[0] : c + ':' + v;
+    sheet('<h4>Palabras de ' + esc(refOfId(id)) + '</h4><div class="loading">Cargando el análisis…</div>');
+    let M, LX; try { [M, LX] = await Promise.all([getJSON('morph/' + b + '.json'), getJSON('lexico.json')]); } catch (e) { sheet('<h4>Análisis</h4><p>' + esc(e.message) + '</p>'); return; }
+    const words = M[href] || [];
+    const rows = words.map(([text, lemma, morph], wi) => {
+      const lang = morph[0]; const ms = morph.slice(1).split('/'); const ls = lemma.split('/'); const ts = text.split('/');
+      const parts = ms.map((m, k) => {
+        const lm = (ls[k] || '').split(' ')[0]; const seg = ts[k] || '';
+        if (/^\d/.test(lm)) {
+          const key = lm.replace(/\D/g, ''); const L = LX[key];
+          const gl = L ? (L[3] || (L[4] ? L[4] + ' <span class="muted">(léxico de Strong, en inglés)</span>' : '')) : '';
+          const verb = m[0] === 'V';
+          return '<div class="wa-seg"><span class="he" lang="he">' + esc(seg) + '</span><div><b>' + (L ? '<span class="he" lang="he">' + esc(L[0]) + '</span> ' : '') + (L && L[3] ? esc(L[3]) : gl) + '</b><span>' + esc(decodeSeg(m, lang)) + (L && L[1] ? ' · ' + esc(L[1]) : '') + '</span>' +
+            '<span class="wa-acts">' + (verb ? '<a href="#pealim-' + key + '" data-act="close-sheet-nav">Conjugaciones en PEALIM</a>' : '<a href="#lema-' + key + '" data-act="close-sheet-nav">Ficha de la palabra</a>') + (L && L[3] ? '<button data-act="w-save" data-k="' + key + '" data-ref="' + b + ' ' + c + ':' + v + '">Guardar para repasar</button>' : '') + '</span></div></div>';
+        }
+        return '<div class="wa-seg"><span class="he" lang="he">' + esc(seg) + '</span><div><span>' + esc(m[0] === 'S' ? decodeSeg(m, lang) : (PREFIX[lm] ? 'prefijo ' + PREFIX[lm] : decodeSeg(m, lang))) + '</span></div></div>';
+      }).join('');
+      return '<div class="wa-word"><p class="he wa-full" lang="he">' + esc(ts.join('')) + '</p>' + parts + '</div>';
+    }).join('');
+    sheet('<h4>Palabras de ' + esc(refOfId(id)) + '</h4><p class="muted" style="font-size:.84rem;margin:0 0 6px">Análisis de cada palabra del texto hebreo: prefijos, raíz léxica y forma gramatical.</p>' + (rows || '<p>No hay análisis disponible para este versículo.</p>'));
+  }
+
   /* ---------- Versículos ---------- */
   function verseHTML(b, c, v, cell, opt = {}) {
     const id = b + '-' + c + '-' + v;
@@ -252,9 +323,10 @@
     else h = '<p class="missing vh">Este versículo no figura en la fuente hebrea utilizada.</p>';
     const hn = cell[2] && cell[2] !== '^' ? ' <span class="hn">(hebreo ' + cell[2] + ')</span>' : '';
     const fav = isFav(id) ? '<span class="fav" aria-label="Guardado">★</span>' : '';
-    return '<article class="v" id="v' + (opt.anchor || v) + '" data-v="' + id + '" tabindex="0">' + h +
-      '<p class="ref">' + esc(bookName(b)) + ' ' + c + ':' + v + hn + fav + '</p>' +
-      esHTML(cell) + '</article>';
+    const col = HL()[id]; const note = NOTES()[id];
+    return '<article class="v' + (col ? ' hlc hlc-' + col : '') + '" id="v' + (opt.anchor || v) + '" data-v="' + id + '" tabindex="0">' + h +
+      '<p class="ref">' + esc(bookName(b)) + ' ' + c + ':' + v + hn + fav + (note ? '<span class="note-ic" aria-label="Tiene nota">📝</span>' : '') + '</p>' +
+      esHTML(cell) + (note ? noteHTML(note) : '') + '</article>';
   }
   function esHTML(cell) {
     const st = cell[3];
@@ -273,7 +345,12 @@
   }
   async function verseSheet(id) {
     const [b, c, v] = id.split('-');
+    const col = HL()[id]; const note = NOTES()[id];
     sheet('<h4>' + esc(bookName(b)) + ' ' + c + ':' + v + '</h4>' +
+      '<div class="swatches" role="group" aria-label="Destacar con color">' + COLORS.map(([k, n]) => '<button class="sw sw-' + k + (col === k ? ' on' : '') + '" data-act="v-color" data-id="' + id + '" data-c="' + k + '" aria-label="' + n + '" aria-pressed="' + (col === k) + '"></button>').join('') +
+      (col ? '<button class="sw-clear" data-act="v-color" data-id="' + id + '" data-c="">Quitar</button>' : '') + '</div>' +
+      '<button class="act" data-act="v-note" data-id="' + id + '">📝 ' + (note ? 'Editar mi nota' : 'Agregar nota') + '</button>' +
+      (!BY[b].nt ? '<button class="act" data-act="v-words" data-id="' + id + '">' + ic('alef') + 'Analizar las palabras hebreas</button>' : '') +
       '<button class="act" data-act="v-copy" data-id="' + id + '">' + ic('copy') + 'Copiar versículo</button>' +
       '<button class="act" data-act="v-wa" data-id="' + id + '">' + ic('wa') + 'Compartir por WhatsApp</button>' +
       '<button class="act" data-act="v-share" data-id="' + id + '">' + ic('share') + 'Compartir…</button>' +
@@ -515,7 +592,7 @@
       '<dl class="meta"><dt>Libro</dt><dd>' + esc(BY[p.lec.b].tr) + ' (' + esc(BY[p.lec.b].es) + ')</dd>' +
       '<dt>Lectura</dt><dd><a href="#lectura-' + n + '">' + esc(fmtRange(p.lec)) + '</a></dd>' +
       '<dt>Haftará</dt><dd>' + haft.map(r => '<a href="#haftara-' + n + '">' + esc(fmtRange(r)) + '</a>').join('; ') + (p.seph ? '<br><span class="muted" style="font-size:.85rem">Costumbre ' + (prefs.haft === 'seph' ? 'sefaradí' : 'ashkenazí') + '</span>' : '') + '</dd></dl>' +
-      '<div class="btns"><a class="btn solid" href="#lectura-' + n + '">' + ic('scroll') + 'Leer la parashá</a><a class="btn" href="#haftara-' + n + '">Haftará</a></div>' +
+      '<div class="btns"><a class="btn solid" href="#lectura-' + n + '">' + ic('scroll') + 'Leer la parashá</a><a class="btn" href="#haftara-' + n + '">Haftará</a><a class="btn" href="#vocabparasha-' + n + '">' + ic('alef') + 'Hebreo de esta parashá</a></div>' +
       '<h2>Resumen</h2><p>' + esc(p.res) + '</p>' +
       '<h2>Personajes principales</h2><p>' + p.per.map(esc).join(', ') + '.</p>' +
       '<h2>Temas centrales</h2><ul>' + p.temas.map(t => '<li>' + esc(t) + '</li>').join('') + '</ul>' +
@@ -548,9 +625,11 @@
     tab = tab || 'versiculos';
     const f = favs(); const marks = Store.get('marks', []);
     const P = await getJSON('parashiot.json');
-    const tabs = [['versiculos', 'Versículos'], ['marcadores', 'Marcadores'], ['parashiot', 'Parashiot'], ['mensajes', 'Mensajes']];
+    const tabs = [['versiculos', 'Favoritos'], ['destacados', 'Destacados'], ['notas', 'Notas'], ['marcadores', 'Marcadores'], ['parashiot', 'Parashiot'], ['mensajes', 'Mensajes']];
     let body = '';
-    if (tab === 'versiculos') {
+    if (tab === 'destacados') body = await destacadosHTML();
+    else if (tab === 'notas') body = await notasHTML();
+    else if (tab === 'versiculos') {
       const vs = f.filter(x => x.type === 'v');
       if (!vs.length) body = '<div class="empty"><p>Toca cualquier versículo mientras lees y elige «Guardar en favoritos».</p><a class="btn" href="#biblia">Abrir la Biblia</a></div>';
       else for (const x of vs) { const { b, c, v, cell } = await verseData(x.id); body += '<a class="result" href="#leer-' + b + '-' + c + '-' + v + '"><b>' + esc(bookName(b)) + ' ' + c + ':' + v + '</b>' + (cell[1] ? '<p class="he" lang="he">' + esc(heb(cell[1])) + '</p>' : '') + esHTML(cell) + '</a>'; }
@@ -566,12 +645,50 @@
       body = ms.length ? '<div class="rows">' + ms.map(x => { const m = M[x.i]; return m ? '<a class="row" href="#mensaje-' + x.i + '"><span class="t"><b>' + esc(m.titulo) + '</b><span>' + esc(refLabel(m.ref)) + '</span></span></a>' : ''; }).join('') + '</div>'
         : '<div class="empty"><p>Guarda un mensaje diario para volver a leerlo.</p><a class="btn" href="#mensaje">Ver el mensaje de hoy</a></div>';
     }
-    view().innerHTML = top('Guardados') + '<div class="wrap"><div class="seg" style="grid-template-columns:repeat(4,1fr)">' + tabs.map(([k, l]) => '<button data-go="guardados-' + k + '" aria-pressed="' + (k === tab) + '" style="font-size:.85rem">' + l + '</button>').join('') + '</div>' + body + '</div>';
+    view().innerHTML = top('Guardados') + '<div class="wrap"><div class="seg tabs-scroll">' + tabs.map(([k, l]) => '<button data-go="guardados-' + k + '" aria-pressed="' + (k === tab) + '">' + l + '</button>').join('') + '</div>' + body + '</div>';
+    const act = document.querySelector('.tabs-scroll [aria-pressed="true"]'); if (act) act.scrollIntoView({ inline: 'center', block: 'nearest' });
+  }
+
+  /* ----- Mis versículos destacados ----- */
+  let hlFilter = '';
+  async function destacadosHTML() {
+    const H = HL(); const ids = Object.keys(H).sort((a, b) => idOrder(a) - idOrder(b));
+    if (!ids.length) return '<div class="empty"><p>Toca un versículo mientras lees y elige un color para destacarlo.</p><a class="btn" href="#biblia">Abrir la Biblia</a></div>';
+    const counts = {}; ids.forEach(id => counts[H[id]] = (counts[H[id]] || 0) + 1);
+    let html = '<h2 class="sec-title">Mis versículos destacados</h2><div class="chips"><button class="chip' + (!hlFilter ? ' on' : '') + '" data-act="hl-filter" data-c="">Todos (' + ids.length + ')</button>' +
+      COLORS.filter(([k]) => counts[k]).map(([k, n]) => '<button class="chip' + (hlFilter === k ? ' on' : '') + '" data-act="hl-filter" data-c="' + k + '"><i class="dot sw-' + k + '"></i>' + n + ' (' + counts[k] + ')</button>').join('') + '</div>';
+    for (const [k, n] of COLORS) {
+      if (hlFilter && hlFilter !== k) continue;
+      const g = ids.filter(id => H[id] === k); if (!g.length) continue;
+      html += '<div class="group-title"><h3><i class="dot sw-' + k + '"></i> ' + n + '</h3></div>';
+      for (const id of g) { const { b, c, v, cell } = await verseData(id); html += '<a class="result hlc hlc-' + k + '" href="#leer-' + b + '-' + c + '-' + v + '"><b>' + esc(refOfId(id)) + '</b>' + (cell[1] ? '<p class="he" lang="he">' + esc(heb(cell[1])) + '</p>' : '') + '<p>' + es(cell[0], true) + '</p></a>'; }
+    }
+    return html;
+  }
+  /* ----- Mis notas bíblicas ----- */
+  let noteQ = '', noteBook = '', noteSort = 'm';
+  async function notasHTML() {
+    const N = NOTES(); let ids = Object.keys(N);
+    if (!ids.length) return '<div class="empty"><p>Toca un versículo y elige «Agregar nota» para escribir tu reflexión.</p><a class="btn" href="#biblia">Abrir la Biblia</a></div>';
+    const books = [...new Set(ids.map(id => id.split('-')[0]))].sort((a, b) => BOOKS.findIndex(x => x.c === a) - BOOKS.findIndex(x => x.c === b));
+    const nq = norm(noteQ);
+    ids = ids.filter(id => (!noteBook || id.split('-')[0] === noteBook) && (!nq || norm(N[id].t + ' ' + refOfId(id)).includes(nq)));
+    ids.sort((a, b) => noteSort === 'ref' ? idOrder(a) - idOrder(b) : noteSort === 'c' ? N[b].c - N[a].c : N[b].m - N[a].m);
+    let html = '<h2 class="sec-title">Mis notas bíblicas</h2><div class="field">' + ic('search') + '<input type="search" data-act="note-q" placeholder="Buscar en mis notas o por referencia" value="' + esc(noteQ) + '" aria-label="Buscar notas"></div>' +
+      '<div class="note-filters"><select data-act="note-book" aria-label="Filtrar por libro"><option value="">Todos los libros</option>' + books.map(b => '<option value="' + b + '"' + (b === noteBook ? ' selected' : '') + '>' + esc(bookName(b)) + '</option>').join('') + '</select>' +
+      '<select data-act="note-sort" aria-label="Ordenar"><option value="m"' + (noteSort === 'm' ? ' selected' : '') + '>Última modificación</option><option value="c"' + (noteSort === 'c' ? ' selected' : '') + '>Fecha de creación</option><option value="ref"' + (noteSort === 'ref' ? ' selected' : '') + '>Orden bíblico</option></select></div>';
+    if (!ids.length) html += '<p class="muted">Ninguna nota coincide.</p>';
+    for (const id of ids) {
+      const { b, c, v, cell } = await verseData(id); const n = N[id];
+      html += '<div class="note-card"><a href="#leer-' + b + '-' + c + '-' + v + '"><b>' + esc(refOfId(id)) + '</b></a><p class="note-verse">' + es(cell[0], true) + '</p>' + noteHTML(n) +
+        '<p class="muted note-date">Creada: ' + esc(new Date(n.c).toLocaleDateString('es')) + (n.m !== n.c ? '. Modificada: ' + esc(new Date(n.m).toLocaleDateString('es')) : '') + '</p><button class="btn" data-act="v-note" data-id="' + id + '">Editar</button></div>';
+    }
+    return html;
   }
 
   /* ----- Menú ----- */
   function vMenu() {
-    const items = [['estudios', 'study', 'Estudios', 'בֵּית מִדְרָשׁ'], ['aprender', 'alef', 'Yo aprendo hebreo con la Torá', 'עִבְרִית'], ['mensaje', 'day', 'Mensaje diario', 'דְּבַר הַיּוֹם'], ['calendario', 'cal', 'Calendario bíblico', 'לוּחַ'], ['vocabulario', 'alef', 'Diccionario hebreo', 'מִלּוֹן'], ['historial', 'hist', 'Historial de lectura', ''], ['acerca', 'info', 'Acerca de Beit Hatzirah', ''], ['ajustes', 'gear', 'Configuración', '']];
+    const items = [['estudios', 'study', 'Estudios', 'בֵּית מִדְרָשׁ'], ['aprender', 'alef', 'Yo aprendo hebreo con la Torá', 'עִבְרִית'], ['pealim', 'text', 'PEALIM: verbos hebreos', 'פְּעָלִים'], ['guardados-destacados', 'star', 'Mis versículos destacados', ''], ['guardados-notas', 'copy', 'Mis notas bíblicas', ''], ['mensaje', 'day', 'Mensaje diario', 'דְּבַר הַיּוֹם'], ['calendario', 'cal', 'Calendario bíblico', 'לוּחַ'], ['vocabulario', 'alef', 'Diccionario hebreo', 'מִלּוֹן'], ['historial', 'hist', 'Historial de lectura', ''], ['acerca', 'info', 'Acerca de Beit Hatzirah', ''], ['ajustes', 'gear', 'Configuración', '']];
     view().innerHTML = top('Menú', { back: 'inicio' }) + '<div class="wrap"><div class="rows" style="margin-top:12px">' +
       items.map(([r, i, t, h]) => '<a class="row" href="#' + r + '"><span style="color:var(--accent)">' + ic(i, ' width="22" height="22"') + '</span><span class="t"><b>' + t + '</b></span>' + (h ? '<span class="he" lang="he">' + h + '</span>' : '') + '</a>').join('') +
       '</div><p class="muted center" style="font-size:.85rem;margin-top:24px">Versión ' + VERSION + '</p></div>';
@@ -707,7 +824,7 @@
       '<div class="opt"><span class="t">Costumbre de la haftará</span><select data-act="set-haft"><option value="ash"' + (prefs.haft === 'ash' ? ' selected' : '') + '>Ashkenazí</option><option value="seph"' + (prefs.haft === 'seph' ? ' selected' : '') + '>Sefaradí</option></select></div>' +
       '<div class="group-title"><h3>Aplicación</h3></div>' +
       (canInstall ? '<div class="opt"><span class="t">Instalar Beit Hatzirah<span>Añade la app a tu pantalla de inicio</span></span><button class="btn solid" data-act="install">Instalar</button></div>' : '') +
-      (swOn ? '<div class="opt"><span class="t">Leer sin conexión<span id="offline-status">Guarda los 66 libros y las tres traducciones en este teléfono (unos 17 MB)</span></span><button class="btn" data-act="offline">Guardar</button></div>' : '') +
+      (swOn ? '<div class="opt"><span class="t">Leer sin conexión<span id="offline-status">Guarda los 66 libros, las tres traducciones, el análisis hebreo y PEALIM en este teléfono (unos 32 MB)</span></span><button class="btn" data-act="offline">Guardar</button></div>' : '') +
       '<details class="moed"><summary><span class="t"><b>Cómo instalar en Android</b></span></summary><div class="body"><p>Abre la app en Chrome, toca el menú ⋮ y elige «Instalar aplicación» o «Agregar a pantalla principal».</p></div></details>' +
       '<details class="moed"><summary><span class="t"><b>Cómo instalar en iPhone</b></span></summary><div class="body"><p>Abre la app en Safari, toca el botón Compartir y elige «Agregar a pantalla de inicio».</p></div></details>' +
       '<div class="opt"><span class="t">Borrar datos guardados<span>Favoritos, marcadores, historial y preferencias de este teléfono</span></span><button class="btn" data-act="reset">Borrar</button></div>' +
@@ -825,6 +942,22 @@
     },
     'v-img': async el => { const { b, c, v, cell } = await verseData(el.dataset.id); shareImage({ he: cell[1] || '', es: es(cell[0]), ref: bookName(b) + ' ' + c + ':' + v }); },
     'img-share': () => shareCanvas(),
+    'v-color': el => {
+      const H = HL(); const id = el.dataset.id; if (el.dataset.c) H[id] = el.dataset.c; else delete H[id];
+      Store.set('hl', H); closeSheet(); toast(el.dataset.c ? 'Versículo destacado' : 'Resaltado quitado'); refreshVerse(id);
+      if (location.hash.startsWith('#guardados')) route();
+    },
+    'v-note': el => noteSheet(el.dataset.id),
+    'note-save': el => {
+      const id = el.dataset.id; const t = (document.getElementById('note-ta').value || '').trim(); const N = NOTES();
+      if (!t) { delete N[id]; } else { const now = Date.now(); N[id] = { t, c: N[id] ? N[id].c : now, m: now }; }
+      Store.set('notes', N); closeSheet(); toast(t ? 'Nota guardada' : 'Nota eliminada'); refreshVerse(id);
+      if (location.hash.startsWith('#guardados')) route();
+    },
+    'note-del': el => { if (!confirm('¿Eliminar esta nota?')) return; const N = NOTES(); delete N[el.dataset.id]; Store.set('notes', N); closeSheet(); toast('Nota eliminada'); refreshVerse(el.dataset.id); if (location.hash.startsWith('#guardados')) route(); },
+    'v-words': el => verseWords(el.dataset.id),
+    'w-save': async el => { const LX = await getJSON('lexico.json'); const L = LX[el.dataset.k]; if (!L || !EXT.saveWord) return; EXT.saveWord({ id: 'lx-' + el.dataset.k, he: L[0], tr: L[1], es: L[3], ref: el.dataset.ref }); el.textContent = 'Guardada ✓'; el.disabled = true; },
+    'hl-filter': el => { hlFilter = el.dataset.c; route(); },
     'ver-sheet': () => verSheet(),
     'set-ver': el => { prefs.ver = el.dataset.v; savePrefs(); closeSheet(); toast(VERS[prefs.ver].name); route(); },
     'p-done': el => { const s = Store.get('studied', {}); const n = el.dataset.n; if (s[n]) delete s[n]; else s[n] = Date.now(); Store.set('studied', s); toast(s[n] ? 'Marcada como estudiada' : 'Marca quitada'); route(); },
@@ -847,7 +980,8 @@
     'install': async () => { if (!deferredPrompt) return; deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt = null; vAjustes(); },
     'offline': async el => {
       const st = $('#offline-status'); el.disabled = true; let n = 0;
-      for (const b of BOOKS) { try { await Promise.all([fetch('data/b/' + b.c + '.json'), fetch('data/es/pdt/' + b.c + '.json'), fetch('data/es/blm/' + b.c + '.json')]); n++; if (st) st.textContent = 'Guardando… ' + n + ' de 66 libros'; } catch (e) { } }
+      for (const b of BOOKS) { try { await Promise.all([fetch('data/b/' + b.c + '.json'), fetch('data/es/pdt/' + b.c + '.json'), fetch('data/es/blm/' + b.c + '.json')].concat(b.nt ? [] : [fetch('data/morph/' + b.c + '.json')])); n++; if (st) st.textContent = 'Guardando… ' + n + ' de 66 libros'; } catch (e) { } }
+      try { await Promise.all(['lexico.json', 'lemas.json', 'h2e.json', 'pealim/indice.json', 'pealim/binyanim.json'].concat([0, 1, 2, 3, 4, 5, 6, 7].map(i => 'pealim/p' + i + '.json')).map(f => fetch('data/' + f))); } catch (e) { }
       if (st) st.textContent = n === 66 ? 'Listo: los 66 libros están disponibles sin conexión.' : 'Se guardaron ' + n + ' de 66 libros. Vuelve a intentarlo con conexión.';
       el.disabled = false;
     },
@@ -875,9 +1009,12 @@
     if (a === 'set-haft') { prefs.haft = e.target.value; savePrefs(); }
     if (a === 'set-ver-sel') { prefs.ver = e.target.value; savePrefs(); vAjustes(); }
     if (a === 'cal-year') vCalendario(+e.target.value);
+    if (a === 'note-book') { noteBook = e.target.value; route(); }
+    if (a === 'note-sort') { noteSort = e.target.value; route(); }
   });
   let vt;
   document.addEventListener('input', e => {
+    if (e.target.dataset.act === 'note-q') { clearTimeout(vt); const q = e.target.value; vt = setTimeout(async () => { noteQ = q; await route(); const i = document.querySelector('[data-act="note-q"]'); if (i) { i.focus(); i.setSelectionRange(q.length, q.length); } }, 300); return; }
     if (e.target.dataset.act === 'vocab-q') { clearTimeout(vt); const q = e.target.value; vt = setTimeout(async () => { await vVocabulario(q); const i = $('#view input'); if (i) { i.focus(); i.setSelectionRange(q.length, q.length); } }, 250); }
   });
   document.addEventListener('submit', e => {
@@ -901,7 +1038,7 @@
     }).catch(() => { });
   }
   if (/[?&]test\b/.test(location.search)) window.__bh = { es, getBookV, prefs };
-  if (EXT.init) EXT.init({ esc, ic, top, sheet, closeSheet, toast, Store, go, view, getJSON, getBook, getBookV, weekInfo, parseCV, bookName, fmtRange, refRoute, refLabel });
+  if (EXT.init) EXT.init({ esc, ic, top, sheet, closeSheet, toast, Store, go, view, getJSON, getBook, getBookV, weekInfo, parseCV, bookName, fmtRange, refRoute, refLabel, decodeSeg, STEM, VTYPE, PRON, heb, hebPlain, norm, BOOKS, BY });
   window.addEventListener('hashchange', route);
   route();
 })();

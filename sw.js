@@ -1,8 +1,8 @@
 /* Service Worker de Beit Hatzirah: funcionamiento sin conexión */
-const VERSION = 'bh-0.3.3';
-const LIBROS = 'bh-libros-2'; // cambia este nombre cuando se actualicen los textos bíblicos
+const VERSION = 'bh-0.4.0';
+const LIBROS = 'bh-libros-3'; // cambia este nombre cuando se actualicen los textos bíblicos
 const SHELL = [
-  './', 'index.html', 'manifest.webmanifest', 'css/app.css', 'js/books.js', 'js/aprender.js', 'js/app.js',
+  './', 'index.html', 'manifest.webmanifest', 'css/app.css', 'js/books.js', 'js/aprender.js', 'js/pealim.js', 'js/app.js',
   'img/logo.jpg', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png', 'icons/apple-touch-icon.png', 'icons/favicon-32.png',
   'fonts/noto-serif-hebrew-hebrew-700-normal.woff2', 'fonts/spectral-latin-400-normal.woff2', 'fonts/spectral-latin-400-italic.woff2',
   'fonts/spectral-latin-600-normal.woff2', 'fonts/spectral-latin-ext-400-normal.woff2',
@@ -18,7 +18,7 @@ self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
   if (e.request.method !== 'GET' || url.origin !== location.origin) return;
   // Libros bíblicos: primero la copia guardada, se conservan entre versiones
-  if (url.pathname.includes('/data/b/') || url.pathname.includes('/data/es/')) {
+  if (/\/data\/(b|es|morph|pealim)\//.test(url.pathname) || /\/data\/(lexico|lemas|h2e)\.json$/.test(url.pathname)) {
     e.respondWith(caches.open(LIBROS).then(async c => {
       const hit = await c.match(e.request); if (hit) return hit;
       const res = await fetch(e.request); if (res.ok) c.put(e.request, res.clone()); return res;

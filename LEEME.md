@@ -4,7 +4,7 @@ Biblioteca digital de las Sagradas Escrituras en hebreo y español.
 Proyecto y dirección de contenido: **Moreh Gabriel ben Eliyah**
 Autoridad rabínica: **Rab Eliyah ben Eleazar**
 
-Versión 0.3.3. Incluye el módulo «Yo aprendo hebreo con la Torá».
+Versión 0.4.0. Incluye el módulo «Yo aprendo hebreo con la Torá».
 
 ---
 
@@ -19,7 +19,13 @@ css/app.css             Diseño visual (modo claro y oscuro)
 js/books.js             Índice de los 66 libros y sus nombres
 js/app.js               Lógica de la aplicación (Biblia, parashiot, calendario, etc.)
 js/aprender.js          Módulo «Yo aprendo hebreo con la Torá» (juegos, niveles, repaso)
-data/aprender.json      Contenido del curso: 12 mundos, 49 unidades, 280 elementos
+data/aprender.json      Contenido del curso: 15 mundos + 12 temáticos, 68 unidades, 374 elementos
+js/pealim.js            PEALIM: buscador y analizador de verbos
+data/pealim/            1.534 verbos bíblicos con todas sus formas atestiguadas
+data/morph/             Análisis de cada palabra del Tanaj (por libro)
+data/lexico.json        Léxico hebreo (8.638 entradas) con significados en español
+data/lemas.json         Dónde aparece cada palabra
+data/h2e.json           Correspondencia de versículos hebreo ↔ español
 data/b/*.json           Un archivo por libro: [español RV1909, hebreo, numeración hebrea si difiere]
 data/es/pdt/*.json      Palabra de Dios para ti (un archivo por libro)
 data/es/blm/*.json      Biblia Libre para el Mundo (un archivo por libro)
@@ -141,3 +147,19 @@ Está en la pestaña **Aprender** de la barra inferior.
 **Agregar unidades:** edita `data/aprender.json`. Cada unidad tiene `id`, `name`, `type` (letters, vowels, read, words, phrases, reading, grammar, analysis), `intro` e `items` (`id`, `he`, `tr`, `es`, y opcionalmente `em` para la imagen y `ref` para el versículo).
 
 **Pendiente:** grabaciones de audio reales, ilustraciones propias (hoy se usan emojis del teléfono), más unidades intermedias y avanzadas, y vocabulario de cada parashá con formas verbales conjugadas.
+
+## 11. Novedades de la versión 0.4
+
+**Alef-Bet revisado.** Cada letra tiene nombre, otros nombres usados (Beit, Gimel, Tzadik, Qof…), sonido explicado, forma final cuando la tiene, una palabra de ejemplo de la Torá con su versículo, audio y un ejercicio para trazarla con el dedo. Se explica que Kaf suena k o j (kh) y que su nombre no es la letra J; que Pe/Fe suena p o f; y que Shin y Sin son la misma letra con distinto punto.
+
+**Curso reorganizado.** 15 mundos principales (Alef-Bet, letras finales, niqqud, sílabas, lectura, primer vocabulario, sustantivos y adjetivos, verbos y conjugaciones, raíces, construcción de frases, expresiones bíblicas, fragmentos de la Torá, comprensión de versículos, intermedio y avanzado) y 12 mundos temáticos (creación, naturaleza, animales, familia, acciones, lugares, tiempo, pacto, mandamientos, Shabat, moedim y vida espiritual). Las unidades de conjugación usan formas que aparecen tal cual en la Biblia. Nuevos: desafío diario, metas semanales, práctica libre sin corazones, trazado de letras y animaciones.
+
+**PEALIM (Menú → PEALIM).** Busca verbos por hebreo (también formas conjugadas, como וַיִּשְׁמְרוּ), transliteración, español o raíz. Cada ficha muestra raíz, binyanim, conjugaciones por binyan y tiempo (solo las formas atestiguadas en el Tanaj, con su versículo), palabras de la misma raíz, ejemplos bíblicos, audio y práctica. Incluye la sección «Los siete binyanim» y listas de favoritos, aprendidos y verbos con errores.
+
+**Versículos con colores y notas.** Al tocar un versículo: siete colores para destacarlo, «Agregar nota» y «Analizar las palabras hebreas». En Guardados → Destacados (filtro por color) y Guardados → Notas (búsqueda, filtro por libro y orden).
+
+**Integración.** El análisis de cada palabra del Tanaj lleva a PEALIM o a la ficha de la palabra, y permite guardarla en «Mis palabras por repasar». Cada parashá tiene «Hebreo de esta parashá» con sus 15 palabras más presentes.
+
+**Fuentes de datos lingüísticos:** Open Scriptures Hebrew Bible (morfología, CC BY 4.0) y léxico de Strong (dominio público). Los significados en español de 508 palabras (los 250 verbos más frecuentes y las palabras más comunes) los redactó Beit Hatzirah; cubren el 72 % de las palabras del texto hebreo.
+
+**Pendiente:** significado en español para el resto del léxico, ilustraciones propias y grabaciones de audio.
