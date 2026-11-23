@@ -122,11 +122,41 @@
     P.audio = a;
   }
 
+  /* ---------- Grabaciones por pasuq (un archivo por versículo) ---------- */
+  function vrec() { const pr = prefs(); const r = pr.lang !== 'both' && recFor(pr.lang, P.b, P.c); return r && r.v ? r : null; }
+  function playVerseFile(i) {
+    const rec = vrec(); if (!rec) return;
+    const n = P.d.c[P.c - 1].length; P.v = i; markVerse();
+    const item = rec.v[i];
+    if (!item) return afterVerseFile();
+    if (P.audio) { P.audio.onended = null; P.audio.pause(); }
+    const a = new Audio(item.s); a.playbackRate = prefs().rate; a.volume = prefs().vol; P.audio = a;
+    a.onended = () => { if (P.audio === a) afterVerseFile(); };
+    a.ontimeupdate = () => { if (P.audio === a) updateProgress(); };
+    a.play().then(() => { P.playing = true; renderPlayer(); }).catch(() => { B.toast('No se pudo reproducir el audio de este pasuq'); stop(); });
+    saveLast();
+  }
+  function afterVerseFile() {
+    const pr = prefs(); const n = P.d.c[P.c - 1].length;
+    if (pr.repeat === 'verse') return playVerseFile(P.v);
+    if (pr.single) { P.playing = false; renderPlayer(); return; }
+    if (P.v < n - 1) return playVerseFile(P.v + 1);
+    if (pr.repeat === 'chapter') return playVerseFile(0);
+    if (pr.auto) return nextChapter(true);
+    P.playing = false; renderPlayer();
+  }
+
   /* ---------- Controles ---------- */
   async function play(fromVerse) {
     const pr = prefs();
     if (typeof fromVerse === 'number') { P.v = fromVerse; P.segs = null; }
     const rec = pr.lang !== 'both' && recFor(pr.lang, P.b, P.c);
+    if (rec && rec.v) {
+      P.mode = 'vrec'; if (SS) SS.cancel(); P.tok++;
+      const i = typeof fromVerse === 'number' ? fromVerse : P.v;
+      if (P.audio && P.audio.onended && i === P.v && P.audio.currentTime > 0 && !P.audio.ended) { P.audio.play(); P.playing = true; renderPlayer(); return; }
+      playVerseFile(i); P.playing = true; renderPlayer(); return;
+    }
     if (rec) {
       P.mode = 'rec'; if (!P.audio || P.audio.src.indexOf(rec.src) < 0) setupRecording(rec);
       if (typeof fromVerse === 'number') P.audio.currentTime = rec.t[fromVerse] || 0;
@@ -141,13 +171,14 @@
     renderPlayer(); speakChunk(); saveLast();
   }
   function pause() {
-    if (P.mode === 'rec' && P.audio) { P.audio.pause(); P.playing = false; renderPlayer(); saveLast(); return; }
+    if ((P.mode === 'rec' || P.mode === 'vrec') && P.audio) { P.audio.pause(); P.playing = false; renderPlayer(); saveLast(); return; }
     P.playing = false; P.tok++; if (SS) SS.cancel(); P.ci = 0; P.segs = null; renderPlayer(); saveLast();
   }
   function stop() { P.playing = false; P.tok++; if (SS) SS.cancel(); if (P.audio) P.audio.pause(); P.segs = null; renderPlayer(); saveLast(); }
   function seekVerse(i, autoplay) {
     const n = P.d.c[P.c - 1].length; i = Math.max(0, Math.min(n - 1, i));
     const was = P.playing || autoplay;
+    if (P.mode === 'vrec' && vrec()) { if (was) playVerseFile(i); else { if (P.audio) { P.audio.onended = null; P.audio.pause(); P.audio = null; } P.v = i; markVerse(); renderPlayer(); } return; }
     if (P.mode === 'rec' && P.audio) { const rec = recFor(prefs().lang, P.b, P.c); P.v = i; P.audio.currentTime = rec.t[i] || 0; if (was) P.audio.play(); markVerse(); renderPlayer(); return; }
     P.tok++; if (SS) SS.cancel(); P.v = i; P.segs = null; P.ci = 0; markVerse();
     if (was) { P.playing = true; renderPlayer(); speakChunk(); } else renderPlayer();
@@ -183,7 +214,9 @@
   function updateProgress() {
     const bar = document.getElementById('au-bar'); if (!bar || !P.d) return;
     let done, total, exact = false;
-    if (P.mode === 'rec' && P.audio && isFinite(P.audio.duration)) { done = P.audio.currentTime; total = P.audio.duration; exact = true; }
+    const vr = vrec();
+    if (vr && vr.v.every(x => !x || x.d)) { const ds = vr.v.map(x => x ? x.d : 0); total = ds.reduce((a, b) => a + b, 0); done = ds.slice(0, P.v).reduce((a, b) => a + b, 0) + (P.mode === 'vrec' && P.audio ? P.audio.currentTime || 0 : 0); exact = true; }
+    else if (P.mode === 'rec' && P.audio && isFinite(P.audio.duration)) { done = P.audio.currentTime; total = P.audio.duration; exact = true; }
     else {
       const chars = chapterChars(); const L = prefs().lang; const cps = (L === 'he' ? P.cps.he : L === 'es' ? P.cps.es : (P.cps.he + P.cps.es) / 2) * prefs().rate;
       const before = chars.slice(0, P.v).reduce((a, b) => a + b, 0);
@@ -212,7 +245,7 @@
     const rp = document.getElementById('au-rep'); if (rp) { rp.textContent = { none: '🔁 Sin repetir', verse: '🔂 Repetir pasuq', chapter: '🔁 Repetir capítulo' }[pr.repeat]; rp.setAttribute('aria-pressed', pr.repeat !== 'none'); }
     const sg = document.getElementById('au-single'); if (sg) { sg.textContent = pr.single ? '◉ Solo este pasuq' : '◎ Capítulo completo'; }
     const src = document.getElementById('au-src');
-    if (src) { const rec = pr.lang !== 'both' && recFor(pr.lang, P.b, P.c); src.textContent = rec ? 'Grabación' : 'Voz del dispositivo' + (pr.lang !== 'es' && voiceFor('he') ? ' · ' + voiceFor('he').name : pr.lang === 'es' && voiceFor('es') ? ' · ' + voiceFor('es').name : ''); }
+    if (src) { const rec = pr.lang !== 'both' && recFor(pr.lang, P.b, P.c); src.textContent = rec ? (rec.voz || 'Grabación') : 'Voz del dispositivo' + (pr.lang !== 'es' && voiceFor('he') ? ' · ' + voiceFor('he').name : pr.lang === 'es' && voiceFor('es') ? ' · ' + voiceFor('es').name : ''); }
     updateProgress();
   }
 
@@ -244,7 +277,7 @@
       [['es', 'Español'], ['he', 'עִבְרִית'], ['both', 'Ambos']].map(([k, l]) => '<button data-act="au-lang" data-l="' + k + '" aria-pressed="' + (pr.lang === k) + '"' + (k === 'he' ? ' lang="he"' : '') + '>' + l + '</button>').join('') + '</div>' +
       '<span>Mostrar texto</span><div class="seg three" role="group" aria-label="Texto visible">' + [['ambos', 'Ambos'], ['he', 'Hebreo'], ['es', 'Español']].map(([k, l]) => '<button data-act="au-text" data-t="' + k + '" aria-pressed="' + (pr.text === k) + '">' + l + '</button>').join('') + '</div></div>' +
       '<div id="au-voicewarn"></div>' +
-      (pr.lang !== 'es' ? '<p class="au-note">' + (bk.nt ? 'El hebreo del Brit Hadashá no tiene vocales; la voz lo lee tal como está escrito. ' : '') + 'La lectura en hebreo usa la voz del dispositivo con la pronunciación israelí moderna, a partir del texto hebreo con nikud. No es la lectura cantada con te’amim. El Nombre יהוה se lee «Adonay».</p>' : '') +
+      (pr.lang !== 'es' && !(pr.lang === 'he' && recFor('he', b, c)) ? '<p class="au-note">' + (bk.nt ? 'El hebreo del Brit Hadashá no tiene vocales; la voz lo lee tal como está escrito. ' : '') + 'La lectura en hebreo usa la voz del dispositivo con la pronunciación israelí moderna, a partir del texto hebreo con nikud. No es la lectura cantada con te’amim. El Nombre יהוה se lee «Adonay».</p>' : '') +
       '</div>' +
       '<h2 class="au-title">' + esc(bk.tr) + ' ' + c + '</h2>' +
       '<div class="au-verses">' + verses + '</div>' +

@@ -1,5 +1,5 @@
 /* Service Worker de Beit Hatzirah: funcionamiento sin conexión */
-const VERSION = 'bh-0.5.1';
+const VERSION = 'bh-0.5.2';
 const LIBROS = 'bh-libros-3'; // cambia este nombre cuando se actualicen los textos bíblicos
 const SHELL = [
   './', 'index.html', 'manifest.webmanifest', 'css/app.css', 'js/books.js', 'js/aprender.js', 'js/pealim.js', 'js/audio.js', 'js/app.js',

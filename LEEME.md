@@ -4,7 +4,7 @@ Biblioteca digital de las Sagradas Escrituras en hebreo y español.
 Proyecto y dirección de contenido: **Moreh Gabriel ben Eliyah**
 Autoridad rabínica: **Rab Eliyah ben Eleazar**
 
-Versión 0.5.0. Incluye el módulo «Yo aprendo hebreo con la Torá».
+Versión 0.5.2. Incluye el módulo «Yo aprendo hebreo con la Torá».
 
 ---
 
@@ -182,3 +182,5 @@ Pestaña **Audio** de la barra inferior, botón 🎧 en cada capítulo de la Bib
 ```
 
 La app usará la grabación en ese capítulo, con tiempo exacto y la misma sincronización por pasuq. Las grabaciones deben tener derechos de uso (por ejemplo, grabadas por la comunidad).
+
+**Voz neuronal masculina (como la de ChatGPT):** el programa `herramientas/generar_audio.py` genera un MP3 por pasuq con la voz de OpenAI y lo registra en `data/audio/indice.json` con este formato: `{"he": {"GEN-1": {"voz": "…", "v": [{"s": "data/audio/he/GEN/1/1.mp3", "d": 5.2}, …]}}}`. Instrucciones completas en `herramientas/COMO_GENERAR_EL_AUDIO.md`.
