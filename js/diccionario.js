@@ -1,4 +1,4 @@
-/* BEIT HATZIRAH — Diccionario bíblico, raíces, nombres divinos, hebreo y griego, temas,
+/* BEIT HATZIRAH — Diccionario bíblico, raíces, nombres divinos, temas,
    expresiones, concordancia, flashcards, gematría y búsqueda global.
    Fuentes: léxico de Strong (dominio público), índice de raíces Brown-Driver-Briggs (Open Scriptures),
    análisis morfológico del Open Scriptures Hebrew Bible (CC BY 4.0). */
@@ -49,11 +49,11 @@
   /* ---------- Inicio del diccionario ---------- */
   async function vHome() {
     await data(); const s = ST();
-    const tiles = [['dicletras', 'א', 'Hebreo-español', Object.keys(LX).length.toLocaleString('es') + ' palabras del Tanaj'], ['dicraices', 'שׁרשׁ', 'Raíces (shóresh)', Object.keys(RA).length.toLocaleString('es') + ' familias de palabras'], ['dicnombres', 'יָהּ', 'Nombres divinos', DD.nombres.length + ' nombres y títulos'], ['dicgriego', 'λόγος', 'Hebreo y griego', DD.hegr.length + ' términos comparados'], ['dictemas', '@dict', 'Diccionario temático', Object.keys(DD.temas).length + ' categorías'], ['dicexpr', '@chat', 'Expresiones idiomáticas', DD.idiom.length + ' expresiones'], ['gematria', '18', 'Gematría', 'Calculadora y conexiones'], ['flashcards', '@cards', 'Flashcards', 'Practica tus favoritas']];
+    const tiles = [['dicletras', 'א', 'Hebreo-español', Object.keys(LX).length.toLocaleString('es') + ' palabras del Tanaj'], ['dicraices', 'שׁרשׁ', 'Raíces (shóresh)', Object.keys(RA).length.toLocaleString('es') + ' familias de palabras'], ['dicnombres', 'יָהּ', 'Nombres divinos', DD.nombres.length + ' nombres y títulos'], ['dictemas', '@dict', 'Diccionario temático', Object.keys(DD.temas).length + ' categorías'], ['dicexpr', '@chat', 'Expresiones idiomáticas', DD.idiom.length + ' expresiones'], ['gematria', '18', 'Gematría', 'Calculadora y conexiones'], ['flashcards', '@cards', 'Flashcards', 'Practica tus favoritas']];
     B.view().innerHTML = B.top('Diccionario bíblico', { back: 'menu' }) + '<div class="wrap dc">' +
-      '<div class="dc-hero"><img class="sec-logo" src="' + B.LOGO + '" alt=""><p class="he" lang="he">מִלּוֹן</p><h2>Diccionario bíblico</h2><p class="muted">Hebreo bíblico, raíces, nombres divinos y griego del Brit Hadashá</p></div>' +
+      '<div class="dc-hero"><img class="sec-logo" src="' + B.LOGO + '" alt=""><p class="he" lang="he">מִלּוֹן</p><h2>Diccionario bíblico</h2><p class="muted">Hebreo bíblico, raíces, nombres divinos y conceptos de las Escrituras</p></div>' +
       '<div class="field">' + B.ic('search') + '<input type="search" id="dcq" placeholder="Palabra en hebreo o español, transliteración, raíz o número" aria-label="Buscar en el diccionario" autocomplete="off"></div><div id="dcres"></div>' +
-      '<div class="dc-tiles">' + tiles.map(([r, i, t, sub]) => '<a class="dc-tile" href="#' + r + '"><span class="dc-ti' + (/[\u0590-\u05FF\u0370-\u03FF]/.test(i) ? ' he' : '') + '"' + (/[\u0590-\u05FF]/.test(i) ? ' lang="he"' : '') + '>' + (i[0] === '@' ? B.ic(i.slice(1)) : esc(i)) + '</span><b>' + esc(t) + '</b><small>' + esc(sub) + '</small></a>').join('') + '</div>' +
+      '<div class="dc-tiles">' + tiles.map(([r, i, t, sub]) => '<a class="dc-tile" href="#' + r + '"><span class="dc-ti' + (/[\u0590-\u05FF]/.test(i) ? ' he' : '') + '"' + (/[\u0590-\u05FF]/.test(i) ? ' lang="he"' : '') + '>' + (i[0] === '@' ? B.ic(i.slice(1)) : esc(i)) + '</span><b>' + esc(t) + '</b><small>' + esc(sub) + '</small></a>').join('') + '</div>' +
       (s.fav.length ? '<div class="group-title"><h3>★ Favoritas</h3></div><div class="rows">' + s.fav.filter(k => LX[k]).map(k => row(k)).join('') + '</div>' : '') +
       (s.hist.length ? '<div class="group-title"><h3>Historial</h3></div><div class="rows">' + s.hist.filter(k => LX[k]).slice(0, 8).map(k => row(k)).join('') + '</div>' : '') +
       '<div class="rows" style="margin-top:16px"><a class="row" href="#vocabulario"><span class="t"><b>Vocabulario del curso y glosario de Beit Hatzirah</b><span>Las palabras del curso «Yo aprendo hebreo», con su pronunciación</span></span></a></div>' +
@@ -107,7 +107,6 @@
     const out = []; const c = plain(L[0]);
     try { const BS = await B.getJSON('besora.json'); BS.raices.forEach(r => { if (plain(r.he) === c) out.push('<p><b>' + esc(r.tr) + ':</b> ' + esc(r.es) + '. ' + esc(r.apl) + ' ' + esc(r.rel) + (r.nota ? ' <span class="muted">' + esc(r.nota) + '</span>' : '') + '</p>'); }); } catch (e) { }
     DD.nombres.forEach(n => { if (plain(n.he) === c) out.push('<p><b>' + esc(n.tr) + ':</b> ' + esc(n.exp) + '</p>'); });
-    DD.hegr.forEach(x => { if (x.he.split(' / ').some(h => plain(h) === c)) out.push('<p><b>En griego:</b> ' + '<span lang="el">' + esc(x.gr) + '</span> (' + esc(x.grt) + '). ' + esc(x.exp) + '</p>'); });
     try { const V = await B.getJSON('vocabulario.json'); V.forEach(v => { if (plain(v.he) === c && v.nota) out.push('<p>' + esc(v.nota) + '</p>'); }); } catch (e) { }
     return out.join('');
   }
@@ -156,12 +155,6 @@
     B.view().innerHTML = B.top('Nombres divinos', { back: 'diccionario' }) + '<div class="wrap dc study"><div class="dc-head"><p class="he dc-word" lang="he">שְׁמוֹת הָאֱלֹהִים</p><h1>Nombres y títulos divinos</h1></div>' +
       '<p>En las Escrituras, el Creador se revela con su Nombre y con títulos que expresan su carácter. En el texto hebreo se conserva siempre la escritura original; en español, Beit Hatzirah presenta el Nombre como <b>YAH</b>.</p>' +
       DD.nombres.map((n, i) => '<details class="dc-name"' + (i < 2 ? ' open' : '') + '><summary>' + he(n.he, 'dc-nh') + '<span><b>' + esc(n.tr) + '</b><small>' + esc(n.sig) + '</small></span></summary><div class="body"><p>' + esc(n.exp) + '</p><p class="muted">Textos: ' + n.refs.map(r => '<a href="#' + B.refRoute(r) + '">' + esc(B.refLabel(r)) + '</a>').join(', ') + '</p></div></details>').join('') + '</div>';
-  }
-  async function vGriego() {
-    await data();
-    B.view().innerHTML = B.top('Hebreo y griego', { back: 'diccionario' }) + '<div class="wrap dc study"><div class="dc-head"><h1>Del Tanaj al Brit Hadashá</h1><p class="muted">Cómo se expresan en griego los grandes términos hebreos</p></div>' +
-      '<p>Los escritos apostólicos se escribieron en griego, pero sus autores pensaban con las categorías del Tanaj. Muchas palabras griegas llegan a través de la Septuaginta, la traducción griega del Tanaj hecha por judíos antes de Yahshúa. Comparar ambos idiomas ayuda a no perder el sentido hebreo.</p>' +
-      DD.hegr.map(x => '<article class="dc-gr"><div class="dc-grh"><div>' + he(x.he, 'dc-nh') + '<small>' + esc(x.tr) + '</small></div><span>→</span><div><b lang="el">' + esc(x.gr) + '</b><small>' + esc(x.grt) + '</small></div></div><p><b>' + esc(x.sig) + '.</b> ' + esc(x.exp) + '</p><p class="muted" style="font-size:.88rem">Tanaj: ' + x.rt.map(r => '<a href="#' + B.refRoute(r) + '">' + esc(B.refLabel(r)) + '</a>').join(', ') + ' · Brit Hadashá: ' + x.ra.map(r => '<a href="#' + B.refRoute(r) + '">' + esc(B.refLabel(r)) + '</a>').join(', ') + '</p></article>').join('') + '</div>';
   }
   async function vTemas(p) {
     await data(); const cats = Object.keys(DD.temas);
@@ -274,8 +267,8 @@
     'gs-bible': el => { if (B.setSearch) B.setSearch(el.dataset.q); }
   });
   Object.assign(EXT.routes, {
-    diccionario: () => vHome(), dic: p => vEntry(p[1]), dicletras: vLetras, dicraices: vRaices, raiz: vRaices, dicnombres: vNombres, dicgriego: vGriego, dictemas: vTemas, dicexpr: vExpr,
+    diccionario: () => vHome(), dic: p => vEntry(p[1]), dicletras: vLetras, dicraices: vRaices, raiz: vRaices, dicnombres: vNombres, dictemas: vTemas, dicexpr: vExpr,
     concordancia: vConc, flashcards: vFlash, gematria: vGem, 'buscar-todo': vGlobal
   });
-  ['diccionario', 'dic', 'dicletras', 'dicraices', 'raiz', 'dicnombres', 'dicgriego', 'dictemas', 'dicexpr', 'concordancia', 'flashcards', 'gematria', 'buscar-todo'].forEach(r => { EXT.tabs[r] = ''; });
+  ['diccionario', 'dic', 'dicletras', 'dicraices', 'raiz', 'dicnombres', 'dictemas', 'dicexpr', 'concordancia', 'flashcards', 'gematria', 'buscar-todo'].forEach(r => { EXT.tabs[r] = ''; });
 })();

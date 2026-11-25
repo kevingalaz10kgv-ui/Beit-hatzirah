@@ -45,7 +45,7 @@
   ];
   const BINNAME = Object.fromEntries(BIN.map(b => [b[0], b[1]]));
   const binName = k => BINNAME[k] || (B.STEM[k] || k);
-  const TENSES = [['p', 'Pasado (perfecto, qatal)'], ['w', 'Pasado narrativo (wayyiqtol: «y dijo»)'], ['i', 'Futuro / imperfecto (yiqtol)'], ['q', 'Perfecto con vav (weqatal: «y dirá»)'], ['v', 'Imperativo'], ['h', 'Cohortativo («que yo…»)'], ['j', 'Yusivo («que él…»)'], ['c', 'Infinitivo constructo'], ['a', 'Infinitivo absoluto'], ['r', 'Participio activo (presente)'], ['s', 'Participio pasivo']];
+  const TENSES = [['p', 'Pasado (perfecto, qatal)'], ['w', 'Pasado narrativo (vayiqtol: «y dijo»)'], ['i', 'Futuro / imperfecto (yiqtol)'], ['q', 'Perfecto con vav (veqatal: «y dirá»)'], ['v', 'Imperativo'], ['h', 'Cohortativo («que yo…»)'], ['j', 'Yusivo («que él…»)'], ['c', 'Infinitivo constructo'], ['a', 'Infinitivo absoluto'], ['r', 'Participio activo (presente)'], ['s', 'Participio pasivo']];
   const PERSONS = ['3ms', '3fs', '2ms', '2fs', '1cs', '3mp', '3fp', '3cp', '2mp', '2fp', '1cp'];
   const PARTS = ['msa', 'fsa', 'mpa', 'fpa', 'msc', 'fsc', 'mpc', 'fpc'];
   const PARTLBL = { msa: 'masc. sing.', fsa: 'fem. sing.', mpa: 'masc. plural', fpa: 'fem. plural', msc: 'masc. sing. constructo', fsc: 'fem. sing. constructo', mpc: 'masc. plural constructo', fpc: 'fem. plural constructo' };
@@ -122,7 +122,7 @@
       '<div class="pl-tabs" role="tablist">' + stems.map((sk, i) => '<button role="tab" data-act="pl-tab" data-s="' + sk + '" aria-selected="' + !i + '">' + esc(binName(sk)) + ' <small>' + (counts[sk] || 0) + '</small></button>').join('') + '</div>' +
       tables +
       '<p class="notice" style="font-size:.88rem">Solo se muestran las formas que aparecen en la Biblia hebrea, sin sufijos pronominales. «—» significa que esa forma no está atestiguada en el Tanaj (no que no exista en el hebreo). Toca una forma para abrir su primer versículo.</p>' +
-      '<div class="group-title"><h3>Hebreo bíblico y moderno</h3></div><p style="font-size:.95rem">La Biblia usa un sistema de aspecto: <b>qatal</b> (acción completa), <b>yiqtol</b> (incompleta o futura), y en los relatos <b>wayyiqtol</b> («y dijo») para el pasado y <b>weqatal</b> («y dirá») para el futuro o las instrucciones. El hebreo moderno tiene tres tiempos: pasado (formas qatal), presente (el participio) y futuro (formas yiqtol), y ya no usa wayyiqtol ni weqatal.</p>' +
+      '<div class="group-title"><h3>Hebreo bíblico y moderno</h3></div><p style="font-size:.95rem">La Biblia usa un sistema de aspecto: <b>qatal</b> (acción completa), <b>yiqtol</b> (incompleta o futura), y en los relatos <b>vayiqtol</b> («y dijo») para el pasado y <b>veqatal</b> («y dirá») para el futuro o las instrucciones. El hebreo moderno tiene tres tiempos: pasado (formas qatal), presente (el participio) y futuro (formas yiqtol), y ya no usa vayiqtol ni veqatal.</p>' +
       (related.length ? '<div class="group-title"><h3>Palabras con las mismas letras</h3></div><div class="rows">' + related.map(([k, L]) => '<a class="row" href="#lema-' + k + '"><span class="t"><b>' + esc(L[1]) + '</b><span>' + esc(L[3] || L[4] || '') + (L[3] ? '' : ' (inglés)') + '</span></span><span class="he" lang="he">' + esc(L[0]) + '</span></a>').join('') + '</div>' : '') +
       '<div class="group-title"><h3>Ejemplos en la Biblia</h3></div><div id="pl-ex"><div class="loading">Cargando versículos…</div></div>' +
       '<p class="muted" style="font-size:.8rem">Formas y análisis: Open Scriptures Hebrew Bible (CC BY 4.0).</p></div>';

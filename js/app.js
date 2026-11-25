@@ -2,7 +2,7 @@
    Aplicación principal (JavaScript sin dependencias). */
 (function () {
   'use strict';
-  const VERSION = '0.9.0';
+  const VERSION = '0.9.1';
   const EMBED = window.__BH_EMBED || null;
   const LOGO = (EMBED && EMBED.logo) || 'img/logo.webp';
   const LOGO_SM = (EMBED && (EMBED.logoSm || EMBED.logo)) || 'img/logo-sm.webp';
@@ -73,18 +73,7 @@
     try { return await p; } catch (e) { delete cache[k]; throw e; }
   }
   /* Libro con el español de la traducción elegida: celdas [español, hebreo, numeración hebrea, nota] */
-  async function getGr(code) { if (!BY[code].nt) return null; try { return await getJSON('gr/' + code + '.json'); } catch (e) { return null; } }
-  async function getBookV(code) {
-    const ver = prefs.ver; const k = 'v/' + ver + '/' + code + (prefs.greek ? '/g' : '');
-    if (cache[k]) return cache[k];
-    const p = (async () => {
-      const r = await getBookV0(code, ver);
-      if (prefs.greek && BY[code].nt) { const g = await getGr(code); if (g) return Object.assign({}, r, { c: r.c.map((ch, ci) => ch.map((cell, vi) => { const x = cell.slice(); while (x.length < 4) x.push(''); x[4] = (g.c[ci] || [])[vi] || ''; return x; })) }); }
-      return r;
-    })();
-    cache[k] = p;
-    try { return await p; } catch (e) { delete cache[k]; throw e; }
-  }
+  async function getBookV(code) { return getBookV0(code, prefs.ver); }
   async function getBookV0(code, ver) {
     const k = 'v0/' + ver + '/' + code;
     if (cache[k]) return cache[k];
@@ -300,7 +289,7 @@
 
   /* ---------- Análisis morfológico (Open Scriptures Hebrew Bible) ---------- */
   const STEM = { q: 'Qal', N: 'Nifal', p: 'Piel', P: 'Pual', h: 'Hifil', H: 'Hofal', t: 'Hitpael', o: 'Polel', O: 'Polal', r: 'Hitpolel', m: 'Poel', M: 'Poal', k: 'Palel', K: 'Pulal', Q: 'Qal pasivo', l: 'Pilpel', L: 'Polpal', f: 'Hitpalpel', D: 'Nitpael', j: 'Pealal', i: 'Pilel', u: 'Hotpaal', c: 'Tifil', v: 'Hishtafel', w: 'Nitpalel', y: 'Nitpoel', z: 'Hitpoel' };
-  const VTYPE = { p: 'pasado (perfecto, qatal)', q: 'perfecto con vav (weqatal)', i: 'futuro / imperfecto (yiqtol)', w: 'pasado narrativo (wayyiqtol)', h: 'cohortativo', j: 'yusivo', v: 'imperativo', r: 'participio activo', s: 'participio pasivo', a: 'infinitivo absoluto', c: 'infinitivo constructo' };
+  const VTYPE = { p: 'pasado (perfecto, qatal)', q: 'perfecto con vav (veqatal)', i: 'futuro / imperfecto (yiqtol)', w: 'pasado narrativo (vayiqtol)', h: 'cohortativo', j: 'yusivo', v: 'imperativo', r: 'participio activo', s: 'participio pasivo', a: 'infinitivo absoluto', c: 'infinitivo constructo' };
   const PER = { 1: '1.ª', 2: '2.ª', 3: '3.ª' }, GEN = { m: 'masc.', f: 'fem.', c: 'común', b: 'masc./fem.' }, NUM = { s: 'sing.', p: 'plural', d: 'dual' }, STATE = { a: '', c: 'constructo', d: 'determinado' };
   const PRON = { '3ms': 'él', '3fs': 'ella', '2ms': 'tú (m.)', '2fs': 'tú (f.)', '1cs': 'yo', '3mp': 'ellos', '3fp': 'ellas', '3cp': 'ellos/ellas', '2mp': 'vosotros', '2fp': 'vosotras', '1cp': 'nosotros' };
   function pgn(x) { const k = x.slice(0, 3); return (PRON[k] ? PRON[k] + ' (' : '') + [PER[x[0]], GEN[x[1]], NUM[x[2]]].filter(Boolean).join(' ') + (PRON[k] ? ')' : ''); }
@@ -365,7 +354,7 @@
     const col = HL()[id]; const note = NOTES()[id];
     return '<article class="v' + (col ? ' hlc hlc-' + col : '') + '" id="v' + (opt.anchor || v) + '" data-v="' + id + '" tabindex="0">' + h +
       '<p class="ref">' + esc(bookName(b)) + ' ' + c + ':' + v + hn + fav + (note ? '<span class="note-ic" aria-label="Tiene nota">📝</span>' : '') + '</p>' +
-      (cell[4] ? '<p class="gr-v" lang="el">' + esc(cell[4]) + '</p>' : '') + esHTML(cell) + (note ? noteHTML(note) : '') + '</article>';
+      esHTML(cell) + (note ? noteHTML(note) : '') + '</article>';
   }
   function esHTML(cell) {
     const st = cell[3];
@@ -449,7 +438,7 @@
   const dayIndex = d => Math.floor((Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())) / 864e5);
   const MODS = [
     ['biblia', 'book', 'Biblia', 'Tanaj y Brit Hadashá', 'תַּנַ״ךְ'],
-    ['diccionario', 'dict', 'Diccionario', 'Hebreo, raíces y griego', 'מִלּוֹן'],
+    ['diccionario', 'dict', 'Diccionario', 'Hebreo, raíces y conceptos', 'מִלּוֹן'],
     ['aprender', 'alef', 'Aprender hebreo', 'Escuela interactiva', 'עִבְרִית'],
     ['parashiot', 'scroll', 'Parashiot', 'Las 54 porciones', 'פָּרָשׁוֹת'],
     ['audio', 'play', 'Audio libro', 'Escucha las Escrituras', 'ספר שמע'],
@@ -866,7 +855,6 @@
       '<div class="group-title"><h3>Lectura</h3></div>' +
       '<div class="opt"><span class="t">Tamaño de letra<span>' + Math.round(prefs.scale * 100) + '%</span></span><span class="size-ctl"><button data-act="size-" aria-label="Reducir">A−</button><button data-act="size+" aria-label="Aumentar">A+</button></span></div>' +
       '<div class="opt"><span class="t">Idioma visible<span>Hebreo y español, solo hebreo o solo español</span></span><select data-act="set-view"><option value="ambos"' + (prefs.view === 'ambos' ? ' selected' : '') + '>Ambos</option><option value="he"' + (prefs.view === 'he' ? ' selected' : '') + '>Hebreo</option><option value="es"' + (prefs.view === 'es' ? ' selected' : '') + '>Español</option></select></div>' +
-      '<div class="opt"><span class="t">Griego en el Brit Hadashá<span>Statistical Restoration Greek New Testament (Alan Bunning, CNTR), licencia CC BY 4.0</span></span>' + sw(!!prefs.greek, 'tg-greek', 'Griego en el Brit Hadashá') + '</div>' +
       '<div class="opt"><span class="t">Signos de cantilación<span>Mostrar los te\'amim además de las vocales</span></span>' + sw(prefs.teamim, 'tg-teamim', 'Signos de cantilación') + '</div>' +
       '<div class="opt"><span class="t">Nombres hebreos<span>Adaptación de nombres sobre la Reina-Valera 1909</span></span>' + sw(prefs.nombres, 'tg-nombres', 'Nombres hebreos') + '</div>' +
       '<div class="opt"><span class="t">Traducción al español<span>' + esc(VERDESC[prefs.ver]) + '</span></span><select data-act="set-ver-sel">' + Object.keys(VERS).map(k => '<option value="' + k + '"' + (prefs.ver === k ? ' selected' : '') + '>' + esc(VERS[k].short) + '</option>').join('') + '</select></div>' +
@@ -1014,7 +1002,6 @@
       const [b, c, v] = el.dataset.id.split('-'); sheet('<h4>Comparar versiones: ' + esc(refOfId(el.dataset.id)) + '</h4><div class="loading">Cargando…</div>');
       const base = await getBook(b); const cell = base.c[c - 1][v - 1]; let h = '';
       if (cell[1] && cell[1] !== '^') h += '<div class="cmp"><span>' + (BY[b].nt ? 'Hebreo (traducción de Delitzsch, sin vocales)' : 'Hebreo (Códice de Leningrado)') + '</span><p class="he" lang="he">' + esc(heb(cell[1])) + '</p></div>';
-      if (BY[b].nt) { const g = await getGr(b); const t = g && (g.c[c - 1] || [])[v - 1]; if (t) h += '<div class="cmp"><span>Griego (Statistical Restoration GNT)</span><p lang="el" class="gr-v">' + esc(t) + '</p></div>'; }
       for (const k of Object.keys(VERS)) { let t = ''; if (k === 'rv') t = cell[0]; else { try { const e = await getEs(k, b); t = (e.c[c - 1] || [])[v - 1] || ''; } catch (x) { } } const save = prefs.ver; prefs.ver = k; const txt = t && t !== '^' ? es(t, true) : '<span class="muted">No figura en esta traducción.</span>'; prefs.ver = save; h += '<div class="cmp"><span>' + esc(VERS[k].name) + '</span><p>' + txt + '</p></div>'; }
       sheet('<h4>Comparar versiones: ' + esc(refOfId(el.dataset.id)) + '</h4>' + h + '<p class="muted" style="font-size:.8rem">Los nombres se muestran según la configuración de Beit Hatzirah (YAH, Yahshúa, Elohim…).</p>');
     },
@@ -1043,14 +1030,13 @@
       const cell = (await getBookV(b)).c[c - 1][v - 1]; shareImage({ he: cell[1] || '', es: es(cell[0]), ref: bookName(b) + ' ' + c + ':' + v, title: m.titulo });
     },
     'vocab-search': el => { searchQ = el.dataset.q; go('buscar'); },
-    'tg-greek': () => { prefs.greek = !prefs.greek; savePrefs(); vAjustes(); },
     'tg-teamim': () => { prefs.teamim = !prefs.teamim; savePrefs(); vAjustes(); },
     'tg-nombres': () => { prefs.nombres = !prefs.nombres; savePrefs(); vAjustes(); },
     'tg-orto': () => { prefs.orto = !prefs.orto; savePrefs(); vAjustes(); },
     'install': async () => { if (!deferredPrompt) return; deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt = null; vAjustes(); },
     'offline': async el => {
       const st = $('#offline-status'); el.disabled = true; let n = 0;
-      for (const b of BOOKS) { try { await Promise.all([fetch('data/b/' + b.c + '.json'), fetch('data/es/pdt/' + b.c + '.json'), fetch('data/es/blm/' + b.c + '.json'), fetch('data/es/rv65/' + b.c + '.json'), fetch('data/xref/' + b.c + '.json')].concat(b.nt ? [fetch('data/gr/' + b.c + '.json')] : [fetch('data/morph/' + b.c + '.json')])); n++; if (st) st.textContent = 'Guardando… ' + n + ' de 66 libros'; } catch (e) { } }
+      for (const b of BOOKS) { try { await Promise.all([fetch('data/b/' + b.c + '.json'), fetch('data/es/pdt/' + b.c + '.json'), fetch('data/es/blm/' + b.c + '.json'), fetch('data/es/rv65/' + b.c + '.json'), fetch('data/xref/' + b.c + '.json')].concat(b.nt ? [] : [fetch('data/morph/' + b.c + '.json')])); n++; if (st) st.textContent = 'Guardando… ' + n + ' de 66 libros'; } catch (e) { } }
       try { await Promise.all(['lexico.json', 'lemas.json', 'h2e.json', 'pealim/indice.json', 'pealim/binyanim.json'].concat([0, 1, 2, 3, 4, 5, 6, 7].map(i => 'pealim/p' + i + '.json')).map(f => fetch('data/' + f))); } catch (e) { }
       if (st) st.textContent = n === 66 ? 'Listo: los 66 libros están disponibles sin conexión.' : 'Se guardaron ' + n + ' de 66 libros. Vuelve a intentarlo con conexión.';
       el.disabled = false;

@@ -4,7 +4,7 @@ Biblioteca digital de las Sagradas Escrituras en hebreo y español.
 Proyecto y dirección de contenido: **Moreh Gabriel ben Eliyah**
 Autoridad rabínica: **Rab Eliyah ben Eleazar**
 
-Versión 0.9.0. Incluye el módulo «Yo aprendo hebreo con la Torá».
+Versión 0.9.1. Incluye el módulo «Yo aprendo hebreo con la Torá».
 
 ---
 
@@ -235,14 +235,20 @@ Aparece en: pantalla de bienvenida, encabezado de todas las pantallas (en el lec
 
 **Nombres divinos (YAH).** En español, el Nombre se presenta como YAH en las cuatro traducciones y en todo el contenido: Jehová/Yahvé/YAVÉ/JAH/Jah/YA → YAH; «Señor Jehová» → Adonay YAH; «Jehová de los ejércitos» → YAH Tzevaot; Aleluya → AleluYAH; Jesús/Jesu → Yahshúa. El hebreo original nunca se modifica. La palabra hebrea אֲדֹנָי (Adonai, «Señor») se conserva como Adonay, y el nombre de la organización «Testigos de Jehová» no se cambia. La voz lee el Nombre como «YAH». El generador de audio usa las mismas reglas.
 
-**Diccionario bíblico** (Menú → Diccionario): ficha de 8.638 palabras (hebreo, transliteración, pronunciación, significado, categoría, género, raíz, familia de palabras, frecuencia, primera aparición verificada, gematría, ejemplos y explicación cuando existe); explorador de 1.472 raíces (índice BDB); 21 nombres y títulos divinos; 22 términos hebreo-griego; diccionario temático; 10 expresiones idiomáticas; lugares y personajes; concordancia completa calculada sobre el texto hebreo; flashcards; favoritos e historial; buscador por hebreo, español, transliteración, raíz o número.
+**Diccionario bíblico** (Menú → Diccionario): ficha de 8.638 palabras (hebreo, transliteración, pronunciación, significado, categoría, género, raíz, familia de palabras, frecuencia, primera aparición verificada, gematría, ejemplos y explicación cuando existe); explorador de 1.472 raíces (índice BDB); 21 nombres y títulos divinos; diccionario temático; 10 expresiones idiomáticas; lugares y personajes; concordancia completa calculada sobre el texto hebreo; flashcards; favoritos e historial; buscador por hebreo, español, transliteración, raíz o número.
 
 **Gematría:** calculadora con teclado hebreo en pantalla, desglose letra por letra, Mispar Hejrejí, Gadol, Katán, Sidurí y reducción, palabras del Tanaj con el mismo valor, tabla de valores y aclaración de que no es prueba de doctrina. El valor numérico aparece también en el análisis de palabras y en las letras del curso.
 
-**Biblia:** Reina-Valera 1865 (dominio público) como cuarta traducción; texto griego del Brit Hadashá (Statistical Restoration GNT, CC BY 4.0) opcional en Configuración; «Comparar versiones» y «Referencias cruzadas» (OpenBible.info, CC BY) en cada versículo; el análisis de palabras enlaza al diccionario, PEALIM y la concordancia.
+**Biblia:** Reina-Valera 1865 (dominio público) como cuarta traducción; «Comparar versiones» y «Referencias cruzadas» (OpenBible.info, CC BY) en cada versículo; el análisis de palabras enlaza al diccionario, PEALIM y la concordancia.
 
 **Tefilot:** 55 tefilot. Nuevas categorías: Tehilim (Salmos 23, 121, 150), Fiestas (Salmo 117 y bendiciones de las fiestas), Agradecimiento (Salmo 100, Salmo 136), Arrepentimiento (Salmo 51, Hoshea 14) y nueve oraciones personales y familiares marcadas como «Composición devocional». Filtros por momento del día.
 
 **Búsqueda global:** botón de lupa del inicio; busca a la vez en la Biblia, el diccionario, Tefilot, Besorá, Parashiot, el curso, PEALIM y el calendario.
 
 **Pendiente (próximas etapas):** estudios completos por parashá, libro, personaje y tema (con objetivos, desarrollo y preguntas); ampliación de Besorá (Reino de Elohim, resurrección y demás temas faltantes); nuevos minijuegos y niveles del curso (ranking personal, desafíos semanales nuevos, animación del trazado); Brit Hadashá en hebreo con nikud (no se encontró una edición con licencia abierta accesible; la de Delitzsch disponible no tiene vocales); grabaciones de audio verificadas; asistente de inteligencia artificial (la app no tiene IA integrada: requeriría un servicio externo con costo).
+
+## 17. Ajuste global de contenido (versión 0.9.1)
+
+**Sin contenido de idioma griego.** Se eliminaron el texto griego del Brit Hadashá (y su carpeta de datos), la opción de mostrarlo, la línea griega en «Comparar versiones», la sección «Hebreo y griego» del diccionario y sus datos, las referencias a términos griegos en las fichas y los análisis basados en palabras griegas dentro de Besorá (se reescribieron desde el texto y el trasfondo hebreo). Se conservan todos los libros y versículos del Brit Hadashá en español y en hebreo. Las menciones a la Septuaginta se mantienen solo como dato histórico sobre el texto del Tanaj (Salmo 22:16 e Isaías 7:14), sin términos griegos.
+
+**Vav = V.** La letra ו se enseña y translitera siempre como V: se quitó «antigua w» del curso, las transliteraciones del léxico y de PEALIM se convirtieron a la forma de Beit Hatzirah (sin W), y los nombres de las formas verbales se escriben «vayiqtol» y «veqatal».
