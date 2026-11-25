@@ -88,7 +88,7 @@
     const concepts = await notesFor(k, L);
     const fav = s.fav.includes(k);
     B.view().innerHTML = B.top(esc(trOf(k)), { back: 'diccionario', right: '<button class="icon-btn" data-act="dc-fav" data-k="' + k + '" aria-label="Favorita">' + (fav ? '★' : '☆') + '</button>' }) + '<div class="wrap dc study">' +
-      '<div class="dc-head"><p class="he dc-word" lang="he">' + esc(L[0]) + '</p><h1>' + esc(trOf(k)) + '</h1><p class="dc-gloss">' + gloss(L) + '</p>' +
+      '<div class="dc-head">' + (EXT.wasp ? EXT.wasp.inline('land', 58, 'main', 'dc-wsp') : '') + '<p class="he dc-word" lang="he">' + esc(L[0]) + '</p><h1>' + esc(trOf(k)) + '</h1><p class="dc-gloss">' + gloss(L) + '</p>' +
       '<div class="btns" style="justify-content:center"><button class="btn" data-act="dc-say" data-h="' + esc(L[0]) + '">🔊 Pronunciación</button>' + (L[2] === 'v' ? '<a class="btn" href="#pealim-' + k + '">Conjugaciones (PEALIM)</a>' : '') + '<a class="btn" href="#concordancia-' + k + '">Concordancia</a>' + (L[3] ? '<button class="btn" data-act="dc-save" data-k="' + k + '">Guardar para repasar</button>' : '') + '</div></div>' +
       '<dl class="meta dc-meta"><dt>Categoría</dt><dd>' + esc(posName(L[2])) + '</dd>' +
       (/^n-[mf]/.test(L[2]) ? '<dt>Género y número</dt><dd>' + (L[2].startsWith('n-f') ? 'femenino' : 'masculino') + ', forma de diccionario (singular)</dd>' : '') +
@@ -96,7 +96,7 @@
       '<dt>Frecuencia</dt><dd>' + L[5].toLocaleString('es') + ' veces en el Tanaj</dd>' +
       '<dt>Primera aparición</dt><dd>' + (L[6] ? '<a href="#' + B.refRoute(L[6]) + '">' + esc(B.refLabel(L[6])) + '</a>' : '—') + '</dd>' +
       '<dt>Gematría</dt><dd><a href="#gematria" data-act="dc-gem" data-w="' + esc(plain(L[0])) + '">' + g.std + '</a> <span class="muted">(estándar) · ' + g.katan + ' (reducida) · ' + g.siduri + ' (ordinal)</span></dd>' +
-      '<dt>Strong</dt><dd>H' + k + '</dd></dl>' +
+      '<dt>Strong</dt><dd>H' + k + '</dd></dl>' + (EXT.wasp ? EXT.wasp.tip('diccionario', k, 'Consejo lingüístico') : '') +
       (concepts ? '<h2>Explicación</h2>' + concepts : '') +
       (fam.length ? '<h2>Familia de palabras</h2><div class="rows">' + fam.slice(0, 14).map(x => row(x)).join('') + '</div>' : '') +
       '<h2>Ejemplos en las Escrituras</h2><div id="dc-ex"><div class="loading">Cargando versículos…</div></div>' +
@@ -130,7 +130,7 @@
     await data();
     if (p[0] === 'raiz') {
       const r = decodeURIComponent(p.slice(1).join('-')); const key = Object.keys(RA).find(x => plain(x) === r); const ks = key ? RA[key] : [];
-      B.view().innerHTML = B.top('Raíz ' + esc(r.split('').join('־')), { back: 'dicraices' }) + '<div class="wrap dc"><div class="dc-head"><p class="he dc-word" lang="he">' + esc(r.split('').join('־')) + '</p><p class="muted">' + ks.length + ' palabras de esta raíz en el Tanaj (según el índice Brown-Driver-Briggs)</p></div>' +
+      B.view().innerHTML = B.top('Raíz ' + esc(r.split('').join('־')), { back: 'dicraices' }) + '<div class="wrap dc"><div class="dc-head">' + (EXT.wasp ? EXT.wasp.inline('observe', 58, 'main', 'dc-wsp') : '') + '<p class="he dc-word" lang="he">' + esc(r.split('').join('־')) + '</p><p class="muted">' + ks.length + ' palabras de esta raíz en el Tanaj (según el índice Brown-Driver-Briggs)</p></div>' +
         '<div class="rows">' + ks.map(k => row(k, posName(LX[k][2]) + ' · ' + LX[k][5] + ' veces')).join('') + '</div>' +
         (ks.some(k => LX[k][2] === 'v') ? '<p><a class="btn" href="#pealim-' + ks.find(k => LX[k][2] === 'v') + '">Ver las conjugaciones del verbo</a></p>' : '') + '</div>';
       return;
@@ -214,7 +214,7 @@
     await data();
     const ex = [['חי', 'Jai', 'vida'], ['אהבה', 'Ahavá', 'amor'], ['אחד', 'Ejad', 'uno'], ['דוד', 'David', ''], ['שלום', 'Shalom', 'paz']];
     B.view().innerHTML = B.top('Gematría', { back: 'diccionario' }) + '<div class="wrap dc study"><div class="dc-head"><p class="he dc-word" lang="he">גִּימַטְרִיָּה</p><h1>Gematría</h1><p class="muted">El valor numérico de las letras hebreas</p></div>' +
-      '<div class="notice"><b>Importante.</b> La gematría es una herramienta tradicional de interpretación y estudio. Las coincidencias numéricas pueden invitar a la reflexión, pero no son una prueba de doctrina ni una demostración de profecías.</div>' +
+      (EXT.wasp ? EXT.wasp.tip('gematria', 1, 'Importante') : '') + '<div class="notice"><b>Importante.</b> La gematría es una herramienta tradicional de interpretación y estudio. Las coincidencias numéricas pueden invitar a la reflexión, pero no son una prueba de doctrina ni una demostración de profecías.</div>' +
       '<div class="field"><input id="gq" dir="rtl" lang="he" placeholder="Escribe una palabra hebrea" aria-label="Palabra hebrea" value="שלום" style="font-family:var(--hebrew);font-weight:700;font-size:1.4rem"></div><div class="dc-kbd">' + kbd('gq') + '</div>' +
       '<div id="gout"></div>' +
       '<h2>Ejemplos</h2><div class="dc-ex">' + ex.map(([w, t, s]) => '<button class="dc-exb" data-act="dc-gem" data-w="' + w + '">' + he(w) + '<b>' + gematria(w).std + '</b><small>' + t + (s ? ' (' + s + ')' : '') + '</small></button>').join('') + '</div>' +
@@ -226,7 +226,7 @@
     const inp = document.getElementById('gq'); const out = document.getElementById('gout'); if (!inp || !out) return;
     const g = gematria(inp.value); if (!g.rows.length) { out.innerHTML = '<p class="muted">Escribe letras hebreas.</p>'; return; }
     const eq = Object.keys(LX).filter(k => gematria(LX[k][0]).std === g.std && plain(LX[k][0]) !== plain(inp.value)).sort((a, b) => (LX[b][3] ? 1 : 0) - (LX[a][3] ? 1 : 0) || LX[b][5] - LX[a][5]).slice(0, 16);
-    out.innerHTML = '<div class="dc-gres"><div class="dc-gbig"><span>' + g.std + '</span><small>Mispar Hejrejí</small></div><div class="dc-gm"><div><b>' + g.gadol + '</b><small>Gadol</small></div><div><b>' + g.katan + '</b><small>Katán</small></div><div><b>' + g.siduri + '</b><small>Sidurí</small></div><div><b>' + g.reducido + '</b><small>Reducción</small></div></div></div>' +
+    out.innerHTML = '<div class="dc-gres">' + (EXT.wasp ? EXT.wasp.inline('land', 64, 'main') : '') + '<div class="dc-gbig"><span>' + g.std + '</span><small>Mispar Hejrejí</small></div><div class="dc-gm"><div><b>' + g.gadol + '</b><small>Gadol</small></div><div><b>' + g.katan + '</b><small>Katán</small></div><div><b>' + g.siduri + '</b><small>Sidurí</small></div><div><b>' + g.reducido + '</b><small>Reducción</small></div></div></div>' +
       '<div class="dc-break" dir="rtl">' + g.rows.map(r => '<div>' + he(r.ch, 'dc-gl') + '<b>' + r.std + '</b><small>' + esc(r.name) + '</small></div>').join('<span>+</span>') + '</div>' +
       '<h3 style="margin-top:18px">Palabras del Tanaj con el mismo valor (' + g.std + ')</h3>' + (eq.length ? '<div class="rows">' + eq.map(k => row(k)).join('') + '</div>' : '<p class="muted">No hay otras palabras del léxico con este valor.</p>') +
       '<p class="dc-note">Las coincidencias se buscan entre las formas de diccionario del léxico bíblico. Son una herramienta de estudio, no una interpretación.</p>';

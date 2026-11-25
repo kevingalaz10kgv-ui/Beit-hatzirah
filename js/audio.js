@@ -240,6 +240,7 @@
   }
   function renderPlayer() {
     const pr = prefs(); const btn = document.getElementById('au-play');
+    const aw = document.querySelector('.au-wsp'); if (aw) { aw.classList.toggle('m-hover', P.playing); aw.classList.toggle('m-still', !P.playing); }
     if (btn) { btn.innerHTML = P.playing ? '❚❚' : '▶'; btn.setAttribute('aria-label', P.playing ? 'Pausar' : 'Reproducir'); }
     document.querySelectorAll('[data-act="au-rate"]').forEach(b => b.setAttribute('aria-pressed', +b.dataset.r === pr.rate));
     const rp = document.getElementById('au-rep'); if (rp) { rp.textContent = { none: '🔁 Sin repetir', verse: '🔂 Repetir pasuq', chapter: '🔁 Repetir capítulo' }[pr.repeat]; rp.setAttribute('aria-pressed', pr.repeat !== 'none'); }
@@ -285,7 +286,7 @@
       '</div>' +
       '<div class="au-player" role="region" aria-label="Reproductor">' +
       '<div class="au-prog" data-act="au-seek" role="slider" aria-label="Progreso del capítulo" tabindex="0"><i id="au-bar"></i></div>' +
-      '<div class="au-row1"><span id="au-vn"></span><span id="au-time"></span></div>' +
+      '<div class="au-row1">' + (EXT.wasp ? EXT.wasp.inline('still', 30, 'simple', 'au-wsp') : '') + '<span id="au-vn"></span><span id="au-time"></span></div>' +
       '<div class="au-ctrls"><button data-act="au-prev" aria-label="Versículo anterior">⏮</button><button id="au-play" class="au-main" data-act="au-toggle" aria-label="Reproducir">▶</button><button data-act="au-next" aria-label="Versículo siguiente">⏭</button></div>' +
       '<div class="au-row2"><div class="au-rates" role="group" aria-label="Velocidad">' + [0.75, 1, 1.25, 1.5].map(r => '<button data-act="au-rate" data-r="' + r + '">' + r + 'x</button>').join('') + '</div>' +
       '<label class="au-vol"><span aria-hidden="true">🔊</span><input type="range" min="0" max="1" step="0.1" value="' + pr.vol + '" data-act="au-vol" aria-label="Volumen de la voz"></label></div>' +

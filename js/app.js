@@ -2,7 +2,7 @@
    Aplicación principal (JavaScript sin dependencias). */
 (function () {
   'use strict';
-  const VERSION = '0.10.0';
+  const VERSION = '0.11.0';
   const EMBED = window.__BH_EMBED || null;
   const LOGO = (EMBED && EMBED.logo) || 'img/logo.webp';
   const LOGO_SM = (EMBED && (EMBED.logoSm || EMBED.logo)) || 'img/logo-sm.webp';
@@ -481,7 +481,7 @@
       (cont.length ? '<section class="cont-row">' + cont.join('') + '</section>' : '') +
       parHTML +
       '<section class="section"><h3 class="h-sec">Explorar</h3><div class="mod-grid">' + MODS.map(([r, i, t, sub, h]) => '<a class="mod" href="#' + r + '"><span class="mod-ic">' + ic(i) + '</span><b>' + esc(t) + '</b><small>' + esc(sub) + '</small><span class="he mod-he" lang="he">' + esc(h) + '</span></a>').join('') + '</div></section>' +
-      '<section class="section two"><a class="card-msg" href="#mensaje"><small>Mensaje diario · דְּבַר הַיּוֹם</small><b>' + esc(msg.titulo) + '</b><span>' + esc(refLabel(msg.ref)) + '</span></a></section>' +
+      '<section class="section two"><a class="card-msg" href="#mensaje">' + (EXT.wasp ? EXT.wasp.inline('hover', 64, 'main', 'msg-wsp') : '') + '<small>Mensaje diario · דְּבַר הַיּוֹם</small><b>' + esc(msg.titulo) + '</b><span>' + esc(refLabel(msg.ref)) + '</span></a></section>' +
       '<section class="section"><h3 class="h-sec">Versículo destacado</h3><div class="verses feat">' + verseHTML(fb, fc, fv, fd) + '</div></section>' +
       '<section class="section"><h3 class="h-sec">Últimas publicaciones</h3><div class="rows">' +
       E.publicaciones.map(p => '<div class="row"><span class="t"><b>' + esc(p.titulo) + '</b><span>' + esc(fmtDate(fromISO(p.fecha), { day: 'numeric', month: 'long', year: 'numeric' })) + '. ' + esc(p.texto) + '</span></span></div>').join('') +
@@ -627,7 +627,7 @@
     const prev = P[n - 2], next = P[n];
     view().innerHTML = top(esc(p.tr), { back: 'parashiot', right: '<button class="icon-btn" data-act="p-share" data-n="' + n + '" aria-label="Compartir">' + ic('share') + '</button>' }) +
       '<div class="wrap study"><div class="reader-head"><p class="he parasha-name" lang="he">' + esc(p.he) + '</p><h2>' + esc(p.tr) + '</h2>' +
-      '<p class="muted" style="margin:0">' + esc(p.sig) + '. Parashá ' + n + ' de 54' + (isCur ? '. Lectura de esta semana' : '') + '</p></div>' +
+      '<p class="muted" style="margin:0">' + esc(p.sig) + '. Parashá ' + n + ' de 54' + (isCur ? '. Lectura de esta semana' : '') + '</p></div>' + (EXT.wasp ? EXT.wasp.tip('estudio', n, 'Antes de comenzar') : '') +
       '<dl class="meta"><dt>Libro</dt><dd>' + esc(BY[p.lec.b].tr) + ' (' + esc(BY[p.lec.b].es) + ')</dd>' +
       '<dt>Lectura</dt><dd><a href="#lectura-' + n + '">' + esc(fmtRange(p.lec)) + '</a></dd>' +
       '<dt>Haftará</dt><dd>' + haft.map(r => '<a href="#haftara-' + n + '">' + esc(fmtRange(r)) + '</a>').join('; ') + (p.seph ? '<br><span class="muted" style="font-size:.85rem">Costumbre ' + (prefs.haft === 'seph' ? 'sefaradí' : 'ashkenazí') + '</span>' : '') + '</dd></dl>' +
@@ -648,7 +648,7 @@
   async function vEstudios() {
     const E = await getJSON('estudios.json');
     view().innerHTML = top('Estudios', { back: 'menu' }) + '<div class="wrap">' +
-      '<div class="reader-head sec-head"><img class="sec-logo" src="' + LOGO + '" alt=""><p class="he" lang="he">בֵּית מִדְרָשׁ</p><h2>Biblioteca de estudios</h2></div>' +
+      '<div class="reader-head sec-head"><img class="sec-logo" src="' + LOGO + '" alt=""><p class="he" lang="he">בֵּית מִדְרָשׁ</p><h2>Biblioteca de estudios</h2></div>' + (EXT.wasp ? EXT.wasp.tip('estudio') : '') +
       '<div class="group-title"><h3>Disponible ahora</h3></div><div class="rows">' +
       '<a class="row" href="#parashiot"><span class="t"><b>Estudios de las parashiot</b><span>54 porciones con resumen, personajes, temas y lectura bilingüe</span></span><span class="pill ok">Disponible</span></a>' +
       '<a class="row" href="#vocabulario"><span class="t"><b>Estudios de palabras hebreas</b><span>Vocabulario con referencias verificadas</span></span><span class="pill ok">Disponible</span></a>' +
@@ -856,7 +856,7 @@
       '<div class="group-title"><h3>Lectura</h3></div>' +
       '<div class="opt"><span class="t">Tamaño de letra<span>' + Math.round(prefs.scale * 100) + '%</span></span><span class="size-ctl"><button data-act="size-" aria-label="Reducir">A−</button><button data-act="size+" aria-label="Aumentar">A+</button></span></div>' +
       '<div class="opt"><span class="t">Idioma visible<span>Hebreo y español, solo hebreo o solo español</span></span><select data-act="set-view"><option value="ambos"' + (prefs.view === 'ambos' ? ' selected' : '') + '>Ambos</option><option value="he"' + (prefs.view === 'he' ? ' selected' : '') + '>Hebreo</option><option value="es"' + (prefs.view === 'es' ? ' selected' : '') + '>Español</option></select></div>' +
-      '<div class="opt"><span class="t">La avispa en el curso de hebreo<span>Mascota que acompaña las lecciones con ánimo y consejos</span></span>' + sw(!EXT.wasp || EXT.wasp.enabled(), 'wsp-toggle', 'La avispa en el curso de hebreo') + '</div>' +
+      '<div class="opt"><span class="t">Animaciones de la avispa<span>Al desactivarlas, la avispa sigue presente pero sin movimiento</span></span>' + sw(!EXT.wasp || EXT.wasp.enabled(), 'wsp-toggle', 'Animaciones de la avispa') + '</div>' +
       '<div class="opt"><span class="t">Signos de cantilación<span>Mostrar los te\'amim además de las vocales</span></span>' + sw(prefs.teamim, 'tg-teamim', 'Signos de cantilación') + '</div>' +
       '<div class="opt"><span class="t">Nombres hebreos<span>Adaptación de nombres sobre la Reina-Valera 1909</span></span>' + sw(prefs.nombres, 'tg-nombres', 'Nombres hebreos') + '</div>' +
       '<div class="opt"><span class="t">Traducción al español<span>' + esc(VERDESC[prefs.ver]) + '</span></span><select data-act="set-ver-sel">' + Object.keys(VERS).map(k => '<option value="' + k + '"' + (prefs.ver === k ? ' selected' : '') + '>' + esc(VERS[k].short) + '</option>').join('') + '</select></div>' +

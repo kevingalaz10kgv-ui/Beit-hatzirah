@@ -4,7 +4,7 @@ Biblioteca digital de las Sagradas Escrituras en hebreo y español.
 Proyecto y dirección de contenido: **Moreh Gabriel ben Eliyah**
 Autoridad rabínica: **Rab Eliyah ben Eleazar**
 
-Versión 0.10.0. Incluye el módulo «Yo aprendo hebreo con la Torá».
+Versión 0.11.0. Incluye el módulo «Yo aprendo hebreo con la Torá».
 
 ---
 
@@ -264,3 +264,24 @@ Aparece en: pantalla de bienvenida, encabezado de todas las pantallas (en el lec
 Las expresiones hebreas de sus mensajes llevan traducción: Shalom (paz), Kol hakavod (muy bien hecho), Yofí (qué bien), Jazak (sé fuerte), Todá (gracias). Se desactiva en Configuración → «La avispa en el curso de hebreo», y no se anima si el teléfono tiene activado «reducir movimiento».
 
 **Estudio de imágenes de versículos.** Al tocar un versículo → «Imagen para compartir», o desde el Mensaje diario. Seis estilos (Minimalista, Inspiración bíblica, Hebreo original, Pergamino, Cinematográfico, Moderno), seis paisajes (amanecer, desierto, montañas, olivos, mar de Galilea, cielo estrellado), tres formatos (1:1, 4:5, 9:16) e idioma (español, hebreo o ambos). Los fondos son ilustraciones pintadas por la app; el texto se compone después con tipografía real, sin modificar el versículo y con la configuración de nombres (YAH). El estilo «Hebreo original» incluye transliteración automática con las reglas de Beit Hatzirah (ו = v), que conviene revisar antes de compartir. En el Brit Hadashá, el hebreo es la traducción de Delitzsch, sin vocales. Botones «Compartir» (cuando el teléfono lo permite) y «Descargar».
+
+## 19. La avispa oficial, inspirada en el emblema (versión 0.11)
+
+**Diseño.** La avispa anterior, de estilo caricaturesco, se reemplazó por una ilustración vectorial inspirada en la avispa del emblema: acabado metálico (plata, acero, grafito), cintura fina, abdomen afilado con bandas, tórax robusto con textura, ojo compuesto oscuro, mandíbulas, antenas segmentadas y alas con nervaduras. El logo oficial no se modificó.
+
+**Sistema gráfico (js/avispa-arte.js).** Una sola anatomía y cuatro versiones: principal (detallada, con luces y sombras), simplificada (espacios pequeños, pantallas de carga, mensajes), monocromática (usa el color del texto: sirve sobre fondos claros u oscuros) e insignia (en un anillo metálico, para logros).
+
+**Animaciones.** Vuelo suave (llegada), vuelo estacionario, aterrizaje, observación (leve giro de cabeza), celebración (vuelo circular y regreso), enseñanza (se inclina hacia la letra) y espera (casi inmóvil). Sin rebotes ni gestos infantiles.
+
+**Presencia por contexto.**
+- Inicio: pequeña, en vuelo estacionario junto al Mensaje diario.
+- Curso de hebreo: guía; se posa en el encabezado del curso, de cada lección y de los resultados; señala letras, mueve las alas al escuchar, celebra, anima y da consejos (sus mensajes aparecen dentro de la página, nunca encima de opciones o botones).
+- Diccionario: aterriza junto a la palabra consultada y observa en el análisis de raíces; consejo lingüístico en cada ficha.
+- Estudios y parashiot: consejo de estudio al comenzar.
+- Gematría: aterriza junto al resultado; nota de prudencia.
+- Audio libro: pequeña junto al reproductor; solo mueve las alas mientras suena el audio.
+- Tefilot: pequeña y quieta en la introducción de cada oración.
+- Logros: celebración breve al subir de nivel, aprobar una unidad o ganar una insignia; insignia de la avispa en el perfil de aprendizaje.
+- Cargas y estados vacíos: la avispa simplificada vuela en las pantallas de carga y acompaña los mensajes de «sin contenido».
+
+**Configuración.** «Animaciones de la avispa»: al desactivarlas, la avispa sigue presente (identidad gráfica) pero sin movimiento. También se respeta la opción «reducir movimiento» del teléfono.

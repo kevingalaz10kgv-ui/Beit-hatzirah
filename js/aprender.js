@@ -77,7 +77,7 @@
     verbos: ['💬', 'Conjugador', 'Practica las conjugaciones de un verbo en PEALIM'],
     temas: ['🗺️', 'Explorador', 'Aprueba un mundo temático completo']
   };
-  function award(s, id) { if (s.badges[id]) return; s.badges[id] = Date.now(); setTimeout(() => B.toast('Insignia: ' + BADGES[id][1] + ' ' + BADGES[id][0]), 600); }
+  function award(s, id) { if (s.badges[id]) return; s.badges[id] = Date.now(); if (EXT.wasp) setTimeout(() => EXT.wasp.badge(BADGES[id][0]), 2200); setTimeout(() => B.toast('Insignia: ' + BADGES[id][1] + ' ' + BADGES[id][0]), 600); }
   function checkBadges(s) {
     if (s.st.lessons >= 1) award(s, 'first');
     const worldDone = w => DATA.worlds.find(x => x.id === w).units.every(u => s.units[u.id] && s.units[u.id].passed);
@@ -569,7 +569,7 @@
     const lv = levelOf(s.xp);
     const words = o.items ? o.items.filter(x => x.ref).slice(0, 4) : [];
     B.view().innerHTML = '<div class="lx" style="--wc:' + o.color + '"><div class="lx-body center">' +
-      '<div class="lx-emoji big">' + (pct >= 80 ? '🎉' : '💪') + '</div><h2>' + esc(msg) + '</h2>' + extra +
+      '<div class="lx-dock"><span class="lx-hero-slot"></span><p class="lx-hero-say" aria-live="polite"></p></div>' + '<div class="lx-emoji big">' + (pct >= 80 ? '🎉' : '💪') + '</div><h2>' + esc(msg) + '</h2>' + extra +
       '<div class="lx-stats"><div><b>' + pct + '%</b><span>aciertos</span></div><div><b>+' + o.xp + '</b><span>XP</span></div><div><b>+' + o.coins + '</b><span>monedas</span></div><div><b>🔥 ' + s.streak.n + '</b><span>racha</span></div></div>' +
       '<p class="muted">Nivel ' + lv + '. Tiempo: ' + Math.round((Date.now() - o.start) / 1000) + ' s</p>' +
       (words.length ? '<div class="lx-torah"><p><b>En la Torá</b></p>' + words.map(w => '<a href="#' + B.refRoute(w.ref) + '">' + he(w.he, 'lx-opt-he') + ' ' + esc(B.refLabel(w.ref)) + '</a>').join('') + '</div>' : '') +
@@ -607,7 +607,7 @@
       map += '</div></section>';
     });
     B.view().innerHTML = B.top('Aprender hebreo', { right: '<a class="icon-btn" href="#perfil-hebreo" aria-label="Mi perfil">👤</a>' }) +
-      '<div class="wrap lx-home"><div class="lx-hero"><img class="sec-logo" src="' + B.LOGO + '" alt=""><p class="he" lang="he">אֲנִי לוֹמֵד עִבְרִית עִם הַתּוֹרָה</p><h2>Yo aprendo hebreo con la Torá</h2>' + stats(s) + '</div>' +
+      '<div class="wrap lx-home"><div class="lx-hero"><img class="sec-logo" src="' + B.LOGO + '" alt=""><p class="he" lang="he">אֲנִי לוֹמֵד עִבְרִית עִם הַתּוֹרָה</p><h2>Yo aprendo hebreo con la Torá</h2><div class="lx-dock"><span class="lx-hero-slot"></span><p class="lx-hero-say" aria-live="polite"></p></div>' + stats(s) + '</div>' +
       '<div class="lx-actions"><button class="lx-big" data-act="lx-unit" data-u="' + nx.id + '" style="--wc:' + nx.world.color + '"><span>Continuar</span><b>' + esc(nx.name) + '</b><small>' + (nx.world.theme ? 'Mundo temático' : 'Mundo ' + nx.world.n) + '. 3 a 5 minutos</small></button>' +
       '<div class="lx-mini"><a href="#repaso" class="' + (due ? 'hot' : '') + '">🔁<b>Repasar</b><span>' + due + ' por repasar</span></a><a href="#parasha-hebreo">📜<b>Hebreo de la parashá</b><span>Vocabulario de esta semana</span></a><a href="#contrarreloj">⚡<b>Contrarreloj</b><span>60 segundos</span></a><a href="#mis-palabras">🗂️<b>Mis palabras</b><span>Dominio y próximo repaso</span></a><a href="#gematria">🔢<b>Gematría</b><span>Valor numérico de las palabras</span></a><a href="#diccionario">📖<b>Diccionario</b><span>Palabras, raíces y flashcards</span></a></div></div>' +
       (hasVoice() ? '' : '<p class="notice">Este teléfono no tiene una voz en hebreo instalada, así que los ejercicios de escuchar están ocultos. En iPhone: Ajustes → Accesibilidad → Contenido leído → Voces → Hebreo. En Android: Ajustes → Texto a voz → instala el idioma hebreo.</p>') +
@@ -700,7 +700,7 @@
     const acc = s.st.tot ? Math.round(s.st.ok / s.st.tot * 100) : 0;
     const cont = s.last && UNIT[s.last] ? UNIT[s.last] : nextUnit(s);
     B.view().innerHTML = B.top('Mi perfil de aprendizaje', { back: 'aprender' }) + '<div class="wrap">' +
-      '<div class="lx-hero"><div class="lx-level">' + lv + '</div><h2>Nivel ' + lv + '</h2><div class="progress"><i style="width:' + Math.round((s.xp - a) / (b - a) * 100) + '%"></i></div><p class="muted" style="margin:0">' + s.xp + ' XP. Faltan ' + (b - s.xp) + ' XP para el nivel ' + (lv + 1) + '.</p></div>' +
+      '<div class="lx-hero">' + (EXT.wasp ? '<span class="lx-badge-wsp">' + EXT.wasp.art('badge') + '</span>' : '') + '<div class="lx-level">' + lv + '</div><h2>Nivel ' + lv + '</h2><div class="progress"><i style="width:' + Math.round((s.xp - a) / (b - a) * 100) + '%"></i></div><p class="muted" style="margin:0">' + s.xp + ' XP. Faltan ' + (b - s.xp) + ' XP para el nivel ' + (lv + 1) + '.</p></div>' +
       '<div class="lx-stats wide"><div><b>🔥 ' + s.streak.n + '</b><span>días seguidos</span></div><div><b>' + passed + '/' + UNITS.length + '</b><span>unidades</span></div><div><b>' + words + '</b><span>palabras aprendidas</span></div><div><b>' + letters + '/27</b><span>letras dominadas</span></div><div><b>' + acc + '%</b><span>aciertos</span></div><div><b>' + dueItems(s).length + '</b><span>por repasar</span></div><div><b>🪙 ' + s.coins + '</b><span>monedas</span></div><div><b>⚡ ' + s.st.speed + '</b><span>récord contrarreloj</span></div></div>' +
       '<div class="btns"><a class="btn solid" href="#leccion-' + cont.id + '-l">Continuar: ' + esc(cont.name) + '</a><a class="btn" href="#mis-palabras">Mis palabras</a></div>' +
       '<div class="group-title"><h3>Insignias</h3></div><div class="lx-badges">' + Object.entries(BADGES).map(([k, [ic, n, d]]) => '<div class="lx-badge' + (s.badges[k] ? ' got' : '') + '" title="' + esc(d) + '"><span>' + esc(ic) + '</span><b>' + esc(n) + '</b><small>' + esc(d) + '</small></div>').join('') + '</div>' +
