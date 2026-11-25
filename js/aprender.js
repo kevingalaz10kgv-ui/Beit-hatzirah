@@ -121,6 +121,7 @@
     const u = new SpeechSynthesisUtterance(text.replace(/י[\u05B0-\u05C7]*ה[\u05B0-\u05C7]*ו[\u05B0-\u05C7]*ה[\u05B0-\u05C7]*/g, 'יָהּ').replace(/־/g, ' '));
     u.lang = voice.lang; u.voice = voice; u.rate = slow ? 0.55 : 0.85;
     speechSynthesis.cancel(); speechSynthesis.speak(u);
+    if (EXT.wasp) EXT.wasp.buzz();
   }
   const sayText = it => it.kind === 'letters' || it.kind === 'vowels' ? (it.name || it.he) : it.he;
   const audioBtns = it => '<span class="lx-audio"><button class="lx-sound" data-act="lx-say" data-id="' + it.id + '" aria-label="Escuchar">🔊</button><button class="lx-sound" data-act="lx-say" data-slow="1" data-id="' + it.id + '" aria-label="Escuchar lento">🐢</button></span>';
@@ -208,12 +209,13 @@
     SES.total = SES.q.length;
     document.body.classList.add('in-lesson');
     renderEx();
+    if (EXT.wasp) EXT.wasp.lesson();
   }
   function header() {
     const p = Math.min(100, Math.round(SES.i / SES.q.length * 100));
     const el = Math.floor((Date.now() - SES.start) / 1000);
     const time = SES.mode === 'speed' ? Math.max(0, Math.ceil((SES.deadline - Date.now()) / 1000)) + ' s' : Math.floor(el / 60) + ':' + String(el % 60).padStart(2, '0');
-    return '<div class="lx-top"><button class="icon-btn" data-act="lx-quit" aria-label="Salir de la lección">✕</button>' +
+    return '<div class="lx-top"><button class="icon-btn" data-act="lx-quit" aria-label="Salir de la lección">✕</button><span class="lx-wsp-slot"></span>' +
       '<div class="lx-bar" role="progressbar" aria-valuenow="' + p + '" aria-valuemin="0" aria-valuemax="100"><i style="width:' + p + '%;background:' + SES.color + '"></i></div>' +
       (SES.mode === 'lesson' ? '<span class="lx-hearts" aria-label="Corazones">❤️ ' + SES.hearts + '</span>' : '') +
       '<span class="lx-time" id="lx-time" aria-label="Tiempo">⏱ ' + time + '</span></div>';
@@ -245,7 +247,7 @@
     const sub = it.tr ? '<span class="lx-tr">' + esc(it.tr) + '</span>' : '';
     switch (ex.t) {
       case 'intro': {
-        const isG = isGlyph(it);
+        const isG = isGlyph(it); if (EXT.wasp) setTimeout(() => EXT.wasp.letter(it), 300);
         body = '<p class="lx-kicker">Nueva ' + (it.kind === 'letters' ? 'letra' : it.kind === 'vowels' ? 'vocal' : it.kind === 'phrases' ? 'frase' : 'palabra') + '</p>' +
           '<div class="lx-card intro">' + (it.em ? '<div class="lx-emoji" aria-hidden="true">' + it.em + '</div>' : '') +
           he(it.he, isG ? 'lx-glyph' : (it.kind === 'phrases' ? 'lx-phrase' : 'lx-word')) +
@@ -374,6 +376,7 @@
     if (ex.t !== 'intro' && ex.t !== 'orderVerse') srsUpdate(s, ex.it.id, ok);
     if (ex.t === 'orderVerse') (SES.unit.items || []).forEach(x => srsUpdate(s, x.id, ok));
     SES.tot++; s.st.tot++;
+    if (EXT.wasp) { if (ok) { SES.combo = (SES.combo || 0) + 1; EXT.wasp.ok(SES.combo); } else { SES.combo = 0; EXT.wasp.bad(); } }
     if (ok) { SES.ok++; s.st.ok++; week(s).ok++; SES.xp += SES.mode === 'review' ? 5 : 10; SES.coins += 1; xpFloat(SES.mode === 'review' ? 5 : 10); }
     else {
       SES.wrongIds.add(ex.it.id);
@@ -559,7 +562,9 @@
       B.view().innerHTML = '<div class="lx" style="--wc:#C6A15B"><div class="lx-body center"><div class="lx-emoji big">🎯</div><h2>Tu punto de partida</h2><p>' + esc(LVLS.find(x => x[0] === lvl)[1]) + '</p><p class="muted">Aciertos: ' + o.ok + ' de ' + o.tot + '. Puedes repasar cualquier unidad anterior cuando quieras.</p><a class="btn solid" href="#aprender">Ir al mapa</a></div></div>';
       return;
     }
+    const lvBefore = levelOf(s.xp);
     s.xp += o.xp; s.coins += o.coins; touchStreak(s); checkBadges(s); save(s);
+    if (EXT.wasp) setTimeout(() => { if (levelOf(s.xp) > lvBefore) EXT.wasp.level(); else if (o.mode === 'exam' && pct >= 80) EXT.wasp.unit(); else if (pct >= 80) EXT.wasp.done(); else EXT.wasp.say('¡Ánimo! Repasar también es avanzar.'); }, 400);
     SES = null; document.body.classList.remove('in-lesson');
     const lv = levelOf(s.xp);
     const words = o.items ? o.items.filter(x => x.ref).slice(0, 4) : [];
@@ -607,6 +612,7 @@
       '<div class="lx-mini"><a href="#repaso" class="' + (due ? 'hot' : '') + '">🔁<b>Repasar</b><span>' + due + ' por repasar</span></a><a href="#parasha-hebreo">📜<b>Hebreo de la parashá</b><span>Vocabulario de esta semana</span></a><a href="#contrarreloj">⚡<b>Contrarreloj</b><span>60 segundos</span></a><a href="#mis-palabras">🗂️<b>Mis palabras</b><span>Dominio y próximo repaso</span></a><a href="#gematria">🔢<b>Gematría</b><span>Valor numérico de las palabras</span></a><a href="#diccionario">📖<b>Diccionario</b><span>Palabras, raíces y flashcards</span></a></div></div>' +
       (hasVoice() ? '' : '<p class="notice">Este teléfono no tiene una voz en hebreo instalada, así que los ejercicios de escuchar están ocultos. En iPhone: Ajustes → Accesibilidad → Contenido leído → Voces → Hebreo. En Android: Ajustes → Texto a voz → instala el idioma hebreo.</p>') +
       map + '<p class="muted" style="font-size:.82rem;margin:20px 0">Las palabras se presentan en hebreo bíblico, con vocales. La voz es sintética, del propio teléfono, y usa la pronunciación israelí moderna; no es una grabación del hebreo antiguo.</p></div>';
+    if (EXT.wasp && (!window.__wspHome || Date.now() - window.__wspHome > 60000)) { window.__wspHome = Date.now(); EXT.wasp.home(); } else if (EXT.wasp) EXT.wasp.show('home');
   }
   EXT.act['lx-claim'] = el => { const s = S(); const wk = week(s); const g = GOALS.find(x => x[0] === el.dataset.g); if (!g || wk.claimed.includes(g[0]) || (wk[g[0]] || 0) < g[2]) return; wk.claimed.push(g[0]); s.coins += g[3]; if (wk.claimed.length === 4) award(s, 'semana'); save(s); B.toast('+' + g[3] + ' monedas 🪙'); vAprender(); };
   EXT.act['lx-daily'] = async () => {
@@ -655,6 +661,7 @@
     B.view().innerHTML = B.top('Aprender hebreo', { back: 'aprender' }) + '<div class="wrap"><div class="lx-hero"><img class="sec-logo" src="' + B.LOGO + '" alt=""><p class="he" lang="he">אֲנִי לוֹמֵד עִבְרִית עִם הַתּוֹרָה</p><h2>¿Cuánto hebreo sabes?</h2><p class="muted">Elige tu punto de partida. Siempre podrás repasar las unidades anteriores.</p></div><div class="rows">' +
       LVLS.map(([k, l]) => '<button class="row" data-act="lx-setlvl" data-l="' + k + '"><span class="t"><b>' + esc(l) + '</b><span>Empiezas en el Mundo ' + START[k].slice(1) + ': ' + esc(DATA.worlds.find(w => w.id === START[k]).name) + '</span></span>' + (s.lvl === k ? '<span class="pill ok">Actual</span>' : '') + '</button>').join('') +
       '</div><div class="btns" style="margin-top:20px"><a class="btn solid" href="#prueba-nivel">Hacer la prueba de nivel (2 minutos)</a></div></div>';
+    if (EXT.wasp) EXT.wasp.show('home', '¡Shalom! (¡Paz!) Elige tu punto de partida y comencemos.');
   }
   EXT.act['lx-setlvl'] = el => { const s = S(); s.lvl = el.dataset.l; save(s); B.go('aprender'); };
   async function vPrueba() {

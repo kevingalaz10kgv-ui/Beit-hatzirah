@@ -4,7 +4,7 @@ Biblioteca digital de las Sagradas Escrituras en hebreo y español.
 Proyecto y dirección de contenido: **Moreh Gabriel ben Eliyah**
 Autoridad rabínica: **Rab Eliyah ben Eleazar**
 
-Versión 0.9.1. Incluye el módulo «Yo aprendo hebreo con la Torá».
+Versión 0.10.0. Incluye el módulo «Yo aprendo hebreo con la Torá».
 
 ---
 
@@ -252,3 +252,15 @@ Aparece en: pantalla de bienvenida, encabezado de todas las pantallas (en el lec
 **Sin contenido de idioma griego.** Se eliminaron el texto griego del Brit Hadashá (y su carpeta de datos), la opción de mostrarlo, la línea griega en «Comparar versiones», la sección «Hebreo y griego» del diccionario y sus datos, las referencias a términos griegos en las fichas y los análisis basados en palabras griegas dentro de Besorá (se reescribieron desde el texto y el trasfondo hebreo). Se conservan todos los libros y versículos del Brit Hadashá en español y en hebreo. Las menciones a la Septuaginta se mantienen solo como dato histórico sobre el texto del Tanaj (Salmo 22:16 e Isaías 7:14), sin términos griegos.
 
 **Vav = V.** La letra ו se enseña y translitera siempre como V: se quitó «antigua w» del curso, las transliteraciones del léxico y de PEALIM se convirtieron a la forma de Beit Hatzirah (sin W), y los nombres de las formas verbales se escriben «vayiqtol» y «veqatal».
+
+## 18. La avispa y el estudio de imágenes (versión 0.10)
+
+**La avispa de Beit Hatzirah.** Ilustración vectorial propia (cintura fina, franjas amarillas y negras, ojos expresivos, alas translúcidas). Acompaña solo el curso «Yo aprendo hebreo con la Torá»:
+- vuela al entrar al curso y saluda;
+- en las lecciones se ubica en el encabezado, junto a la barra de progreso, y sus mensajes aparecen dentro de la tarjeta o de la barra de respuesta, sin tapar el contenido;
+- señala cada letra nueva, mueve las alas al escuchar una pronunciación, celebra los aciertos con un giro, anima con un gesto amable ante un error, felicita las rachas (3, 5, 10… aciertos seguidos) y hace una celebración especial al terminar una lección, aprobar una unidad o subir de nivel;
+- al tocarla da un consejo de pronunciación, escritura o vocabulario.
+
+Las expresiones hebreas de sus mensajes llevan traducción: Shalom (paz), Kol hakavod (muy bien hecho), Yofí (qué bien), Jazak (sé fuerte), Todá (gracias). Se desactiva en Configuración → «La avispa en el curso de hebreo», y no se anima si el teléfono tiene activado «reducir movimiento».
+
+**Estudio de imágenes de versículos.** Al tocar un versículo → «Imagen para compartir», o desde el Mensaje diario. Seis estilos (Minimalista, Inspiración bíblica, Hebreo original, Pergamino, Cinematográfico, Moderno), seis paisajes (amanecer, desierto, montañas, olivos, mar de Galilea, cielo estrellado), tres formatos (1:1, 4:5, 9:16) e idioma (español, hebreo o ambos). Los fondos son ilustraciones pintadas por la app; el texto se compone después con tipografía real, sin modificar el versículo y con la configuración de nombres (YAH). El estilo «Hebreo original» incluye transliteración automática con las reglas de Beit Hatzirah (ו = v), que conviene revisar antes de compartir. En el Brit Hadashá, el hebreo es la traducción de Delitzsch, sin vocales. Botones «Compartir» (cuando el teléfono lo permite) y «Descargar».

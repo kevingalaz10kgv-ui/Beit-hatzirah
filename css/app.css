@@ -748,3 +748,56 @@ main>*{animation:pagein .28s ease-out both}
 .tf-dev{background:#9C6ADE;color:#fff}
 
 .hero2 img{display:block;margin:0 auto}
+
+/* ===== La avispa de Beit Hatzirah ===== */
+.wsp{position:fixed;right:10px;bottom:calc(64px + env(safe-area-inset-bottom,0px));width:86px;z-index:40;cursor:pointer;transition:opacity .35s,transform .35s;-webkit-tap-highlight-color:transparent}
+.wsp[data-place="lesson"]{top:calc(env(safe-area-inset-top,0px) + 112px);bottom:auto;width:60px}
+body.in-lesson .wsp[data-place="done"]{bottom:calc(20px + env(safe-area-inset-bottom,0px))}
+.wsp.gone{opacity:0;pointer-events:none;transform:translateY(24px)}
+.wsp-svg{width:100%;height:auto;display:block;overflow:visible;filter:drop-shadow(0 6px 10px rgba(0,0,0,.18))}
+.wsp-fly{animation:wspbob 3.4s ease-in-out infinite}
+@keyframes wspbob{50%{transform:translateY(-6px) rotate(-2deg)}}
+.wsp-wing{transform-box:fill-box;animation:wspflap .6s ease-in-out infinite alternate}
+.wsp-wing-b{transform-origin:100% 100%}.wsp-wing-f{transform-origin:0% 100%}
+@keyframes wspflap{from{transform:rotate(-6deg) scaleY(.92)}to{transform:rotate(6deg) scaleY(1)}}
+.wsp.arrive .wsp-wing,.wsp.a-buzz .wsp-wing,.wsp.a-ok .wsp-wing,.wsp.a-party .wsp-wing,.wsp.a-tap .wsp-wing{animation-duration:.07s}
+.wsp.arrive .wsp-fly{animation:wsparrive 1.3s cubic-bezier(.2,.8,.2,1) both}
+@keyframes wsparrive{0%{transform:translate(140px,-160px) rotate(-14deg) scale(.7);opacity:0}60%{transform:translate(-10px,6px) rotate(4deg);opacity:1}100%{transform:none}}
+.wsp.a-ok .wsp-fly{animation:wspok 1s ease}
+@keyframes wspok{30%{transform:translateY(-18px) rotate(-10deg)}55%{transform:translateY(-10px) rotate(350deg)}100%{transform:rotate(360deg)}}
+.wsp.a-party .wsp-fly{animation:wspparty 1.8s ease-in-out}
+@keyframes wspparty{20%{transform:translate(-30px,-40px) rotate(-18deg) scale(1.1)}45%{transform:translate(-60px,-20px) rotate(180deg) scale(1.15)}70%{transform:translate(-20px,-50px) rotate(340deg) scale(1.1)}100%{transform:rotate(360deg)}}
+.wsp.a-bad .wsp-head{transform-box:fill-box;transform-origin:50% 80%;animation:wspno 1.1s ease}
+@keyframes wspno{20%{transform:rotate(-10deg)}40%{transform:rotate(8deg)}60%{transform:rotate(-6deg)}80%{transform:rotate(3deg)}}
+.wsp.a-bad .wsp-fly{animation:wspsoft 1.1s ease}
+@keyframes wspsoft{50%{transform:translateY(4px)}}
+.wsp.a-point .wsp-fly{animation:wsppoint 1.3s ease}
+@keyframes wsppoint{40%{transform:translateX(-8px) rotate(-10deg)}70%{transform:translateX(-4px) rotate(-6deg)}}
+.wsp-arm{transform-box:fill-box;transform-origin:0 0}
+.wsp.a-point .wsp-arm,.wsp.a-ok .wsp-arm{animation:wspwave .4s ease-in-out 3 alternate}
+@keyframes wspwave{to{transform:rotate(-25deg)}}
+.wsp.a-buzz .wsp-fly{animation:wspbuzz .9s ease}
+@keyframes wspbuzz{25%{transform:translateY(-5px)}50%{transform:translateY(0)}75%{transform:translateY(-3px)}}
+.wsp.a-tap .wsp-fly{animation:wsptap .9s ease}
+@keyframes wsptap{40%{transform:translateY(-14px) scale(1.12)}}
+.wsp-bubble{position:absolute;right:calc(100% + 2px);bottom:40%;width:max-content;max-width:min(250px,64vw);background:var(--surface);color:var(--text);border:1px solid color-mix(in srgb,var(--dorado) 55%,transparent);border-radius:16px 16px 4px 16px;padding:9px 13px;font-size:.88rem;line-height:1.4;box-shadow:0 8px 24px rgba(0,0,0,.18);opacity:0;transform:translateY(6px) scale(.96);transform-origin:100% 100%;transition:opacity .25s,transform .25s;pointer-events:none}
+.wsp[data-place="lesson"] .wsp-bubble{bottom:auto;top:10%;border-radius:16px 4px 16px 16px;transform-origin:100% 0}
+.wsp.talk .wsp-bubble{opacity:1;transform:none}
+.wsp.still .wsp-fly,.wsp.still .wsp-wing{animation:none!important}
+@media (prefers-reduced-motion:reduce){.wsp-fly,.wsp-wing,.wsp-head,.wsp-arm{animation:none!important}}
+/* ===== Estudio de imágenes ===== */
+.im-stage{display:flex;justify-content:center;margin:14px 0 8px}
+.im-stage canvas{width:auto;max-width:100%;max-height:58vh;border-radius:12px;box-shadow:0 14px 40px rgba(0,0,0,.28)}
+.im-panel h3{font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:14px 0 6px}
+.im-panel .chips{margin:0}
+.im-check{display:flex;gap:8px;align-items:center;margin:12px 0;font-size:.95rem}
+.im-note{font-size:.8rem;color:var(--muted);margin:14px 0}
+.im-actions{position:sticky;bottom:calc(64px + env(safe-area-inset-bottom,0px));background:var(--bg);padding:10px 0;margin:0}
+
+.lx-wsp-slot{display:inline-flex;width:46px;height:40px;flex:none;align-items:center}
+.lx-wsp-slot:empty{display:none}
+.lx-wsp-slot .wsp{position:relative;right:auto;top:auto;bottom:auto;width:46px;z-index:1}
+.lx-wsp-slot .wsp-bubble{display:none}
+.lx-wsp-slot .wsp-svg{filter:none}
+.wsp-line{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:.92rem;font-weight:500;text-align:left;justify-content:center}
+.wsp-face{flex:none;display:inline-flex}

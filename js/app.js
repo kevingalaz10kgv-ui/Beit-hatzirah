@@ -2,7 +2,7 @@
    Aplicación principal (JavaScript sin dependencias). */
 (function () {
   'use strict';
-  const VERSION = '0.9.1';
+  const VERSION = '0.10.0';
   const EMBED = window.__BH_EMBED || null;
   const LOGO = (EMBED && EMBED.logo) || 'img/logo.webp';
   const LOGO_SM = (EMBED && (EMBED.logoSm || EMBED.logo)) || 'img/logo-sm.webp';
@@ -848,6 +848,7 @@
 
   /* ----- Configuración ----- */
   function sw(on, act, label) { return '<button class="switch" role="switch" aria-checked="' + on + '" data-act="' + act + '" aria-label="' + label + '"></button>'; }
+  window.BH_EXT.refreshSettings = () => { if (location.hash === '#ajustes') vAjustes(); };
   function vAjustes() {
     const canInstall = !!deferredPrompt;
     const swOn = 'serviceWorker' in navigator && !EMBED && location.protocol !== 'file:';
@@ -855,6 +856,7 @@
       '<div class="group-title"><h3>Lectura</h3></div>' +
       '<div class="opt"><span class="t">Tamaño de letra<span>' + Math.round(prefs.scale * 100) + '%</span></span><span class="size-ctl"><button data-act="size-" aria-label="Reducir">A−</button><button data-act="size+" aria-label="Aumentar">A+</button></span></div>' +
       '<div class="opt"><span class="t">Idioma visible<span>Hebreo y español, solo hebreo o solo español</span></span><select data-act="set-view"><option value="ambos"' + (prefs.view === 'ambos' ? ' selected' : '') + '>Ambos</option><option value="he"' + (prefs.view === 'he' ? ' selected' : '') + '>Hebreo</option><option value="es"' + (prefs.view === 'es' ? ' selected' : '') + '>Español</option></select></div>' +
+      '<div class="opt"><span class="t">La avispa en el curso de hebreo<span>Mascota que acompaña las lecciones con ánimo y consejos</span></span>' + sw(!EXT.wasp || EXT.wasp.enabled(), 'wsp-toggle', 'La avispa en el curso de hebreo') + '</div>' +
       '<div class="opt"><span class="t">Signos de cantilación<span>Mostrar los te\'amim además de las vocales</span></span>' + sw(prefs.teamim, 'tg-teamim', 'Signos de cantilación') + '</div>' +
       '<div class="opt"><span class="t">Nombres hebreos<span>Adaptación de nombres sobre la Reina-Valera 1909</span></span>' + sw(prefs.nombres, 'tg-nombres', 'Nombres hebreos') + '</div>' +
       '<div class="opt"><span class="t">Traducción al español<span>' + esc(VERDESC[prefs.ver]) + '</span></span><select data-act="set-ver-sel">' + Object.keys(VERS).map(k => '<option value="' + k + '"' + (prefs.ver === k ? ' selected' : '') + '>' + esc(VERS[k].short) + '</option>').join('') + '</select></div>' +
@@ -982,7 +984,7 @@
       const art = document.querySelector('[data-v="' + id + '"] .ref');
       if (art) { const f = art.querySelector('.fav'); if (now && !f) art.insertAdjacentHTML('beforeend', '<span class="fav">★</span>'); if (!now && f) f.remove(); }
     },
-    'v-img': async el => { const { b, c, v, cell } = await verseData(el.dataset.id); shareImage({ he: cell[1] || '', es: es(cell[0]), ref: bookName(b) + ' ' + c + ':' + v }); },
+    'v-img': el => { closeSheet(); go('imagen-' + el.dataset.id); },
     'img-share': () => shareCanvas(),
     'v-color': el => {
       const H = HL(); const id = el.dataset.id; if (el.dataset.c) H[id] = el.dataset.c; else delete H[id];
@@ -1027,7 +1029,7 @@
     'm-save': el => { const i = +el.dataset.i; toggleFav({ id: 'm-' + i, type: 'm', i }); route(); },
     'm-img': async el => {
       const M = await getJSON('mensajes.json'); const m = M[+el.dataset.i]; const [b, cv] = m.ref.split(' '); const { c, v } = parseCV(cv);
-      const cell = (await getBookV(b)).c[c - 1][v - 1]; shareImage({ he: cell[1] || '', es: es(cell[0]), ref: bookName(b) + ' ' + c + ':' + v, title: m.titulo });
+      go('imagen-' + b + '-' + c + '-' + v);
     },
     'vocab-search': el => { searchQ = el.dataset.q; go('buscar'); },
     'tg-teamim': () => { prefs.teamim = !prefs.teamim; savePrefs(); vAjustes(); },
@@ -1094,7 +1096,7 @@
     }).catch(() => { });
   }
   if (/[?&]test\b/.test(location.search)) window.__bh = { es, getBookV, prefs };
-  if (EXT.init) EXT.init({ esc, ic, top, sheet, closeSheet, toast, Store, go, view, getJSON, getBook, getBookV, weekInfo, parseCV, bookName, fmtRange, refRoute, refLabel, decodeSeg, STEM, VTYPE, PRON, heb, hebPlain, norm, BOOKS, BY, es, LOGO, LOGO_SM, setSearch: q => { searchQ = q; go('buscar'); } });
+  if (EXT.init) EXT.init({ esc, ic, top, sheet, closeSheet, toast, Store, go, view, getJSON, getBook, getBookV, weekInfo, parseCV, bookName, fmtRange, refRoute, refLabel, decodeSeg, STEM, VTYPE, PRON, heb, hebPlain, norm, BOOKS, BY, es, LOGO, LOGO_SM, setSearch: q => { searchQ = q; go('buscar'); }, verShort: () => VERS[prefs.ver].short });
   window.addEventListener('hashchange', route);
   route();
 })();
