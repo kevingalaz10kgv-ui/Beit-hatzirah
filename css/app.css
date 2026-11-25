@@ -653,10 +653,9 @@ body.au-on main{padding-bottom:calc(330px + env(safe-area-inset-bottom,0px))}
 .sec-logo{display:block;width:86px;height:auto;margin:6px auto 8px;filter:drop-shadow(0 6px 14px rgba(0,0,0,.18))}
 .reader-head.sec-head{text-align:center}.reader-head.sec-head .he{text-align:center}
 .lx-hero .sec-logo,.bs-hero .sec-logo,.tf-hero .sec-logo,.au-head .sec-logo{width:78px}
-.loading::before{content:"";display:block;width:76px;height:52px;margin:0 auto 12px;background:var(--wasp-load) center/contain no-repeat;animation:wload 1.6s ease-in-out infinite}
-@keyframes wload{0%,100%{transform:translate(-14px,2px)}50%{transform:translate(14px,-4px)}}
+
 @keyframes logopulse{50%{opacity:.55;transform:scale(.94)}}
-@media (prefers-reduced-motion:reduce){.loading::before,#splash img{animation:none}}
+@media (prefers-reduced-motion:reduce){#splash img{animation:none}}
 /* En el lector el encabezado tiene muchas herramientas: se prioriza el título */
 .top .wrap:has(.ver-btn) .hdr-logo{display:none}
 @media (max-width:359px){.hdr-logo{display:none}}
@@ -761,93 +760,156 @@ main>*{animation:pagein .28s ease-out both}
 
 
 
-/* ======================================================================
-   LA AVISPA DE BEIT HATZIRAH — sistema gráfico y animaciones (0.11)
-   ====================================================================== */
-.wsp-art{display:block;width:100%;height:auto;overflow:visible}
-.wsp-badge{display:block;width:100%;height:auto}
-.wsp-wing{transform-box:fill-box}
-.wsp-wing-b{transform-origin:100% 100%}.wsp-wing-f{transform-origin:0% 100%}
-.wsp-head{transform-box:fill-box;transform-origin:30% 70%}
-.wsp-arm{transform-box:fill-box;transform-origin:0 0}
-/* presencia integrada */
-.wsp-i{display:inline-block;width:var(--ws,44px);flex:none;vertical-align:middle;color:var(--text)}
-/* 2. Vuelo estacionario: aleteo rápido y desplazamiento mínimo */
-.m-hover .wsp-wing{animation:wflut .07s linear infinite alternate}
-.m-hover .wsp-art{animation:whover 3.6s ease-in-out infinite}
-@keyframes wflut{from{transform:rotate(-7deg) scaleY(.94)}to{transform:rotate(5deg) scaleY(1)}}
-@keyframes whover{50%{transform:translate(-2px,-3px)}}
-/* 7. Espera: casi inmóvil, un leve movimiento de alas cada tanto */
-.m-wait .wsp-wing{animation:wtwitch 7s ease-in-out infinite}
-@keyframes wtwitch{0%,88%,100%{transform:none}91%{transform:rotate(-6deg)}94%{transform:rotate(3deg)}}
-/* 4. Observación: leve giro de cabeza */
-.m-observe .wsp-head{animation:wobserve 6s ease-in-out infinite}
-.m-observe .wsp-wing{animation:wtwitch 9s ease-in-out infinite}
-@keyframes wobserve{0%,60%,100%{transform:none}70%{transform:rotate(-5deg)}85%{transform:rotate(2deg)}}
-/* 3. Aterrizaje: llega desde arriba, se posa y pliega las alas */
-.m-land .wsp-art{animation:wland 1.4s cubic-bezier(.22,.8,.3,1) both}
-.m-land .wsp-wing{animation:wflut .07s linear 12 alternate}
-@keyframes wland{0%{transform:translate(40px,-46px) rotate(-10deg);opacity:0}70%{transform:translate(0,2px) rotate(1deg);opacity:1}100%{transform:none}}
-/* guía del curso */
-.wsp{position:fixed;right:8px;bottom:calc(66px + env(safe-area-inset-bottom,0px));width:96px;z-index:40;cursor:pointer;transition:opacity .4s,transform .4s;-webkit-tap-highlight-color:transparent}
-.wsp.gone{opacity:0;pointer-events:none;transform:translateY(20px)}
-.wsp .wsp-wing{animation:wflut .07s linear infinite alternate}
-.wsp-fly{animation:whover 3.6s ease-in-out infinite}
-/* 1. Vuelo suave de llegada */
-.wsp.arrive .wsp-fly{animation:wfly 1.6s cubic-bezier(.25,.8,.3,1) both}
-@keyframes wfly{0%{transform:translate(150px,-120px) rotate(-8deg);opacity:0}65%{transform:translate(-6px,4px) rotate(2deg);opacity:1}100%{transform:none}}
-/* 6. Enseñanza: se inclina hacia la letra */
-.wsp.a-point .wsp-fly{animation:wteach 1.5s ease-in-out}
-@keyframes wteach{40%,70%{transform:translateX(-6px) rotate(-6deg)}}
-.wsp.a-buzz .wsp-wing{animation-duration:.045s}
-.wsp.a-ok .wsp-fly{animation:wnod .9s ease}
-@keyframes wnod{35%{transform:translateY(-6px) rotate(-4deg)}}
-.wsp.a-bad .wsp-head{animation:wobserve 1.4s ease}
-.wsp.a-tap .wsp-fly{animation:wnod .9s ease}
-/* 5. Celebración: vuelo circular y regreso */
-.wsp.a-party .wsp-fly{animation:worbit 1.9s ease-in-out}
-@keyframes worbit{0%{transform:rotate(0) translateX(0) rotate(0)}15%{transform:rotate(30deg) translateX(26px) rotate(-30deg)}85%{transform:rotate(330deg) translateX(26px) rotate(-330deg)}100%{transform:rotate(360deg) translateX(0) rotate(-360deg)}}
-.wsp-bubble{position:absolute;right:calc(100% + 2px);bottom:30%;width:max-content;max-width:min(250px,64vw);background:var(--surface);color:var(--text);border:1px solid color-mix(in srgb,var(--dorado) 50%,transparent);border-radius:14px 14px 4px 14px;padding:9px 13px;font-size:.88rem;line-height:1.4;box-shadow:0 8px 24px rgba(0,0,0,.18);opacity:0;transform:translateY(6px);transition:opacity .3s,transform .3s;pointer-events:none}
-.wsp.talk .wsp-bubble{opacity:1;transform:none}
-.lx-wsp-slot{display:inline-flex;width:56px;height:40px;flex:none;align-items:center}
-.lx-wsp-slot:empty{display:none}
-.lx-wsp-slot .wsp{position:relative;right:auto;top:auto;bottom:auto;width:56px;z-index:1}
-.lx-wsp-slot .wsp-bubble{display:none}
-.wsp-line{display:flex;align-items:center;gap:10px;margin-top:10px;font-size:.92rem;font-weight:500;justify-content:center}
-/* celebración de logros (cualquier módulo) */
-.wsp-celebrate{width:max-content;position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 76px);transform:translateX(-50%);z-index:60;display:flex;align-items:center;gap:12px;background:var(--nav);border:1px solid color-mix(in srgb,var(--dorado) 55%,transparent);border-radius:18px;padding:10px 18px 10px 10px;box-shadow:0 16px 40px rgba(0,0,0,.3);animation:wcin .45s ease both;max-width:min(92vw,440px)}
-.wsp-celebrate.out{animation:wcout .5s ease both}
-.wsp-celebrate p{margin:0;font-weight:600;font-size:.95rem}
-.wsp-orbit{width:70px;flex:none;animation:worbit 1.9s ease-in-out .3s}
-.wsp-orbit .wsp-wing{animation:wflut .07s linear infinite alternate}
-@keyframes wcin{from{opacity:0;transform:translate(-50%,-14px)}to{opacity:1;transform:translate(-50%,0)}}
-@keyframes wcout{to{opacity:0;transform:translate(-50%,-14px)}}
-/* consejos integrados */
-.wsp-tip{display:flex;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--dorado);border-radius:14px;padding:10px 14px;margin:14px 0}
-.wsp-tip small{display:block;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);font-weight:600}
-.wsp-tip p{margin:2px 0 0;font-size:.92rem;line-height:1.45}
-/* ubicaciones */
-.card-msg{position:relative;padding-right:84px}
-.msg-wsp{position:absolute;right:10px;top:50%;margin-top:-24px}
-.dc-head{position:relative}
-.dc-wsp{position:absolute;right:0;top:10px}
-.au-row1{align-items:center;gap:8px}.au-wsp{margin-right:2px}
-.tf-head .tf-wsp{display:block;margin:0 auto 4px}
-.lx-badge-wsp{display:block;width:84px;margin:0 auto 8px}
-.empty::before{content:"";display:block;width:84px;height:58px;margin:0 auto 10px;background:var(--wasp-load) center/contain no-repeat;opacity:.75}
-/* sin animaciones (Configuración o «reducir movimiento») */
-.wsp-still .wsp-i *,.wsp-still .wsp *,.wsp-still .wsp-celebrate *,.wsp-still .wsp-art,.wsp-still .loading::before{animation:none!important}
-.m-still *{animation:none!important}
-@media (prefers-reduced-motion:reduce){.wsp-i *,.wsp *,.wsp-celebrate *,.loading::before{animation:none!important}}
 
-.lx-dock{display:flex;flex-direction:column;align-items:center;margin:4px 0 2px;min-height:0}
+/* ======================================================================
+   EL MOREH DE BEIT HATZIRAH — guía oficial (0.12)
+   Ilustración original en tres capas; cabeza y brazo giran sobre el cuello y el hombro.
+   ====================================================================== */
+.mo-fig{position:relative;display:inline-block;height:var(--mh,220px);aspect-ratio:524/960;flex:none}
+.mo-flip{position:absolute;inset:0;display:block}
+.mo-fig.mirror .mo-flip{transform:scaleX(-1)}
+.mo-fig img{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;user-select:none;-webkit-user-drag:none}
+.mo-head{transform-origin:40.73% 21.88%}
+.mo-arm{transform-origin:72.77% 32.75%}
+.mo-body{transform-origin:50% 100%}
+/* poses */
+.p-idle .mo-body{animation:mbreath 4.8s ease-in-out infinite}
+.p-idle .mo-head{animation:mattend 9s ease-in-out infinite}
+@keyframes mbreath{50%{transform:scaleY(1.006)}}
+@keyframes mattend{0%,70%,100%{transform:none}78%{transform:rotate(-2.5deg)}90%{transform:rotate(1deg)}}
+.p-nod .mo-head{animation:mnod 1.1s ease-in-out}
+@keyframes mnod{25%{transform:rotate(3deg) translateY(2px)}55%{transform:rotate(-1deg)}80%{transform:rotate(1.5deg)}}
+.p-teach .mo-arm,.p-point .mo-arm{animation:mpoint 1.6s ease-in-out}
+.p-point .mo-arm{animation:mpoint 1.6s ease-in-out infinite alternate}
+@keyframes mpoint{0%{transform:none}35%{transform:rotate(-4deg)}70%{transform:rotate(-2deg)}100%{transform:rotate(-3deg)}}
+.p-teach .mo-head{animation:mnod 1.4s ease-in-out .4s}
+.p-explain .mo-arm{animation:mexplain 1.8s ease-in-out 2}
+.p-explain .mo-head{animation:mattend 3.6s ease-in-out}
+@keyframes mexplain{0%,100%{transform:none}25%{transform:rotate(3deg)}50%{transform:rotate(-3deg)}75%{transform:rotate(2deg)}}
+.p-welcome .mo-arm{animation:mwave .9s ease-in-out 3 alternate}
+.p-welcome .mo-head{animation:mnod 1.2s ease-in-out .3s}
+@keyframes mwave{from{transform:rotate(2deg)}to{transform:rotate(-6deg)}}
+.p-reflect .mo-head{animation:mreflect 1.6s ease-in-out both}
+@keyframes mreflect{40%,80%{transform:rotate(-3.5deg) translateY(1px)}}
+.p-celebrate .mo-flip{animation:mhop 1s ease-in-out 2}
+.p-celebrate .mo-arm{animation:mwave .5s ease-in-out 4 alternate}
+.p-celebrate .mo-head{animation:mnod 1s ease-in-out 2}
+@keyframes mhop{30%{transform:translateY(-6%)}55%{transform:none}70%{transform:translateY(-2%)}}
+.mo-fig.mirror.p-celebrate .mo-flip{animation:mhopm 1s ease-in-out 2}
+@keyframes mhopm{0%,100%{transform:scaleX(-1)}30%{transform:scaleX(-1) translateY(-6%)}55%{transform:scaleX(-1)}70%{transform:scaleX(-1) translateY(-2%)}}
+.p-walk .mo-flip{animation:mwalk .45s ease-in-out infinite}
+@keyframes mwalk{50%{transform:translateY(-1.6%) rotate(.8deg)}}
+.mo-fig.mirror.p-walk .mo-flip{animation:mwalkm .45s ease-in-out infinite}
+@keyframes mwalkm{0%,100%{transform:scaleX(-1)}50%{transform:scaleX(-1) translateY(-1.6%) rotate(-.8deg)}}
+.p-enter{animation:menter 1.2s cubic-bezier(.25,.8,.3,1) both}
+.p-enter .mo-flip{animation:mwalk .45s ease-in-out 3}
+@keyframes menter{from{transform:translateX(70%);opacity:0}to{transform:none;opacity:1}}
+.p-leave{animation:mleave .8s ease-in both}
+@keyframes mleave{to{transform:translateX(80%);opacity:0}}
+/* avatar */
+.mo-av{display:inline-block;width:var(--ms,40px);height:var(--ms,40px);border-radius:50%;overflow:hidden;flex:none;background:radial-gradient(circle at 50% 35%,#F6E7BE,#E4C989);box-shadow:0 0 0 2px color-mix(in srgb,var(--dorado) 70%,transparent);vertical-align:middle}
+.mo-av img{width:100%;height:100%;object-fit:cover;object-position:50% 20%;display:block}
+.mo-nod img,.mo-idle img{animation:mavatar 7s ease-in-out infinite;transform-origin:50% 90%}
+@keyframes mavatar{0%,80%,100%{transform:none}86%{transform:rotate(3deg)}93%{transform:rotate(-1deg)}}
+.mo-badge{box-shadow:0 0 0 3px #C6A15B,0 0 0 6px #252525,0 6px 18px rgba(0,0,0,.3);margin:0 auto 10px;display:block}
+.mo-dim{filter:grayscale(1);opacity:.45}
+.mo-hdr{padding:0;width:40px;height:40px;display:inline-grid;place-items:center}
+/* escena: entra desde un costado, habla y se retira */
+.mo-scene{position:fixed;left:0;right:0;bottom:calc(64px + env(safe-area-inset-bottom,0px));z-index:55;display:flex;align-items:flex-end;justify-content:flex-end;gap:6px;padding:0 10px 10px;pointer-events:none;visibility:hidden}
+.mo-scene.in{visibility:visible}
+.mo-scene.out{visibility:hidden;transition:visibility 0s .8s}
+.mo-actor .mo-fig{--mh:120px}
+.mo-scene[data-size="big"] .mo-actor .mo-fig{--mh:min(200px,28vh)}
+.mo-card{pointer-events:auto;position:relative;order:-1;max-width:min(300px,calc(100vw - 110px));background:var(--nav);border:1px solid color-mix(in srgb,var(--dorado) 55%,transparent);border-radius:18px 18px 4px 18px;padding:14px 16px 12px;box-shadow:0 14px 40px rgba(0,0,0,.28);margin-bottom:40px;opacity:0;transform:translateY(10px);transition:opacity .35s .5s,transform .35s .5s}
+.mo-scene.in .mo-card{opacity:1;transform:none}
+.mo-scene.out .mo-card{opacity:0;transition-delay:0s}
+.mo-say{margin:0 18px 8px 0;font-size:.95rem;line-height:1.5}
+.mo-acts{display:flex;flex-wrap:wrap;gap:6px}.mo-acts .btn{padding:6px 12px;font-size:.84rem}
+.mo-x{position:absolute;top:6px;right:8px;font-size:1rem;color:var(--muted)}
+.mo-actor{pointer-events:auto}
+/* celebración */
+.mo-celebrate{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 70px);transform:translateX(-50%);z-index:60;width:max-content;max-width:min(92vw,460px);display:flex;align-items:flex-end;gap:12px;background:var(--nav);border:1px solid color-mix(in srgb,var(--dorado) 60%,transparent);border-radius:20px;padding:10px 18px 10px 12px;box-shadow:0 18px 44px rgba(0,0,0,.32);animation:mcin .45s ease both}
+.mo-celebrate.out{animation:mcout .5s ease both}
+.mo-celebrate p{margin:0 0 10px;font-weight:600;font-size:.95rem;line-height:1.4}
+.mo-cfig .mo-fig{--mh:120px}
+@keyframes mcin{from{opacity:0;transform:translate(-50%,-14px)}to{opacity:1;transform:translate(-50%,0)}}
+@keyframes mcout{to{opacity:0;transform:translate(-50%,-14px)}}
+/* consejos integrados y mensajes en la lección */
+.mo-tip{display:flex;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--dorado);border-radius:14px;padding:10px 14px;margin:14px 0}
+.mo-tip small{display:block;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);font-weight:600}
+.mo-tip p{margin:2px 0 0;font-size:.92rem;line-height:1.45}
+.mo-line{display:flex;align-items:center;gap:10px;margin-top:10px;font-size:.92rem;font-weight:500;justify-content:center}
+.lx-wsp-slot{display:inline-flex;width:34px;height:40px;flex:none;align-items:flex-end;overflow:visible}
+.lx-wsp-slot:empty{display:none}
+.lx-wsp-slot .mo-guide .mo-fig{--mh:50px}
+.lx-dock{display:flex;flex-direction:column;align-items:center;margin:4px 0 2px}
 .lx-hero-slot{display:block}
-.lx-hero-slot .wsp{position:relative;right:auto;bottom:auto;width:92px;z-index:1;margin:0 auto}
-.lx-hero-slot .wsp-bubble{display:none}
+.lx-hero-slot .mo-guide .mo-fig{--mh:150px}
+.mo-guide{display:inline-block;cursor:pointer}
 .lx-hero-say{margin:2px auto 0;max-width:30em;font-size:.95rem;color:var(--accent);font-weight:500;min-height:1.4em;opacity:0;transform:translateY(-4px);transition:opacity .35s,transform .35s;text-align:center}
 .lx-hero-say.on{opacity:1;transform:none}
+.card-msg{position:relative;padding-right:84px}
+.msg-wsp{position:absolute;right:14px;top:50%;margin-top:-28px}
+.dc-head{position:relative}.dc-wsp{position:absolute;right:0;top:10px}
+.au-row1{align-items:center;gap:8px}
+.tf-head .tf-wsp{display:block;margin:0 auto 4px}
+.lx-badge-wsp{display:block;margin:0 auto 8px;width:max-content}
+.loading::before{content:"";display:block;width:56px;height:56px;margin:0 auto 12px;border-radius:50%;background:var(--moreh-av) 50% 20%/cover no-repeat,radial-gradient(circle,#F6E7BE,#E4C989);box-shadow:0 0 0 2px #C6A15B;animation:mload 1.4s ease-in-out infinite}
+@keyframes mload{50%{transform:translateY(-6px)}}
+.empty::before{content:"";display:block;width:64px;height:64px;margin:0 auto 10px;border-radius:50%;background:var(--moreh-av) 50% 20%/cover no-repeat,radial-gradient(circle,#F6E7BE,#E4C989);opacity:.85}
+/* panel del asistente */
+.mo-panel .mo-ph{display:flex;align-items:center;gap:12px;margin-bottom:6px}.mo-ph b{display:block;font-size:1.05rem}.mo-ph span{color:var(--muted);font-size:.85rem}
+.mo-greet{font-size:1rem;line-height:1.5;margin:8px 0 10px}
+.mo-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.mo-ask{display:flex;gap:6px}.mo-ask input{flex:1;font:inherit;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--text)}
+.mo-a{display:flex;gap:10px;align-items:flex-start;background:var(--surface);border-radius:14px;padding:10px 12px;margin:10px 0}.mo-a p{margin:0 0 6px}
+.mo-h{margin:16px 0 6px}
+.mo-learn{display:grid;gap:6px}
+.mo-learn button{text-align:left;padding:10px 12px;border-radius:12px;background:var(--surface);border:1px solid var(--line)}
+.mo-learn b{display:block;font-size:.95rem}.mo-learn span{font-size:.8rem;color:var(--muted)}
+.mo-foot{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}.mo-foot .btn{font-size:.84rem;padding:7px 12px}
+.mo-note{font-size:.76rem;color:var(--muted);margin:12px 0 0}
+/* Aprende con el Moreh */
+.mo-stage{display:flex;gap:8px;align-items:flex-end;margin:12px 0}
+.mo-stage>.mo-fig{--mh:min(300px,42vh)}
+.mo-board{flex:1;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:18px 18px 18px 4px;padding:14px 16px;box-shadow:var(--sh-card);align-self:stretch;display:flex;flex-direction:column;justify-content:center}
+.mo-board small{color:var(--accent);font-weight:600;font-size:.74rem}
+.mo-big{font-size:3.6rem;text-align:center;color:var(--accent);margin:6px 0;line-height:1.3}.mo-big.sm{font-size:1.5rem;line-height:1.9}
+.mo-es{font-style:italic;color:var(--muted);text-align:center}
+.mo-text{font-size:1rem;line-height:1.55}
+.mo-ex{font-size:.88rem;color:var(--muted)}
+.mo-steps{display:flex;align-items:center;gap:8px;justify-content:space-between;margin:8px 0}
+.mo-dots{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;flex:1}.mo-dots i{width:6px;height:6px;border-radius:50%;background:var(--line)}.mo-dots i.on{background:var(--accent)}
+@media (max-width:420px){.mo-stage{flex-direction:column;align-items:center}.mo-stage>.mo-fig{--mh:190px}.mo-board{border-radius:18px;width:100%}}
+/* recorrido guiado */
+.mo-tour{position:fixed;inset:0;z-index:70;display:none}.mo-tour.on{display:block}
+.mo-spot{position:fixed;border-radius:16px;box-shadow:0 0 0 9999px rgba(10,8,6,.66);transition:all .45s ease;pointer-events:none}
+.mo-tactor{float:right;margin:-4px -6px 0 8px;shape-outside:margin-box}
+.mo-tactor .mo-fig{--mh:150px}
+.mo-tcard.flip .mo-tactor{float:left;margin:-4px 8px 0 -6px}
+.mo-tcard::after{content:"";display:block;clear:both}
+.mo-tcard{position:fixed;left:50%;transform:translateX(-50%);width:min(380px,calc(100vw - 28px));background:var(--nav);border:1px solid var(--dorado);border-radius:18px;padding:14px 16px;box-shadow:0 18px 44px rgba(0,0,0,.4);z-index:3;transition:top .4s,bottom .4s}
+.mo-tcard p{margin:0 0 10px;line-height:1.5}.mo-tcard .btns{margin:0;justify-content:flex-end}.mo-tcard .btn{padding:7px 12px;font-size:.85rem}.mo-tcard small{color:var(--muted);font-size:.75rem}
+/* Mi camino */
+.mo-chero{display:flex;align-items:flex-end;gap:10px;margin:12px 0}.mo-chero .mo-fig{--mh:190px}.mo-chero h2{margin:0}.mo-chero p{color:var(--muted)}
+.mo-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.mo-stat{background:var(--surface);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:2px;box-shadow:var(--sh-card)}
+.mo-stat svg{width:22px;height:22px;stroke:var(--accent)}.mo-stat b{font-size:1.5rem}.mo-stat small{color:var(--muted)}.mo-stat a{font-size:.8rem;color:var(--accent)}
+.mo-goals{display:grid;gap:8px}.mo-goal{display:flex;gap:10px;align-items:center;padding:8px 10px;border-radius:14px;background:var(--surface)}
+.mo-goal b{display:block;font-size:.95rem}.mo-goal small{color:var(--muted)}.mo-goal.ok{border:1px solid color-mix(in srgb,var(--dorado) 60%,transparent)}
+.opt.col{flex-direction:column;align-items:stretch;gap:6px}.mo-seg{margin:0}
+/* sin animaciones o asistente desactivado */
+.mo-still .mo-fig,.mo-still .mo-fig *,.mo-still .mo-av img,.mo-still .loading::before{animation:none!important;transition:none!important}
+.mo-off .mo-hdr,.mo-off .mo-tip,.mo-off .mo-guide{display:none!important}
+@media (prefers-reduced-motion:reduce){.mo-fig,.mo-fig *,.mo-av img,.loading::before{animation:none!important}}
 .im-feat{display:flex;gap:10px;overflow-x:auto;padding:2px 0 6px}
 .im-ft{flex:none;width:118px;border-radius:12px;overflow:hidden;border:2px solid transparent;background:var(--surface);padding:0;text-align:left}
 .im-ft.on{border-color:var(--dorado)}
 .im-ft img{display:block;width:100%;aspect-ratio:2/3;object-fit:cover}
 .im-ft span{display:block;font-size:.78rem;padding:6px 8px;font-weight:600}
+
+.mo-gav{display:inline-flex}
+.mo-gav.a-nod img{animation:mnod 1s ease-in-out;transform-origin:50% 90%}
+.mo-gav.a-reflect img{animation:mreflect 1.4s ease-in-out;transform-origin:50% 90%}
+.mo-gav.a-teach img,.mo-gav.a-celebrate img{animation:mnod 1.2s ease-in-out 2;transform-origin:50% 90%}
+.lx-wsp-slot{width:40px}

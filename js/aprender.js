@@ -77,7 +77,7 @@
     verbos: ['💬', 'Conjugador', 'Practica las conjugaciones de un verbo en PEALIM'],
     temas: ['🗺️', 'Explorador', 'Aprueba un mundo temático completo']
   };
-  function award(s, id) { if (s.badges[id]) return; s.badges[id] = Date.now(); if (EXT.wasp) setTimeout(() => EXT.wasp.badge(BADGES[id][0]), 2200); setTimeout(() => B.toast('Insignia: ' + BADGES[id][1] + ' ' + BADGES[id][0]), 600); }
+  function award(s, id) { if (s.badges[id]) return; s.badges[id] = Date.now(); if (EXT.moreh) setTimeout(() => EXT.moreh.badge(BADGES[id][0]), 2200); setTimeout(() => B.toast('Insignia: ' + BADGES[id][1] + ' ' + BADGES[id][0]), 600); }
   function checkBadges(s) {
     if (s.st.lessons >= 1) award(s, 'first');
     const worldDone = w => DATA.worlds.find(x => x.id === w).units.every(u => s.units[u.id] && s.units[u.id].passed);
@@ -121,7 +121,7 @@
     const u = new SpeechSynthesisUtterance(text.replace(/י[\u05B0-\u05C7]*ה[\u05B0-\u05C7]*ו[\u05B0-\u05C7]*ה[\u05B0-\u05C7]*/g, 'יָהּ').replace(/־/g, ' '));
     u.lang = voice.lang; u.voice = voice; u.rate = slow ? 0.55 : 0.85;
     speechSynthesis.cancel(); speechSynthesis.speak(u);
-    if (EXT.wasp) EXT.wasp.buzz();
+    if (EXT.moreh) EXT.moreh.buzz();
   }
   const sayText = it => it.kind === 'letters' || it.kind === 'vowels' ? (it.name || it.he) : it.he;
   const audioBtns = it => '<span class="lx-audio"><button class="lx-sound" data-act="lx-say" data-id="' + it.id + '" aria-label="Escuchar">🔊</button><button class="lx-sound" data-act="lx-say" data-slow="1" data-id="' + it.id + '" aria-label="Escuchar lento">🐢</button></span>';
@@ -130,6 +130,7 @@
   /* ---------- Sonido de acierto/error ---------- */
   let actx = null;
   function beep(ok) {
+    if (EXT.sounds && !EXT.sounds()) return;
     try {
       actx = actx || new (window.AudioContext || window.webkitAudioContext)();
       const o = actx.createOscillator(), g = actx.createGain(); o.connect(g); g.connect(actx.destination);
@@ -209,7 +210,7 @@
     SES.total = SES.q.length;
     document.body.classList.add('in-lesson');
     renderEx();
-    if (EXT.wasp) EXT.wasp.lesson();
+    if (EXT.moreh) EXT.moreh.lesson();
   }
   function header() {
     const p = Math.min(100, Math.round(SES.i / SES.q.length * 100));
@@ -247,7 +248,7 @@
     const sub = it.tr ? '<span class="lx-tr">' + esc(it.tr) + '</span>' : '';
     switch (ex.t) {
       case 'intro': {
-        const isG = isGlyph(it); if (EXT.wasp) setTimeout(() => EXT.wasp.letter(it), 300);
+        const isG = isGlyph(it); if (EXT.moreh) setTimeout(() => EXT.moreh.letter(it), 300);
         body = '<p class="lx-kicker">Nueva ' + (it.kind === 'letters' ? 'letra' : it.kind === 'vowels' ? 'vocal' : it.kind === 'phrases' ? 'frase' : 'palabra') + '</p>' +
           '<div class="lx-card intro">' + (it.em ? '<div class="lx-emoji" aria-hidden="true">' + it.em + '</div>' : '') +
           he(it.he, isG ? 'lx-glyph' : (it.kind === 'phrases' ? 'lx-phrase' : 'lx-word')) +
@@ -376,7 +377,7 @@
     if (ex.t !== 'intro' && ex.t !== 'orderVerse') srsUpdate(s, ex.it.id, ok);
     if (ex.t === 'orderVerse') (SES.unit.items || []).forEach(x => srsUpdate(s, x.id, ok));
     SES.tot++; s.st.tot++;
-    if (EXT.wasp) { if (ok) { SES.combo = (SES.combo || 0) + 1; EXT.wasp.ok(SES.combo); } else { SES.combo = 0; EXT.wasp.bad(); } }
+    if (EXT.moreh) { if (ok) { SES.combo = (SES.combo || 0) + 1; EXT.moreh.ok(SES.combo); } else { SES.combo = 0; EXT.moreh.bad(); } }
     if (ok) { SES.ok++; s.st.ok++; week(s).ok++; SES.xp += SES.mode === 'review' ? 5 : 10; SES.coins += 1; xpFloat(SES.mode === 'review' ? 5 : 10); }
     else {
       SES.wrongIds.add(ex.it.id);
@@ -564,7 +565,7 @@
     }
     const lvBefore = levelOf(s.xp);
     s.xp += o.xp; s.coins += o.coins; touchStreak(s); checkBadges(s); save(s);
-    if (EXT.wasp) setTimeout(() => { if (levelOf(s.xp) > lvBefore) EXT.wasp.level(); else if (o.mode === 'exam' && pct >= 80) EXT.wasp.unit(); else if (pct >= 80) EXT.wasp.done(); else EXT.wasp.say('¡Ánimo! Repasar también es avanzar.'); }, 400);
+    if (EXT.moreh) setTimeout(() => { if (levelOf(s.xp) > lvBefore) EXT.moreh.level(); else if (o.mode === 'exam' && pct >= 80) EXT.moreh.unit(); else if (pct >= 80) EXT.moreh.done(); else EXT.moreh.say('¡Ánimo! Repasar también es avanzar.'); }, 400);
     SES = null; document.body.classList.remove('in-lesson');
     const lv = levelOf(s.xp);
     const words = o.items ? o.items.filter(x => x.ref).slice(0, 4) : [];
@@ -612,7 +613,7 @@
       '<div class="lx-mini"><a href="#repaso" class="' + (due ? 'hot' : '') + '">🔁<b>Repasar</b><span>' + due + ' por repasar</span></a><a href="#parasha-hebreo">📜<b>Hebreo de la parashá</b><span>Vocabulario de esta semana</span></a><a href="#contrarreloj">⚡<b>Contrarreloj</b><span>60 segundos</span></a><a href="#mis-palabras">🗂️<b>Mis palabras</b><span>Dominio y próximo repaso</span></a><a href="#gematria">🔢<b>Gematría</b><span>Valor numérico de las palabras</span></a><a href="#diccionario">📖<b>Diccionario</b><span>Palabras, raíces y flashcards</span></a></div></div>' +
       (hasVoice() ? '' : '<p class="notice">Este teléfono no tiene una voz en hebreo instalada, así que los ejercicios de escuchar están ocultos. En iPhone: Ajustes → Accesibilidad → Contenido leído → Voces → Hebreo. En Android: Ajustes → Texto a voz → instala el idioma hebreo.</p>') +
       map + '<p class="muted" style="font-size:.82rem;margin:20px 0">Las palabras se presentan en hebreo bíblico, con vocales. La voz es sintética, del propio teléfono, y usa la pronunciación israelí moderna; no es una grabación del hebreo antiguo.</p></div>';
-    if (EXT.wasp && (!window.__wspHome || Date.now() - window.__wspHome > 60000)) { window.__wspHome = Date.now(); EXT.wasp.home(); } else if (EXT.wasp) EXT.wasp.show('home');
+    if (EXT.moreh && (!window.__wspHome || Date.now() - window.__wspHome > 60000)) { window.__wspHome = Date.now(); EXT.moreh.home(); } else if (EXT.moreh) EXT.moreh.show('home');
   }
   EXT.act['lx-claim'] = el => { const s = S(); const wk = week(s); const g = GOALS.find(x => x[0] === el.dataset.g); if (!g || wk.claimed.includes(g[0]) || (wk[g[0]] || 0) < g[2]) return; wk.claimed.push(g[0]); s.coins += g[3]; if (wk.claimed.length === 4) award(s, 'semana'); save(s); B.toast('+' + g[3] + ' monedas 🪙'); vAprender(); };
   EXT.act['lx-daily'] = async () => {
@@ -661,7 +662,7 @@
     B.view().innerHTML = B.top('Aprender hebreo', { back: 'aprender' }) + '<div class="wrap"><div class="lx-hero"><img class="sec-logo" src="' + B.LOGO + '" alt=""><p class="he" lang="he">אֲנִי לוֹמֵד עִבְרִית עִם הַתּוֹרָה</p><h2>¿Cuánto hebreo sabes?</h2><p class="muted">Elige tu punto de partida. Siempre podrás repasar las unidades anteriores.</p></div><div class="rows">' +
       LVLS.map(([k, l]) => '<button class="row" data-act="lx-setlvl" data-l="' + k + '"><span class="t"><b>' + esc(l) + '</b><span>Empiezas en el Mundo ' + START[k].slice(1) + ': ' + esc(DATA.worlds.find(w => w.id === START[k]).name) + '</span></span>' + (s.lvl === k ? '<span class="pill ok">Actual</span>' : '') + '</button>').join('') +
       '</div><div class="btns" style="margin-top:20px"><a class="btn solid" href="#prueba-nivel">Hacer la prueba de nivel (2 minutos)</a></div></div>';
-    if (EXT.wasp) EXT.wasp.show('home', '¡Shalom! (¡Paz!) Elige tu punto de partida y comencemos.');
+    if (EXT.moreh) EXT.moreh.show('home', '¡Shalom! (¡Paz!) Elige tu punto de partida y comencemos.');
   }
   EXT.act['lx-setlvl'] = el => { const s = S(); s.lvl = el.dataset.l; save(s); B.go('aprender'); };
   async function vPrueba() {
@@ -700,7 +701,7 @@
     const acc = s.st.tot ? Math.round(s.st.ok / s.st.tot * 100) : 0;
     const cont = s.last && UNIT[s.last] ? UNIT[s.last] : nextUnit(s);
     B.view().innerHTML = B.top('Mi perfil de aprendizaje', { back: 'aprender' }) + '<div class="wrap">' +
-      '<div class="lx-hero">' + (EXT.wasp ? '<span class="lx-badge-wsp">' + EXT.wasp.art('badge') + '</span>' : '') + '<div class="lx-level">' + lv + '</div><h2>Nivel ' + lv + '</h2><div class="progress"><i style="width:' + Math.round((s.xp - a) / (b - a) * 100) + '%"></i></div><p class="muted" style="margin:0">' + s.xp + ' XP. Faltan ' + (b - s.xp) + ' XP para el nivel ' + (lv + 1) + '.</p></div>' +
+      '<div class="lx-hero">' + (EXT.moreh ? '<span class="lx-badge-wsp">' + EXT.moreh.art('badge') + '</span>' : '') + '<div class="lx-level">' + lv + '</div><h2>Nivel ' + lv + '</h2><div class="progress"><i style="width:' + Math.round((s.xp - a) / (b - a) * 100) + '%"></i></div><p class="muted" style="margin:0">' + s.xp + ' XP. Faltan ' + (b - s.xp) + ' XP para el nivel ' + (lv + 1) + '.</p></div>' +
       '<div class="lx-stats wide"><div><b>🔥 ' + s.streak.n + '</b><span>días seguidos</span></div><div><b>' + passed + '/' + UNITS.length + '</b><span>unidades</span></div><div><b>' + words + '</b><span>palabras aprendidas</span></div><div><b>' + letters + '/27</b><span>letras dominadas</span></div><div><b>' + acc + '%</b><span>aciertos</span></div><div><b>' + dueItems(s).length + '</b><span>por repasar</span></div><div><b>🪙 ' + s.coins + '</b><span>monedas</span></div><div><b>⚡ ' + s.st.speed + '</b><span>récord contrarreloj</span></div></div>' +
       '<div class="btns"><a class="btn solid" href="#leccion-' + cont.id + '-l">Continuar: ' + esc(cont.name) + '</a><a class="btn" href="#mis-palabras">Mis palabras</a></div>' +
       '<div class="group-title"><h3>Insignias</h3></div><div class="lx-badges">' + Object.entries(BADGES).map(([k, [ic, n, d]]) => '<div class="lx-badge' + (s.badges[k] ? ' got' : '') + '" title="' + esc(d) + '"><span>' + esc(ic) + '</span><b>' + esc(n) + '</b><small>' + esc(d) + '</small></div>').join('') + '</div>' +

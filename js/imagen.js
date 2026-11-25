@@ -235,7 +235,7 @@
     const chips = (list, key) => list.map(([k, l]) => '<button class="chip' + (ST[key] === k ? ' on' : '') + '" data-act="im-set" data-k="' + key + '" data-v="' + k + '" aria-pressed="' + (ST[key] === k) + '">' + esc(l) + '</button>').join('');
     B.view().innerHTML = B.top('Imagen del versículo', { back: 'leer-' + id.split('-').slice(0, 2).join('-') }) + '<div class="wrap im">' +
       '<div class="im-stage"><canvas id="im-cv" aria-label="Vista previa de la imagen"></canvas></div><p id="im-warn" class="notice" hidden></p>' +
-      '<div class="im-panel"><h3>Plantillas destacadas</h3><div class="im-feat">' + FONDOS.map(f => '<button class="im-ft' + (ST.tpl === 'f-' + f.id ? ' on' : '') + '" data-act="im-set" data-k="tpl" data-v="f-' + f.id + '" aria-pressed="' + (ST.tpl === 'f-' + f.id) + '"><img src="' + fondoSrc(f) + '" alt="" loading="lazy"><span>' + esc(f.name) + '</span></button>').join('') + '</div>' +
+      '<div class="im-panel">' + (EXT.moreh ? EXT.moreh.tip('imagen', 1) : '') + '<h3>Plantillas destacadas</h3><div class="im-feat">' + FONDOS.map(f => '<button class="im-ft' + (ST.tpl === 'f-' + f.id ? ' on' : '') + '" data-act="im-set" data-k="tpl" data-v="f-' + f.id + '" aria-pressed="' + (ST.tpl === 'f-' + f.id) + '"><img src="' + fondoSrc(f) + '" alt="" loading="lazy"><span>' + esc(f.name) + '</span></button>').join('') + '</div>' +
       '<h3>Otros estilos</h3><div class="chips">' + chips(TPL.filter(t => !FONDO(t[0])), 'tpl') + '</div>' +
       (ST.tpl === 'insp' || ST.tpl === 'cine' ? '<h3>Paisaje</h3><div class="chips">' + chips(SCN, 'scn') + '</div>' : '') +
       '<h3>Formato</h3><div class="chips">' + chips(FMT.filter(f => f[0] !== '2:3' || FONDO(ST.tpl)).map(f => [f[0], f[1]]), 'fmt') + '</div>' +

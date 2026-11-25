@@ -2,7 +2,7 @@
    Aplicación principal (JavaScript sin dependencias). */
 (function () {
   'use strict';
-  const VERSION = '0.11.1';
+  const VERSION = '0.12.0';
   const EMBED = window.__BH_EMBED || null;
   const LOGO = (EMBED && EMBED.logo) || 'img/logo.webp';
   const LOGO_SM = (EMBED && (EMBED.logoSm || EMBED.logo)) || 'img/logo-sm.webp';
@@ -228,7 +228,7 @@
   const view = () => $('#view');
   function top(title, opts = {}) {
     const back = opts.back ? '<button class="icon-btn" data-act="back" data-fallback="' + opts.back + '" aria-label="Volver">' + ic('back') + '</button>' : '';
-    const right = (opts.right || '');
+    const right = (EXT.moreh && EXT.moreh.headerBtn ? EXT.moreh.headerBtn() : '') + (opts.right || '');
     return '<header class="top"><div class="wrap">' + back + '<a class="hdr-logo" href="#inicio" aria-label="Inicio"><img src="' + LOGO_SM + '" alt="" width="30" height="31"></a><h1>' + title + '</h1>' + right + '</div></header>';
   }
   function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), 2200); }
@@ -448,7 +448,7 @@
     ['pealim', 'text', 'PEALIM', 'Verbos hebreos', 'פְּעָלִים'],
     ['estudios', 'study', 'Estudios', 'Biblioteca de estudio', 'לִמּוּד'],
     ['calendario', 'cal', 'Calendario', 'Shabat y moedim', 'מוֹעֲדִים'],
-    ['buscar-todo', 'search', 'Buscar', 'En toda la aplicación', 'חִפּוּשׂ']];
+    ['buscar-todo', 'search', 'Buscar', 'En toda la aplicación', 'חִפּוּשׂ'], ['camino', 'star', 'Mi camino', 'Tu progreso con el Moreh', 'דֶּרֶךְ']];
   async function vInicio() {
     const w = await weekInfo();
     const E = await getJSON('estudios.json');
@@ -472,7 +472,7 @@
     if (al && BY[al.b]) cont.push('<a class="cont" href="#audio-' + al.b + '-' + al.c + '-' + al.v + '">' + ic('play') + '<span><small>Continuar escuchando</small><b>' + esc(bookName(al.b)) + ' ' + al.c + ':' + al.v + '</b></span></a>');
     view().innerHTML =
       '<header class="top"><div class="wrap"><div class="brand"><img src="' + LOGO_SM + '" alt="" width="34" height="36"><span>Beit Hatzirah</span></div>' +
-      '<a class="icon-btn" href="#buscar-todo" aria-label="Buscar en toda la aplicación">' + ic('search') + '</a>' +
+      (EXT.moreh && EXT.moreh.headerBtn ? EXT.moreh.headerBtn() : '') + '<a class="icon-btn" href="#buscar-todo" aria-label="Buscar en toda la aplicación">' + ic('search') + '</a>' +
       '<a class="icon-btn" href="#menu" aria-label="Menú">' + ic('menu') + '</a></div></header>' +
       '<div class="wrap home">' +
       '<section class="hero2"><img src="' + LOGO + '" alt="Logotipo de Beit Hatzirah" width="150" height="157"><p class="he" lang="he">בית הצרעה</p><h2>BEIT HATZIRAH</h2>' +
@@ -481,7 +481,7 @@
       (cont.length ? '<section class="cont-row">' + cont.join('') + '</section>' : '') +
       parHTML +
       '<section class="section"><h3 class="h-sec">Explorar</h3><div class="mod-grid">' + MODS.map(([r, i, t, sub, h]) => '<a class="mod" href="#' + r + '"><span class="mod-ic">' + ic(i) + '</span><b>' + esc(t) + '</b><small>' + esc(sub) + '</small><span class="he mod-he" lang="he">' + esc(h) + '</span></a>').join('') + '</div></section>' +
-      '<section class="section two"><a class="card-msg" href="#mensaje">' + (EXT.wasp ? EXT.wasp.inline('hover', 64, 'main', 'msg-wsp') : '') + '<small>Mensaje diario · דְּבַר הַיּוֹם</small><b>' + esc(msg.titulo) + '</b><span>' + esc(refLabel(msg.ref)) + '</span></a></section>' +
+      '<section class="section two"><a class="card-msg" href="#mensaje">' + (EXT.moreh ? EXT.moreh.inline('still', 56, 'avatar', 'msg-wsp') : '') + '<small>Mensaje diario · דְּבַר הַיּוֹם</small><b>' + esc(msg.titulo) + '</b><span>' + esc(refLabel(msg.ref)) + '</span></a></section>' +
       '<section class="section"><h3 class="h-sec">Versículo destacado</h3><div class="verses feat">' + verseHTML(fb, fc, fv, fd) + '</div></section>' +
       '<section class="section"><h3 class="h-sec">Últimas publicaciones</h3><div class="rows">' +
       E.publicaciones.map(p => '<div class="row"><span class="t"><b>' + esc(p.titulo) + '</b><span>' + esc(fmtDate(fromISO(p.fecha), { day: 'numeric', month: 'long', year: 'numeric' })) + '. ' + esc(p.texto) + '</span></span></div>').join('') +
@@ -627,7 +627,7 @@
     const prev = P[n - 2], next = P[n];
     view().innerHTML = top(esc(p.tr), { back: 'parashiot', right: '<button class="icon-btn" data-act="p-share" data-n="' + n + '" aria-label="Compartir">' + ic('share') + '</button>' }) +
       '<div class="wrap study"><div class="reader-head"><p class="he parasha-name" lang="he">' + esc(p.he) + '</p><h2>' + esc(p.tr) + '</h2>' +
-      '<p class="muted" style="margin:0">' + esc(p.sig) + '. Parashá ' + n + ' de 54' + (isCur ? '. Lectura de esta semana' : '') + '</p></div>' + (EXT.wasp ? EXT.wasp.tip('estudio', n, 'Antes de comenzar') : '') +
+      '<p class="muted" style="margin:0">' + esc(p.sig) + '. Parashá ' + n + ' de 54' + (isCur ? '. Lectura de esta semana' : '') + '</p></div>' + (EXT.moreh ? EXT.moreh.tip('estudio', n, 'Antes de comenzar') : '') +
       '<dl class="meta"><dt>Libro</dt><dd>' + esc(BY[p.lec.b].tr) + ' (' + esc(BY[p.lec.b].es) + ')</dd>' +
       '<dt>Lectura</dt><dd><a href="#lectura-' + n + '">' + esc(fmtRange(p.lec)) + '</a></dd>' +
       '<dt>Haftará</dt><dd>' + haft.map(r => '<a href="#haftara-' + n + '">' + esc(fmtRange(r)) + '</a>').join('; ') + (p.seph ? '<br><span class="muted" style="font-size:.85rem">Costumbre ' + (prefs.haft === 'seph' ? 'sefaradí' : 'ashkenazí') + '</span>' : '') + '</dd></dl>' +
@@ -648,7 +648,7 @@
   async function vEstudios() {
     const E = await getJSON('estudios.json');
     view().innerHTML = top('Estudios', { back: 'menu' }) + '<div class="wrap">' +
-      '<div class="reader-head sec-head"><img class="sec-logo" src="' + LOGO + '" alt=""><p class="he" lang="he">בֵּית מִדְרָשׁ</p><h2>Biblioteca de estudios</h2></div>' + (EXT.wasp ? EXT.wasp.tip('estudio') : '') +
+      '<div class="reader-head sec-head"><img class="sec-logo" src="' + LOGO + '" alt=""><p class="he" lang="he">בֵּית מִדְרָשׁ</p><h2>Biblioteca de estudios</h2></div>' + (EXT.moreh ? EXT.moreh.tip('estudio') : '') +
       '<div class="group-title"><h3>Disponible ahora</h3></div><div class="rows">' +
       '<a class="row" href="#parashiot"><span class="t"><b>Estudios de las parashiot</b><span>54 porciones con resumen, personajes, temas y lectura bilingüe</span></span><span class="pill ok">Disponible</span></a>' +
       '<a class="row" href="#vocabulario"><span class="t"><b>Estudios de palabras hebreas</b><span>Vocabulario con referencias verificadas</span></span><span class="pill ok">Disponible</span></a>' +
@@ -727,7 +727,7 @@
 
   /* ----- Menú ----- */
   function vMenu() {
-    const items = [['buscar-todo', 'search', 'Buscar en toda la aplicación', 'חִפּוּשׂ'], ['diccionario', 'dict', 'Diccionario bíblico', 'מִלּוֹן'], ['gematria', 'hash', 'Gematría', 'גִּימַטְרִיָּה'], ['tefilot', 'pray', 'Tefilot: oraciones y bendiciones', 'תְּפִלּוֹת'], ['besora', 'chat', 'Besorá: evangelización y raíces hebreas', 'בְּשׂוֹרָה'], ['audio', 'play', 'Audio libro', 'ספר שמע'], ['estudios', 'study', 'Estudios', 'בֵּית מִדְרָשׁ'], ['aprender', 'alef', 'Yo aprendo hebreo con la Torá', 'עִבְרִית'], ['pealim', 'text', 'PEALIM: verbos hebreos', 'פְּעָלִים'], ['guardados-destacados', 'star', 'Mis versículos destacados', ''], ['guardados-notas', 'copy', 'Mis notas bíblicas', ''], ['mensaje', 'day', 'Mensaje diario', 'דְּבַר הַיּוֹם'], ['calendario', 'cal', 'Calendario bíblico', 'לוּחַ'], ['vocabulario', 'alef', 'Vocabulario del curso', ''], ['historial', 'hist', 'Historial de lectura', ''], ['acerca', 'info', 'Acerca de Beit Hatzirah', ''], ['ajustes', 'gear', 'Configuración', '']];
+    const items = [['camino', 'star', 'Mi camino de aprendizaje', 'דֶּרֶךְ'], ['buscar-todo', 'search', 'Buscar en toda la aplicación', 'חִפּוּשׂ'], ['diccionario', 'dict', 'Diccionario bíblico', 'מִלּוֹן'], ['gematria', 'hash', 'Gematría', 'גִּימַטְרִיָּה'], ['tefilot', 'pray', 'Tefilot: oraciones y bendiciones', 'תְּפִלּוֹת'], ['besora', 'chat', 'Besorá: evangelización y raíces hebreas', 'בְּשׂוֹרָה'], ['audio', 'play', 'Audio libro', 'ספר שמע'], ['estudios', 'study', 'Estudios', 'בֵּית מִדְרָשׁ'], ['aprender', 'alef', 'Yo aprendo hebreo con la Torá', 'עִבְרִית'], ['pealim', 'text', 'PEALIM: verbos hebreos', 'פְּעָלִים'], ['guardados-destacados', 'star', 'Mis versículos destacados', ''], ['guardados-notas', 'copy', 'Mis notas bíblicas', ''], ['mensaje', 'day', 'Mensaje diario', 'דְּבַר הַיּוֹם'], ['calendario', 'cal', 'Calendario bíblico', 'לוּחַ'], ['vocabulario', 'alef', 'Vocabulario del curso', ''], ['historial', 'hist', 'Historial de lectura', ''], ['acerca', 'info', 'Acerca de Beit Hatzirah', ''], ['ajustes', 'gear', 'Configuración', '']];
     view().innerHTML = top('Menú', { back: 'inicio' }) + '<div class="wrap"><div class="menu-brand"><img src="' + LOGO + '" alt="Logotipo de Beit Hatzirah" width="110" height="115"><div><p class="he" lang="he">בית הצרעה</p><b>Beit Hatzirah</b></div></div><div class="rows" style="margin-top:12px">' +
       items.map(([r, i, t, h]) => '<a class="row" href="#' + r + '"><span style="color:var(--accent)">' + ic(i, ' width="22" height="22"') + '</span><span class="t"><b>' + t + '</b></span>' + (h ? '<span class="he" lang="he">' + h + '</span>' : '') + '</a>').join('') +
       '</div><p class="muted center" style="font-size:.85rem;margin-top:24px">Versión ' + VERSION + '</p></div>';
@@ -856,7 +856,7 @@
       '<div class="group-title"><h3>Lectura</h3></div>' +
       '<div class="opt"><span class="t">Tamaño de letra<span>' + Math.round(prefs.scale * 100) + '%</span></span><span class="size-ctl"><button data-act="size-" aria-label="Reducir">A−</button><button data-act="size+" aria-label="Aumentar">A+</button></span></div>' +
       '<div class="opt"><span class="t">Idioma visible<span>Hebreo y español, solo hebreo o solo español</span></span><select data-act="set-view"><option value="ambos"' + (prefs.view === 'ambos' ? ' selected' : '') + '>Ambos</option><option value="he"' + (prefs.view === 'he' ? ' selected' : '') + '>Hebreo</option><option value="es"' + (prefs.view === 'es' ? ' selected' : '') + '>Español</option></select></div>' +
-      '<div class="opt"><span class="t">Animaciones de la avispa<span>Al desactivarlas, la avispa sigue presente pero sin movimiento</span></span>' + sw(!EXT.wasp || EXT.wasp.enabled(), 'wsp-toggle', 'Animaciones de la avispa') + '</div>' +
+      (EXT.moreh && EXT.moreh.settingsHTML ? EXT.moreh.settingsHTML(sw) : '') +
       '<div class="opt"><span class="t">Signos de cantilación<span>Mostrar los te\'amim además de las vocales</span></span>' + sw(prefs.teamim, 'tg-teamim', 'Signos de cantilación') + '</div>' +
       '<div class="opt"><span class="t">Nombres hebreos<span>Adaptación de nombres sobre la Reina-Valera 1909</span></span>' + sw(prefs.nombres, 'tg-nombres', 'Nombres hebreos') + '</div>' +
       '<div class="opt"><span class="t">Traducción al español<span>' + esc(VERDESC[prefs.ver]) + '</span></span><select data-act="set-ver-sel">' + Object.keys(VERS).map(k => '<option value="' + k + '"' + (prefs.ver === k ? ' selected' : '') + '>' + esc(VERS[k].short) + '</option>').join('') + '</select></div>' +

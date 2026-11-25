@@ -70,7 +70,7 @@
     B.view().innerHTML = top('Besorá', 'menu') + '<div class="wrap bs">' +
       '<div class="bs-hero"><img class="sec-logo" src="' + B.LOGO + '" alt=""><p class="he" lang="he">בְּשׂוֹרָה</p><h2>Besorá</h2><p>La Buena Noticia desde las Escrituras</p>' +
       '<div class="progress"><i style="width:' + Math.round(read / total * 100) + '%"></i></div><small>' + read + ' de ' + total + ' estudios leídos</small></div>' +
-      '<div class="field">' + B.ic('search') + '<input type="search" id="bsq" placeholder="Buscar un tema, versículo o pregunta" aria-label="Buscar en Besorá" autocomplete="off"></div><div id="bsres"></div>' +
+      (EXT.moreh ? EXT.moreh.tip('besora', 1) : '') + '<div class="field">' + B.ic('search') + '<input type="search" id="bsq" placeholder="Buscar un tema, versículo o pregunta" aria-label="Buscar en Besorá" autocomplete="off"></div><div id="bsres"></div>' +
       '<div class="bs-cards">' + cards.map(([k, i, t, sub]) => '<a class="bs-card" href="#besora-' + k + '"><span class="bs-ci' + (k === 'aleftav' ? ' he' : '') + '"' + (k === 'aleftav' ? ' lang="he"' : '') + '>' + i + '</span><b>' + t + '</b><small>' + sub + '</small></a>').join('') + '</div>' +
       (s.fav.length ? '<div class="group-title"><h3>★ Favoritos</h3></div><div class="rows">' + s.fav.map(id => itemRow(id)).join('') + '</div>' : '') +
       (s.hist.length ? '<div class="group-title"><h3>Historial de estudios</h3></div><div class="rows">' + s.hist.slice(0, 8).map(h => itemRow(h.id, h.ts)).join('') + '</div>' : '') +

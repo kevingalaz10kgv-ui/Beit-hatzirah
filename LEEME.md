@@ -4,7 +4,7 @@ Biblioteca digital de las Sagradas Escrituras en hebreo y español.
 Proyecto y dirección de contenido: **Moreh Gabriel ben Eliyah**
 Autoridad rabínica: **Rab Eliyah ben Eleazar**
 
-Versión 0.11.1. Incluye el módulo «Yo aprendo hebreo con la Torá».
+Versión 0.12.0. Incluye el módulo «Yo aprendo hebreo con la Torá».
 
 ---
 
@@ -294,3 +294,23 @@ La imagen oficial entregada por Beit Hatzirah (`img/fondos/jerusalen.png`, 1024 
 - **Formatos:** Original 2:3 (la imagen exacta), 1:1, 4:5 y 9:16. En los formatos de otra proporción, el espacio sobrante se completa con la misma imagen difuminada y oscurecida, para no recortar el logo, el marco dorado ni el paisaje. La exportación es en PNG a la resolución de la imagen (1024 × 1536, 1536 × 1536, 1229 × 1536 o 1024 × 1820).
 - **Texto:** se compone encima (nunca se regenera la imagen), centrado en el cielo y la ciudad, debajo del logo; hebreo en dorado claro y español en blanco, con un velo oscuro suave para el contraste que se aparta del logo. El tamaño se adapta a la extensión del versículo; en versículos muy largos la zona de texto se amplía hacia abajo antes de reducir más la letra, sin cortar palabras.
 - **Nuevos fondos:** se agregan en el registro `FONDOS` de `js/imagen.js` (archivo, tamaño, zona del texto y zona del logo). En la vista previa de Claude se usa una copia JPEG de alta calidad por límite de tamaño; la app publicada usa el PNG original.
+
+## 21. El Moreh de Beit Hatzirah (versión 0.12)
+
+El Moreh reemplaza a la avispa como guía oficial y conserva todas sus funciones (acompañamiento del curso, consejos, celebraciones, presencia por contexto, configuración).
+
+**Ilustración.** Se usa la imagen entregada tal cual: solo se quitó el fondo amarillo y se separó en tres capas (cuerpo, cabeza y brazo que señala). La cabeza gira sobre el cuello y el brazo sobre el hombro, con capas superpuestas para que nunca aparezcan uniones; en reposo, la composición coincide con la ilustración original. No se redibujó ni se generó con IA ningún rostro o pose: todas las animaciones mueven la ilustración original. Avatar circular para espacios pequeños.
+
+**Animaciones.** Entrada desde un costado, caminar, señalar, explicar (brazo), asentir, atención/escucha, reflexión, celebración (con un pequeño salto y saludo), bienvenida y despedida (se retira hacia un costado). La expresión del rostro es la de la ilustración original (sonriente).
+
+**Presencia.** Botón con su rostro en el encabezado de todas las pantallas (abre el panel de ayuda). Bienvenida en el inicio y avisos breves al entrar a cada sección (modo guía), que se retiran solos, al desplazarse o al tocar fuera. En el curso: se posa en el encabezado del curso y de los resultados, y su rostro acompaña cada lección; sus mensajes aparecen dentro de la tarjeta o de la barra de respuesta. Consejos integrados en diccionario, estudios, parashiot, gematría, audio, tefilot, Besorá y el estudio de imágenes. Celebraciones al subir de nivel, aprobar unidades, ganar insignias y alcanzar metas. Pantallas de carga y estados vacíos con su rostro.
+
+**Panel de ayuda.** Saludo y mensaje según la sección (rotan para no repetirse), preguntas sugeridas, campo para escribir preguntas, «Aprende con el Moreh», recorrido guiado, «Mi camino», configuración y «Ocultar por ahora». Las respuestas usan el contenido de Beit Hatzirah: reconoce temas (alfabeto, raíces, lectura, gematría, diccionario, parashá, tefilot, audio, Besorá, imágenes, configuración), referencias bíblicas («Juan 3:16») y busca en tefilot, Besorá, parashiot y el diccionario. No es una inteligencia artificial y lo dice; si no encuentra respuesta, lo indica y ofrece la búsqueda global.
+
+**Aprende con el Moreh** (`#aprende-…`): explicaciones paso a paso con datos reales: el alfabeto (22 letras del curso, con sonido, valor y ejemplo de la Torá), qué es una raíz (familia ש־מ־ר del índice BDB), leer un versículo palabra por palabra (el último versículo abierto del Tanaj, o Bereshit 1:1, con transliteración, significado y prefijos según el análisis morfológico), la gematría (cálculo de שלום), el uso del diccionario, la parashá de la semana y cómo leer una tefilá.
+
+**Recorrido guiado.** Se ofrece la primera vez; ilumina cada sección del inicio mientras el Moreh camina hacia ella y la señala. Se puede omitir, retroceder y volver a iniciar desde el panel o desde Configuración.
+
+**Mi camino de aprendizaje** (`#camino`, en el menú y en el inicio): letras aprendidas, lecciones, palabras consultadas, estudios y parashiot, capítulos escuchados, tefilot leídas, XP e insignias, y 14 reconocimientos con celebración del Moreh.
+
+**Configuración → El Moreh:** activar o desactivar el asistente, animaciones, modo guía o discreto, frecuencia (baja, normal, alta), efectos sonoros (también los del curso), iniciar el recorrido, pedir ayuda y «Mi camino». «Ocultar por ahora» lo esconde hasta volver a abrir la app.

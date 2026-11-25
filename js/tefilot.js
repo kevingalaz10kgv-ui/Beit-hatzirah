@@ -62,7 +62,7 @@
     B.view().innerHTML = top('Tefilot', 'menu') + '<div class="wrap tf">' +
       '<div class="tf-hero"><img class="sec-logo" src="' + B.LOGO + '" alt=""><p class="he" lang="he">תְּפִלּוֹת</p><h2>TEFILOT</h2><p>Oraciones y bendiciones hebreas</p></div>' +
       '<div class="field">' + B.ic('search') + '<input type="search" id="tfq" placeholder="Buscar: Netilat Yadáyim, Shabat, mañana, pan…" aria-label="Buscar una tefilá" autocomplete="off"></div><div id="tfres"></div>' +
-      '<div class="chips tf-moments">' + [['mañana', 'Mañana'], ['tarde', 'Tarde'], ['noche', 'Noche'], ['Shabat', 'Shabat'], ['comida', 'Comidas'], ['protección', 'Protección']].map(([k, l]) => '<a class="chip" href="#tefilot-m-' + encodeURIComponent(k) + '">' + l + '</a>').join('') + '</div>' +
+      (EXT.moreh ? EXT.moreh.tip('tefilot', 1) : '') + '<div class="chips tf-moments">' + [['mañana', 'Mañana'], ['tarde', 'Tarde'], ['noche', 'Noche'], ['Shabat', 'Shabat'], ['comida', 'Comidas'], ['protección', 'Protección']].map(([k, l]) => '<a class="chip" href="#tefilot-m-' + encodeURIComponent(k) + '">' + l + '</a>').join('') + '</div>' +
       '<div class="tf-cats">' + D.cats.map(c => { const n = D.tefilot.filter(t => t.cat === c.id).length; return '<a class="tf-cat" href="#tefilot-c-' + c.id + '"><span class="tf-ci">' + B.ic(c.ic === 'return' ? 'ret' : c.ic) + '</span><b>' + esc(c.es) + '</b><span class="he" lang="he">' + esc(c.he) + '</span><small>' + (n ? n + ' tefilot' : 'Próxima etapa') + '</small></a>'; }).join('') +
       '<a class="tf-cat" href="#tefilot-guia"><span class="tf-ci">' + B.ic('help') + '</span><b>¿Qué bendición digo?</b><span class="he" lang="he">מַה מְּבָרְכִים</span><small>Guía de alimentos</small></a></div>' +
       (s.fav.length ? '<div class="group-title"><h3>★ Favoritas</h3></div><div class="rows">' + s.fav.map(by).filter(Boolean).map(row).join('') + '</div>' : '') +
@@ -113,7 +113,7 @@
         (p.ref ? '<p class="tf-ref"><a href="#leer-' + p.ref.replace(' ', '-').replace(':', '-') + '">' + esc(B.refLabel(p.ref)) + '</a></p>' : (t.estado === 'biblico' ? '<p class="tf-ref">Texto litúrgico</p>' : '')) + '</div>');
     }
     B.view().innerHTML = top(esc(t.es), 'tefilot-c-' + t.cat) + '<div class="wrap tf' + (s.comfy ? ' comfy' : '') + '" style="--tfs:' + s.scale + '">' +
-      '<div class="tf-head">' + (EXT.wasp ? EXT.wasp.inline('still', 30, 'simple', 'tf-wsp') : '') + '<p class="he tf-name" lang="he">' + esc(t.he) + '</p><h1>' + esc(t.es) + '</h1><p class="muted" style="margin:0">' + esc(cat ? cat.es : '') + '</p>' + badge(t) + '</div>' +
+      '<div class="tf-head">' + (EXT.moreh ? EXT.moreh.inline('still', 30, 'simple', 'tf-wsp') : '') + '<p class="he tf-name" lang="he">' + esc(t.he) + '</p><h1>' + esc(t.es) + '</h1><p class="muted" style="margin:0">' + esc(cat ? cat.es : '') + '</p>' + badge(t) + '</div>' +
       '<dl class="meta"><dt>Cuándo</dt><dd>' + esc(t.momento) + '</dd><dt>Fuente</dt><dd>' + esc(t.fuente) + '</dd></dl>' +
       '<p>' + esc(t.explic) + '</p>' + (t.instr ? '<div class="tf-instr"><b>Instrucciones</b><p>' + esc(t.instr) + '</p></div>' : '') +
       '<div class="tf-tools"><div class="chips">' + [['he', 'Hebreo'], ['tr', 'Transliteración'], ['es', 'Traducción']].map(([k, l]) => '<button class="chip' + (s.show[k] ? ' on' : '') + '" data-act="tf-show" data-k="' + k + '" aria-pressed="' + s.show[k] + '">' + l + '</button>').join('') + '</div>' +
