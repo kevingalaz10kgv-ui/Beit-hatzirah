@@ -22,7 +22,7 @@ INSTR = {
            'modern Israeli pronunciation, following the vowel points (niqqud) exactly. Pace: calm, unhurried and reverent, '
            'with a brief pause at the end. Do not translate, explain or add any words.'),
     'es': ('Voz: un hombre de voz cálida y grave. Lee este texto bíblico en español latinoamericano neutro, con ritmo '
-           'pausado y tono reverente. Pronuncia a la manera hebrea los nombres Elohim, Adonay, Yahshua, Mashíaj y '
+           'pausado y tono reverente. Pronuncia a la manera hebrea los nombres Elohim, YAH, Yahshúa, Mashíaj y '
            'Ruaj HaKodesh. No traduzcas, no expliques y no agregues palabras.')
 }
 
@@ -31,21 +31,22 @@ TEAM = re.compile('[\u0591-\u05AF\u05BD\u05C0\u034F]')
 NAME = re.compile('י[\u05B0-\u05C7]*ה[\u05B0-\u05C7]*ו[\u05B0-\u05C7]*ה[\u05B0-\u05C7]*')
 def heb_speech(h):
     h = TEAM.sub('', h)
-    h = NAME.sub(lambda m: 'אֱלֹהִים' if '\u05B4' in m.group(0) else 'אֲדֹנָי', h)
+    h = NAME.sub('יָהּ', h)   # el Nombre se lee «YAH»
     return re.sub(r'\s+', ' ', h.replace('\u05BE', ' ').replace('\u05C3', '.')).strip()
 L = r'[^\W\d_]'
 NB, NE = r'(^|(?<!' + L + r')(?<!ʼ))', r'(?!' + L + r')'
 def _rx(w): return re.compile(r'(?<![^\W\d_ʼ])(' + w + r')(?![^\W\d_])')
-NOMBRES = [('Jesucristo', 'Yahshua HaMashíaj'), ('Jesús', 'Yahshua'), ('Cristos', 'Mashíaj'), ('Cristo', 'Mashíaj'),
-           ('Espíritu Santo', 'Ruaj HaKodesh'), ('Jehová', 'Adonay'), ('Yahvé', 'Adonay'), ('YAVÉ', 'Adonay'), ('Yavé', 'Adonay'),
+NOMBRES = [('Jesucristo', 'Yahshúa HaMashíaj'), ('Jesús', 'Yahshúa'), ('Cristos', 'Mashíaj'), ('Cristo', 'Mashíaj'),
+           ('Espíritu Santo', 'Ruaj HaKodesh'), ('Jehová', 'YAH'), ('Yahvé', 'YAH'), ('YAVÉ', 'YAH'), ('Yavé', 'YAH'), ('Jesu', 'Yahshúa'), ('Yah', 'YAH'), ('JAH', 'YAH'), ('Jah', 'YAH'), ('YA', 'YAH'), ('Aleluya', 'AleluYAH'),
            ('ʼElohim', 'Elohim'), ('ʼAdonay', 'Adonay'), ('ʼEL', 'El'), ('ʼEl', 'El'), ('Dios', 'Elohim')]
 DIVINO = re.compile(r'(?<![^\W\d_ʼ])(?:(el|del|al) )?(?:Señor|ʼAdonay) (?:Jehová|Yahvé|YAVÉ|Yavé)(?![^\W\d_])')
 ART = re.compile(r'(?<![^\W\d_ʼ])(el|del|al) (ʼAdonay|Jehová|Yahvé|YAVÉ|Yavé)(?![^\W\d_])')
 def es_speech(t, nombres=True):
     if nombres:
         art = lambda a: 'de ' if a == 'del' else 'a ' if a == 'al' else ''
-        t = DIVINO.sub(lambda m: art(m.group(1)) + 'Adonay Elohim', t)
-        t = ART.sub(lambda m: art(m.group(1)) + 'Adonay', t)
+        t = DIVINO.sub(lambda m: art(m.group(1)) + 'Adonay YAH', t)
+        t = re.sub(r'(?<![^\W\d_ʼ])(?:Jehová|Yahvé|YAVÉ|Yavé) de (?:los ejércitos|las huestes)(?![^\W\d_])', 'YAH Tzevaot', t)
+        t = ART.sub(lambda m: art(m.group(1)) + 'YAH', t)
         for a, b in NOMBRES: t = _rx(re.escape(a)).sub(b, t)
     return re.sub(r'\s+', ' ', t.replace('ʼ', '')).strip()
 

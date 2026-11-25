@@ -18,6 +18,7 @@
   const ESTADO = {
     biblico: ['✓ Texto bíblico', 'Texto del Códice de Leningrado tomado de la Biblia de la app. Las frases litúrgicas añadidas se indican.', 'ok'],
     cc0: ['Dominio público', 'Texto de una fuente en dominio público (CC0), con erratas evidentes corregidas.', 'cc0'],
+    devocional: ['Composición devocional', 'Oración escrita por Beit Hatzirah, inspirada en las Escrituras. No es una tefilá tradicional.', 'dev'],
     transcripcion: ['Por verificar', 'Transcripción del nusaj tradicional preparada por Beit Hatzirah. Verifícala con un sidur impreso antes de usarla en público.', 'warn']
   };
   const badge = t => { const e = t.verificado && t.estado !== 'biblico' ? ['✓ Verificada por Beit Hatzirah', '', 'ok'] : ESTADO[t.estado]; return '<span class="tf-badge tf-' + e[2] + '" title="' + esc(e[1]) + '">' + esc(e[0]) + '</span>'; };
@@ -30,8 +31,8 @@
     const p = B.Store.get('audio', {}) || {}; const want = l === 'he' ? p.vHe : p.vEs;
     return vs.find(v => v.name === want) || (l === 'he' && vs.find(v => /avri|asaf/i.test(v.name))) || vs.find(v => /premium|enhanced|mejorad|natural/i.test(v.name)) || vs[0];
   }
-  const heSpeech = h => h.replace(/[\u0591-\u05AF\u05BD\u05C0]/g, '').replace(/יְיָ|יְהֹוָה|יְהוָה|יהוה/g, 'אֲדֹנָי').replace(/לַיְיָ/g, 'לַאדֹנָי').replace(/\u05BE/g, ' ').replace(/[()]/g, '');
-  async function partText(t, i) { const p = t.partes[i]; if (AU.lang === 'he') return heSpeech(p.he); return p.es || await refES(p.ref); }
+  const heSpeech = h => h.replace(/[\u0591-\u05AF\u05BD\u05C0]/g, '').replace(/יְיָ|יְיָ|יי(?=[\s,.])/g, 'יָהּ').replace(/י[\u05B0-\u05C7]*ה[\u05B0-\u05C7]*ו[\u05B0-\u05C7]*ה[\u05B0-\u05C7]*/g, 'יָהּ').replace(/\u05BE/g, ' ').replace(/[()]/g, '');
+  async function partText(t, i) { const p = t.partes[i]; if (AU.lang === 'he' && p.he) return heSpeech(p.he); return p.es || await refES(p.ref); }
   async function refES(ref) { const [b, cv] = ref.split(' '); const [c, v] = cv.split(':').map(Number); const d = await B.getBookV(b); return B.es((d.c[c - 1][v - 1] || [''])[0]); }
   async function speakPart() {
     if (!AU.playing) return; const t = D.tefilot.find(x => x.id === AU.id); if (!t || AU.i >= t.partes.length) { stopAudio(); return; }
@@ -61,8 +62,9 @@
     B.view().innerHTML = top('Tefilot', 'menu') + '<div class="wrap tf">' +
       '<div class="tf-hero"><img class="sec-logo" src="' + B.LOGO + '" alt=""><p class="he" lang="he">תְּפִלּוֹת</p><h2>TEFILOT</h2><p>Oraciones y bendiciones hebreas</p></div>' +
       '<div class="field">' + B.ic('search') + '<input type="search" id="tfq" placeholder="Buscar: Netilat Yadáyim, Shabat, mañana, pan…" aria-label="Buscar una tefilá" autocomplete="off"></div><div id="tfres"></div>' +
-      '<div class="tf-cats">' + D.cats.map(c => { const n = D.tefilot.filter(t => t.cat === c.id).length; return '<a class="tf-cat" href="#tefilot-c-' + c.id + '"><span class="tf-ci">' + c.ic + '</span><b>' + esc(c.es) + '</b><span class="he" lang="he">' + esc(c.he) + '</span><small>' + (n ? n + ' tefilot' : 'Próxima etapa') + '</small></a>'; }).join('') +
-      '<a class="tf-cat" href="#tefilot-guia"><span class="tf-ci">🍎</span><b>¿Qué bendición digo?</b><span class="he" lang="he">מַה מְּבָרְכִים</span><small>Guía de alimentos</small></a></div>' +
+      '<div class="chips tf-moments">' + [['mañana', 'Mañana'], ['tarde', 'Tarde'], ['noche', 'Noche'], ['Shabat', 'Shabat'], ['comida', 'Comidas'], ['protección', 'Protección']].map(([k, l]) => '<a class="chip" href="#tefilot-m-' + encodeURIComponent(k) + '">' + l + '</a>').join('') + '</div>' +
+      '<div class="tf-cats">' + D.cats.map(c => { const n = D.tefilot.filter(t => t.cat === c.id).length; return '<a class="tf-cat" href="#tefilot-c-' + c.id + '"><span class="tf-ci">' + B.ic(c.ic === 'return' ? 'ret' : c.ic) + '</span><b>' + esc(c.es) + '</b><span class="he" lang="he">' + esc(c.he) + '</span><small>' + (n ? n + ' tefilot' : 'Próxima etapa') + '</small></a>'; }).join('') +
+      '<a class="tf-cat" href="#tefilot-guia"><span class="tf-ci">' + B.ic('help') + '</span><b>¿Qué bendición digo?</b><span class="he" lang="he">מַה מְּבָרְכִים</span><small>Guía de alimentos</small></a></div>' +
       (s.fav.length ? '<div class="group-title"><h3>★ Favoritas</h3></div><div class="rows">' + s.fav.map(by).filter(Boolean).map(row).join('') + '</div>' : '') +
       (used.length ? '<div class="group-title"><h3>Las más usadas</h3></div><div class="rows">' + used.map(row).join('') + '</div>' : '') +
       (s.hist.length ? '<div class="group-title"><h3>Leídas recientemente</h3></div><div class="rows">' + s.hist.slice(0, 5).map(by).filter(Boolean).map(row).join('') + '</div>' : '') +
@@ -81,8 +83,9 @@
   });
   async function vCat(id) {
     await data(); const c = D.cats.find(x => x.id === id); if (!c) return B.go('tefilot');
-    const ts = D.tefilot.filter(t => t.cat === id); const s = ST();
-    B.view().innerHTML = top(esc(c.es)) + '<div class="wrap tf"><div class="tf-hero small"><span class="tf-ci">' + c.ic + '</span><p class="he" lang="he">' + esc(c.he) + '</p><h2>' + esc(c.es) + '</h2></div>' +
+    const FIESTA = /fiestas|Pésaj|Sukot|Shavuot|Yom Kipur|Yom Teruá/;
+    const ts = D.tefilot.filter(t => t.cat === id || (id === 'fiestas' && t.cat !== 'fiestas' && t.tags.some(x => FIESTA.test(x)))); const s = ST();
+    B.view().innerHTML = top(esc(c.es)) + '<div class="wrap tf"><div class="tf-hero small"><span class="tf-ci">' + B.ic(c.ic === 'return' ? 'ret' : c.ic) + '</span><p class="he" lang="he">' + esc(c.he) + '</p><h2>' + esc(c.es) + '</h2></div>' +
       (ts.length ? '<div class="rows">' + ts.map(t => '<a class="row" href="#tefilot-t-' + t.id + '"><span class="t"><b>' + esc(t.es) + '</b><span>' + esc(t.momento) + '</span></span>' + (s.learned.includes(t.id) ? '<span class="done">' + B.ic('check', ' width="18" height="18"') + '</span>' : '') + '<span class="he" lang="he">' + esc(t.he) + '</span></a>').join('') + '</div>'
         : '<div class="empty"><p>Esta categoría se incorporará en la próxima etapa: oraciones por la familia, los hijos, el matrimonio, la salud, la protección y la sabiduría. Las composiciones devocionales de Beit Hatzirah se identificarán claramente como tales, para no confundirlas con las tefilot tradicionales.</p><a class="btn" href="#tefilot-c-especiales">Ver momentos especiales</a></div>') +
       (id === 'alimentos' ? '<div class="btns" style="margin:16px 0"><a class="btn solid" href="#tefilot-guia">🍎 ¿Qué bendición digo?</a></div>' : '') + '</div>';
@@ -104,8 +107,8 @@
     for (let i = 0; i < t.partes.length; i++) {
       const p = t.partes[i]; const es = p.es || await refES(p.ref);
       parts.push('<div class="tf-p" id="tfp' + i + '" data-act="tf-part" data-i="' + i + '">' +
-        (s.show.he ? '<p class="he tf-he" lang="he" dir="rtl">' + words(p.he) + '</p>' : '') +
-        (s.show.tr ? '<p class="tf-tr" lang="es">' + esc(p.tr) + '</p>' : '') +
+        (s.show.he && p.he ? '<p class="he tf-he" lang="he" dir="rtl">' + words(p.he) + '</p>' : '') +
+        (s.show.tr && p.tr ? '<p class="tf-tr" lang="es">' + esc(p.tr) + '</p>' : '') +
         (s.show.es ? '<p class="tf-es" lang="es">' + B.es(es || '', true) + '</p>' : '') +
         (p.ref ? '<p class="tf-ref"><a href="#leer-' + p.ref.replace(' ', '-').replace(':', '-') + '">' + esc(B.refLabel(p.ref)) + '</a></p>' : (t.estado === 'biblico' ? '<p class="tf-ref">Texto litúrgico</p>' : '')) + '</div>');
     }
@@ -172,7 +175,11 @@
     return out.join('\n\n') + '\n\nBeit Hatzirah — בית הצרעה';
   }
 
-  Object.assign(EXT.routes, { tefilot: p => { if (p[1] === 'c') return vCat(p[2]); if (p[1] === 't') return vTef(p.slice(2).join('-')); if (p[1] === 'guia') return vGuia(); return vHome(); } });
+  async function vMoment(k) {
+    await data(); k = decodeURIComponent(k); const ts = D.tefilot.filter(t => t.tags.includes(k) || (k === 'tarde' && /tarde|Minjá/.test(t.momento)));
+    B.view().innerHTML = B.top('Tefilot: ' + esc(k), { back: 'tefilot' }) + '<div class="wrap tf"><div class="rows" style="margin-top:12px">' + ts.map(t => '<a class="row" href="#tefilot-t-' + t.id + '"><span class="t"><b>' + esc(t.es) + '</b><span>' + esc(t.momento) + '</span></span><span class="he" lang="he">' + esc(t.he) + '</span></a>').join('') + '</div>' + (ts.length ? '' : '<p class="muted">Todavía no hay tefilot para este momento.</p>') + '</div>';
+  }
+  Object.assign(EXT.routes, { tefilot: p => { if (p[1] === 'm') return vMoment(p.slice(2).join('-')); if (p[1] === 'c') return vCat(p[2]); if (p[1] === 't') return vTef(p.slice(2).join('-')); if (p[1] === 'guia') return vGuia(); return vHome(); } });
   EXT.tabs.tefilot = '';
   const prevLeave = EXT.leave; EXT.leave = () => { if (prevLeave) prevLeave(); if (!/^#tefilot-t-/.test(location.hash) && AU.playing) stopAudio(); };
 })();

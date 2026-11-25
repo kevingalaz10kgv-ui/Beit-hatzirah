@@ -4,7 +4,7 @@ Biblioteca digital de las Sagradas Escrituras en hebreo y español.
 Proyecto y dirección de contenido: **Moreh Gabriel ben Eliyah**
 Autoridad rabínica: **Rab Eliyah ben Eleazar**
 
-Versión 0.8.0. Incluye el módulo «Yo aprendo hebreo con la Torá».
+Versión 0.9.0. Incluye el módulo «Yo aprendo hebreo con la Torá».
 
 ---
 
@@ -228,3 +228,21 @@ Menú → Tefilot, la tarjeta del inicio, o «Tefilot de Shabat» en cada parash
 El logotipo oficial es el archivo entregado por Beit Hatzirah (fondo transparente). Solo se recortó el margen vacío y se redujo de tamaño: no se modificó el dibujo, los colores ni las proporciones. Como es plateado con contornos oscuros sobre fondo transparente, se ve bien tanto en modo claro como en modo oscuro sin versiones alteradas.
 
 Aparece en: pantalla de bienvenida, encabezado de todas las pantallas (en el lector se oculta para dar espacio al título), inicio, menú, pantallas de carga, Audio libro, Estudios, Parashiot, Aprender hebreo, PEALIM, Besorá, Tefilot y la imagen para compartir versículos. Los íconos de la app usan el logo sobre fondo negro #111111 (paleta oficial); el ícono enmascarable deja el margen de seguridad para Android.
+
+## 16. Actualización maestra (versión 0.9)
+
+**Identidad.** Inicio renovado con logo, lema y créditos («Pertenece a Ha’roeh Eliyah ben Eleazar · Desarrollado por Moreh Gabriel ben Eliyah»), cuadrícula de módulos con íconos propios y «Continuar leyendo / escuchando». «Acerca de» con lema, créditos, quiénes somos, misión, visión y propósito educativo.
+
+**Nombres divinos (YAH).** En español, el Nombre se presenta como YAH en las cuatro traducciones y en todo el contenido: Jehová/Yahvé/YAVÉ/JAH/Jah/YA → YAH; «Señor Jehová» → Adonay YAH; «Jehová de los ejércitos» → YAH Tzevaot; Aleluya → AleluYAH; Jesús/Jesu → Yahshúa. El hebreo original nunca se modifica. La palabra hebrea אֲדֹנָי (Adonai, «Señor») se conserva como Adonay, y el nombre de la organización «Testigos de Jehová» no se cambia. La voz lee el Nombre como «YAH». El generador de audio usa las mismas reglas.
+
+**Diccionario bíblico** (Menú → Diccionario): ficha de 8.638 palabras (hebreo, transliteración, pronunciación, significado, categoría, género, raíz, familia de palabras, frecuencia, primera aparición verificada, gematría, ejemplos y explicación cuando existe); explorador de 1.472 raíces (índice BDB); 21 nombres y títulos divinos; 22 términos hebreo-griego; diccionario temático; 10 expresiones idiomáticas; lugares y personajes; concordancia completa calculada sobre el texto hebreo; flashcards; favoritos e historial; buscador por hebreo, español, transliteración, raíz o número.
+
+**Gematría:** calculadora con teclado hebreo en pantalla, desglose letra por letra, Mispar Hejrejí, Gadol, Katán, Sidurí y reducción, palabras del Tanaj con el mismo valor, tabla de valores y aclaración de que no es prueba de doctrina. El valor numérico aparece también en el análisis de palabras y en las letras del curso.
+
+**Biblia:** Reina-Valera 1865 (dominio público) como cuarta traducción; texto griego del Brit Hadashá (Statistical Restoration GNT, CC BY 4.0) opcional en Configuración; «Comparar versiones» y «Referencias cruzadas» (OpenBible.info, CC BY) en cada versículo; el análisis de palabras enlaza al diccionario, PEALIM y la concordancia.
+
+**Tefilot:** 55 tefilot. Nuevas categorías: Tehilim (Salmos 23, 121, 150), Fiestas (Salmo 117 y bendiciones de las fiestas), Agradecimiento (Salmo 100, Salmo 136), Arrepentimiento (Salmo 51, Hoshea 14) y nueve oraciones personales y familiares marcadas como «Composición devocional». Filtros por momento del día.
+
+**Búsqueda global:** botón de lupa del inicio; busca a la vez en la Biblia, el diccionario, Tefilot, Besorá, Parashiot, el curso, PEALIM y el calendario.
+
+**Pendiente (próximas etapas):** estudios completos por parashá, libro, personaje y tema (con objetivos, desarrollo y preguntas); ampliación de Besorá (Reino de Elohim, resurrección y demás temas faltantes); nuevos minijuegos y niveles del curso (ranking personal, desafíos semanales nuevos, animación del trazado); Brit Hadashá en hebreo con nikud (no se encontró una edición con licencia abierta accesible; la de Delitzsch disponible no tiene vocales); grabaciones de audio verificadas; asistente de inteligencia artificial (la app no tiene IA integrada: requeriría un servicio externo con costo).

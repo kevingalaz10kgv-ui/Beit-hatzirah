@@ -118,7 +118,7 @@
   function speak(text, slow) {
     if (!('speechSynthesis' in window)) { B.toast('Este navegador no tiene voz'); return; }
     if (!voice) { B.toast('Tu teléfono no tiene una voz en hebreo instalada'); return; }
-    const u = new SpeechSynthesisUtterance(text.replace(/יְהוָה/g, 'אֲדֹנָי').replace(/־/g, ' '));
+    const u = new SpeechSynthesisUtterance(text.replace(/י[\u05B0-\u05C7]*ה[\u05B0-\u05C7]*ו[\u05B0-\u05C7]*ה[\u05B0-\u05C7]*/g, 'יָהּ').replace(/־/g, ' '));
     u.lang = voice.lang; u.voice = voice; u.rate = slow ? 0.55 : 0.85;
     speechSynthesis.cancel(); speechSynthesis.speak(u);
   }
@@ -253,6 +253,7 @@
           (it.alt ? '<div class="lx-alt">También se llama: ' + esc(it.alt) + '</div>' : '') +
           '<div class="lx-es">' + esc(it.kind === 'letters' || it.kind === 'vowels' ? 'Sonido: ' + it.es : it.es) + '</div>' +
           (it.snd ? '<p class="lx-snd">' + esc(it.snd) + '</p>' : '') +
+          (it.kind === 'letters' && it.he.length === 1 && EXT.gematria ? '<p class="lx-gv">Valor numérico: <b>' + EXT.gematria(it.he).std + '</b>' + (/[ךםןףץ]/.test(it.he) ? ' (en el método Gadol, ' + EXT.gematria(it.he).gadol + ')' : '') + ' · <a href="#gematria" data-act="lx-ref">Gematría</a></p>' : '') +
           (it.fin ? '<div class="lx-forms"><span>Forma normal ' + he(it.he, 'lx-glyph-s') + '</span><span>Forma final ' + he(it.fin, 'lx-glyph-s') + '</span></div>' : (it.kind === 'letters' && it.he.length === 1 && !/[ךםןףץ]/.test(it.he) ? '<p class="lx-snd muted">Se escribe igual al comienzo, en medio y al final de la palabra.</p>' : '')) +
           audioBtns(it) +
           (it.ex ? '<div class="lx-ex"><span>Ejemplo en la Torá</span>' + he(it.ex.he, 'lx-opt-he') + '<b>' + esc(it.ex.tr) + '</b> = ' + esc(it.ex.es) + ' <a href="#' + B.refRoute(it.ex.ref) + '" data-act="lx-ref">' + esc(B.refLabel(it.ex.ref)) + '</a></div>' : '') +
@@ -603,7 +604,7 @@
     B.view().innerHTML = B.top('Aprender hebreo', { right: '<a class="icon-btn" href="#perfil-hebreo" aria-label="Mi perfil">👤</a>' }) +
       '<div class="wrap lx-home"><div class="lx-hero"><img class="sec-logo" src="' + B.LOGO + '" alt=""><p class="he" lang="he">אֲנִי לוֹמֵד עִבְרִית עִם הַתּוֹרָה</p><h2>Yo aprendo hebreo con la Torá</h2>' + stats(s) + '</div>' +
       '<div class="lx-actions"><button class="lx-big" data-act="lx-unit" data-u="' + nx.id + '" style="--wc:' + nx.world.color + '"><span>Continuar</span><b>' + esc(nx.name) + '</b><small>' + (nx.world.theme ? 'Mundo temático' : 'Mundo ' + nx.world.n) + '. 3 a 5 minutos</small></button>' +
-      '<div class="lx-mini"><a href="#repaso" class="' + (due ? 'hot' : '') + '">🔁<b>Repasar</b><span>' + due + ' por repasar</span></a><a href="#parasha-hebreo">📜<b>Hebreo de la parashá</b><span>Vocabulario de esta semana</span></a><a href="#contrarreloj">⚡<b>Contrarreloj</b><span>60 segundos</span></a><a href="#mis-palabras">🗂️<b>Mis palabras</b><span>Dominio y próximo repaso</span></a></div></div>' +
+      '<div class="lx-mini"><a href="#repaso" class="' + (due ? 'hot' : '') + '">🔁<b>Repasar</b><span>' + due + ' por repasar</span></a><a href="#parasha-hebreo">📜<b>Hebreo de la parashá</b><span>Vocabulario de esta semana</span></a><a href="#contrarreloj">⚡<b>Contrarreloj</b><span>60 segundos</span></a><a href="#mis-palabras">🗂️<b>Mis palabras</b><span>Dominio y próximo repaso</span></a><a href="#gematria">🔢<b>Gematría</b><span>Valor numérico de las palabras</span></a><a href="#diccionario">📖<b>Diccionario</b><span>Palabras, raíces y flashcards</span></a></div></div>' +
       (hasVoice() ? '' : '<p class="notice">Este teléfono no tiene una voz en hebreo instalada, así que los ejercicios de escuchar están ocultos. En iPhone: Ajustes → Accesibilidad → Contenido leído → Voces → Hebreo. En Android: Ajustes → Texto a voz → instala el idioma hebreo.</p>') +
       map + '<p class="muted" style="font-size:.82rem;margin:20px 0">Las palabras se presentan en hebreo bíblico, con vocales. La voz es sintética, del propio teléfono, y usa la pronunciación israelí moderna; no es una grabación del hebreo antiguo.</p></div>';
   }

@@ -66,7 +66,7 @@
   const top = (t, back) => B.top(t, { back: back || 'besora' });
   async function vHome() {
     await data(); const s = ST(); const total = D.temas.length + D.faq.length; const read = D.temas.filter(t => s.read[t.id]).length + D.faq.filter((f, i) => s.read['faq-' + i]).length;
-    const cards = [['perfiles', '🗣️', '¿Con quién voy a conversar?', 'Cinco perfiles, ' + D.temas.length + ' temas'], ['profecias', '📜', 'Profecías del Mashíaj', D.profecias.length + ' profecías en dos columnas'], ['fiestas', '🕎', 'Shabat y fiestas bíblicas', 'Levítico 23 y su relación con el Mashíaj'], ['raices', '🌳', 'Raíces hebreas', D.raices.length + ' conceptos clave'], ['aleftav', 'את', 'Misterios: el Alef-Tav', 'Gramática y lectura simbólica'], ['faq', '❓', 'Preguntas difíciles', D.faq.length + ' respuestas bíblicas'], ['sim', '🎭', 'Simulador de conversaciones', D.sim.length + ' escenarios con evaluación'], ['rapida', '⚡', 'Evangelización rápida', 'Una respuesta preparada en segundos']];
+    const cards = [['perfiles', 'user', '¿Con quién voy a conversar?', 'Cinco perfiles, ' + D.temas.length + ' temas'], ['profecias', 'scroll', 'Profecías del Mashíaj', D.profecias.length + ' profecías en dos columnas'], ['fiestas', 'cal', 'Shabat y fiestas bíblicas', 'Levítico 23 y su relación con el Mashíaj'], ['raices', 'tree', 'Raíces hebreas', D.raices.length + ' conceptos clave'], ['aleftav', 'את', 'Misterios: el Alef-Tav', 'Gramática y lectura simbólica'], ['faq', 'help', 'Preguntas difíciles', D.faq.length + ' respuestas bíblicas'], ['sim', 'mask', 'Simulador de conversaciones', D.sim.length + ' escenarios con evaluación'], ['rapida', 'bolt', 'Evangelización rápida', 'Una respuesta preparada en segundos']];
     B.view().innerHTML = top('Besorá', 'menu') + '<div class="wrap bs">' +
       '<div class="bs-hero"><img class="sec-logo" src="' + B.LOGO + '" alt=""><p class="he" lang="he">בְּשׂוֹרָה</p><h2>Besorá</h2><p>La Buena Noticia desde las Escrituras</p>' +
       '<div class="progress"><i style="width:' + Math.round(read / total * 100) + '%"></i></div><small>' + read + ' de ' + total + ' estudios leídos</small></div>' +
@@ -100,14 +100,14 @@
     if (parts[2]) {
       const p = PERFILES.find(x => x[0] === parts[2]); if (!p) return B.go('besora-perfiles');
       const ts = D.temas.filter(t => t.perfil === p[0]);
-      B.view().innerHTML = top(esc(p[1]), 'besora-perfiles') + '<div class="wrap bs"><div class="bs-hero small"><span class="bs-pi">' + p[2] + '</span><h2>' + esc(p[1]) + '</h2><p>' + esc(p[3]) + '</p></div>' +
+      B.view().innerHTML = top(esc(p[1]), 'besora-perfiles') + '<div class="wrap bs"><div class="bs-hero small"><span class="bs-pi">' + B.ic('user') + '</span><h2>' + esc(p[1]) + '</h2><p>' + esc(p[3]) + '</p></div>' +
         (p[0] === 'judio' ? '<p class="notice">Con una persona judía, el Tanaj es la autoridad compartida. Presenta las interpretaciones mesiánicas como tales y reconoce las lecturas judías tradicionales: el respeto abre puertas.</p>' : '') +
         '<div class="rows">' + ts.map((t, i) => '<a class="row" href="#besora-tema-' + t.id + '"><span class="num">' + (i + 1) + '</span><span class="t"><b>' + esc(t.t) + '</b><span>' + esc(t.refs.slice(0, 3).map(refName).join(' · ')) + '</span></span>' + (s.read[t.id] ? '<span class="done">' + B.ic('check', ' width="18" height="18"') + '</span>' : '') + '</a>').join('') + '</div>' +
         '<div class="btns" style="margin:20px 0"><a class="btn" href="#besora-sim-' + p[0] + '">🎭 Practicar en el simulador</a><a class="btn" href="#besora-rapida">⚡ Respuesta rápida</a></div></div>';
       return;
     }
     B.view().innerHTML = top('¿Con quién voy a conversar?') + '<div class="wrap bs"><p style="margin-top:18px">Elige el perfil de la persona. Cada tema incluye el texto bíblico, palabras hebreas, las distintas interpretaciones, objeciones frecuentes y una forma respetuosa de responder.</p><div class="bs-cards">' +
-      PERFILES.map(([k, n, i, d]) => { const ts = D.temas.filter(t => t.perfil === k); const rd = ts.filter(t => s.read[t.id]).length; return '<a class="bs-card" href="#besora-perfiles-' + k + '"><span class="bs-ci">' + i + '</span><b>' + esc(n) + '</b><small>' + esc(d) + '</small><small class="bs-prog">' + rd + ' de ' + ts.length + ' leídos</small></a>'; }).join('') + '</div></div>';
+      PERFILES.map(([k, n, i, d]) => { const ts = D.temas.filter(t => t.perfil === k); const rd = ts.filter(t => s.read[t.id]).length; return '<a class="bs-card" href="#besora-perfiles-' + k + '"><span class="bs-ci">' + B.ic('user') + '</span><b>' + esc(n) + '</b><small>' + esc(d) + '</small><small class="bs-prog">' + rd + ' de ' + ts.length + ' leídos</small></a>'; }).join('') + '</div></div>';
   }
 
   async function vTema(parts) {

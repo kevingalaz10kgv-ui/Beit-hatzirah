@@ -44,7 +44,7 @@
   function hebSpeech(h) {
     return h.replace(TEAM, '')
       // el Nombre (י־ה־ו־ה, con o sin prefijo) se lee «Adonay»; con las vocales de Elohim (jirik final), «Elohim»
-      .replace(/י[\u05B0-\u05C7]*ה[\u05B0-\u05C7]*ו[\u05B0-\u05C7]*ה[\u05B0-\u05C7]*/g, m => /\u05B4/.test(m) ? 'אֱלֹהִים' : 'אֲדֹנָי')
+      .replace(/י[\u05B0-\u05C7]*ה[\u05B0-\u05C7]*ו[\u05B0-\u05C7]*ה[\u05B0-\u05C7]*/g, 'יָהּ')
       .replace(/\u05BE/g, ' ').replace(/\u05C3/g, '.').replace(/\s+/g, ' ').trim();
   }
   const esSpeech = t => B.es(t).replace(/ʼ/g, '').replace(/\s+/g, ' ').trim();
@@ -277,7 +277,7 @@
       [['es', 'Español'], ['he', 'עִבְרִית'], ['both', 'Ambos']].map(([k, l]) => '<button data-act="au-lang" data-l="' + k + '" aria-pressed="' + (pr.lang === k) + '"' + (k === 'he' ? ' lang="he"' : '') + '>' + l + '</button>').join('') + '</div>' +
       '<span>Mostrar texto</span><div class="seg three" role="group" aria-label="Texto visible">' + [['ambos', 'Ambos'], ['he', 'Hebreo'], ['es', 'Español']].map(([k, l]) => '<button data-act="au-text" data-t="' + k + '" aria-pressed="' + (pr.text === k) + '">' + l + '</button>').join('') + '</div></div>' +
       '<div id="au-voicewarn"></div>' +
-      (pr.lang !== 'es' && !(pr.lang === 'he' && recFor('he', b, c)) ? '<p class="au-note">' + (bk.nt ? 'El hebreo del Brit Hadashá no tiene vocales; la voz lo lee tal como está escrito. ' : '') + 'La lectura en hebreo usa la voz del dispositivo con la pronunciación israelí moderna, a partir del texto hebreo con nikud. No es la lectura cantada con te’amim. El Nombre יהוה se lee «Adonay».</p>' : '') +
+      (pr.lang !== 'es' && !(pr.lang === 'he' && recFor('he', b, c)) ? '<p class="au-note">' + (bk.nt ? 'El hebreo del Brit Hadashá no tiene vocales; la voz lo lee tal como está escrito. ' : '') + 'La lectura en hebreo usa la voz del dispositivo con la pronunciación israelí moderna, a partir del texto hebreo con nikud. No es la lectura cantada con te’amim. El Nombre יהוה se lee «YAH».</p>' : '') +
       '</div>' +
       '<h2 class="au-title">' + esc(bk.tr) + ' ' + c + '</h2>' +
       '<div class="au-verses">' + verses + '</div>' +

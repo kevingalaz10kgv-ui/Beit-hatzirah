@@ -2,7 +2,7 @@
    Aplicación principal (JavaScript sin dependencias). */
 (function () {
   'use strict';
-  const VERSION = '0.8.0';
+  const VERSION = '0.9.0';
   const EMBED = window.__BH_EMBED || null;
   const LOGO = (EMBED && EMBED.logo) || 'img/logo.webp';
   const LOGO_SM = (EMBED && (EMBED.logoSm || EMBED.logo)) || 'img/logo-sm.webp';
@@ -22,8 +22,10 @@
   const VERS = {
     pdt: { name: 'Palabra de Dios para ti', short: 'PDT', src: 'Palabra de Dios para ti © 2020 Asociación Bíblica Latinoamericana, licencia CC BY-SA 4.0' },
     blm: { name: 'Biblia Libre para el Mundo', short: 'BLM', src: 'Biblia Libre para el Mundo, de David Williams y Michael Paul Johnson, dominio público (CC0); borrador en revisión' },
-    rv: { name: 'Reina-Valera 1909', short: 'RV1909', src: 'Reina-Valera 1909, dominio público' }
+    rv: { name: 'Reina-Valera 1909', short: 'RV1909', src: 'Reina-Valera 1909, dominio público' },
+    rv65: { name: 'Reina-Valera 1865', short: 'RV1865', src: 'Reina-Valera 1865, dominio público' }
   };
+  if (EMBED && !EMBED.books['rv65/GEN']) delete VERS.rv65;
   const prefs = Object.assign({}, DEF, Store.get('prefs', {}));
   if (!VERS[prefs.ver]) prefs.ver = 'pdt';
   const savePrefs = () => { Store.set('prefs', prefs); applyPrefs(); };
@@ -71,8 +73,20 @@
     try { return await p; } catch (e) { delete cache[k]; throw e; }
   }
   /* Libro con el español de la traducción elegida: celdas [español, hebreo, numeración hebrea, nota] */
+  async function getGr(code) { if (!BY[code].nt) return null; try { return await getJSON('gr/' + code + '.json'); } catch (e) { return null; } }
   async function getBookV(code) {
-    const ver = prefs.ver; const k = 'v/' + ver + '/' + code;
+    const ver = prefs.ver; const k = 'v/' + ver + '/' + code + (prefs.greek ? '/g' : '');
+    if (cache[k]) return cache[k];
+    const p = (async () => {
+      const r = await getBookV0(code, ver);
+      if (prefs.greek && BY[code].nt) { const g = await getGr(code); if (g) return Object.assign({}, r, { c: r.c.map((ch, ci) => ch.map((cell, vi) => { const x = cell.slice(); while (x.length < 4) x.push(''); x[4] = (g.c[ci] || [])[vi] || ''; return x; })) }); }
+      return r;
+    })();
+    cache[k] = p;
+    try { return await p; } catch (e) { delete cache[k]; throw e; }
+  }
+  async function getBookV0(code, ver) {
+    const k = 'v0/' + ver + '/' + code;
     if (cache[k]) return cache[k];
     const p = (async () => {
       const base = await getBook(code);
@@ -96,12 +110,15 @@
   const L = '\\p{L}';
   const NB = '(^|[^' + L + 'ʼ])';
   const NE = '(?=[^' + L + ']|$)';
+  // Nombres divinos (Beit Hatzirah): el Nombre se presenta como YAH en español; el hebreo nunca se modifica.
   const NOMBRE_DIVINO = new RegExp(NB + '(?:(el|del|al) )?((?:Señor|ʼAdonay) (?:Jehová|Yahvé|YAVÉ|Yavé))' + NE, 'gu');
-  const ART_ADONAY = new RegExp(NB + '(el|del|al) (ʼAdonay|Jehová|Yahvé|YAVÉ|Yavé)' + NE, 'gu');
+  const TZEVAOT = new RegExp(NB + '((?:Jehová|Yahvé|YAVÉ|Yavé) de (?:los [eE]jércitos|las huestes))' + NE, 'gu');
+  const ART_ADONAY = new RegExp(NB + '(el|del|al) (Jehová|Yahvé|YAVÉ|Yavé)' + NE, 'gu');
   const NOMBRES = [
-    ['Jesucristo', 'Yahshua HaMashíaj'], ['Jesús', 'Yahshua'], ['Cristos', 'Mashíaj'], ['Cristo', 'Mashíaj'],
+    ['Jesucristo', 'Yahshúa HaMashíaj'], ['Jesús', 'Yahshúa'], ['Cristos', 'Mashíaj'], ['Cristo', 'Mashíaj'],
     ['Espíritu Santo', 'Ruaj HaKodesh'],
-    ['Jehová', 'Adonay'], ['Yahvé', 'Adonay'], ['YAVÉ', 'Adonay'], ['Yavé', 'Adonay'],
+    ['Jesu', 'Yahshúa'], ['Jesus', 'Yahshúa'],
+    ['Jehová', 'YAH'], ['Yahvé', 'YAH'], ['YAVÉ', 'YAH'], ['Yavé', 'YAH'], ['Alelu-\\s?[JY]ah', 'AleluYAH'], ['Yah', 'YAH'], ['JAH', 'YAH'], ['Jah', 'YAH'], ['YA', 'YAH'], ['Aleluya', 'AleluYAH'], ['aleluya', 'AleluYAH'],
     ['ʼElohim', 'Elohim'], ['ʼAdonay', 'Adonay'], ['ʼEL', 'El'], ['ʼEl', 'El'], ['Dios', 'Elohim']
   ].map(([a, b]) => [new RegExp(NB + '(' + a + ')' + NE, 'gu'), b]);
   const ORTO = [['á', 'a'], ['Á', 'A'], ['é', 'e'], ['É', 'E'], ['ó', 'o'], ['Ó', 'O'], ['fué', 'fue'], ['Fué', 'Fue'], ['fuí', 'fui'], ['dió', 'dio'], ['Dió', 'Dio'], ['vió', 'vio'], ['Vió', 'Vio'], ['ví', 'vi'], ['Ví', 'Vi']]
@@ -114,8 +131,9 @@
     const marks = [];
     const tok = (orig, b) => { marks.push([orig, b]); return '\uE000' + (marks.length - 1) + '\uE001'; };
     if (prefs.nombres) {
-      t = t.replace(NOMBRE_DIVINO, (m, pre, art, orig) => pre + (art === 'del' ? 'de ' : art === 'al' ? 'a ' : '') + tok(orig, 'Adonay Elohim'));
-      t = t.replace(ART_ADONAY, (m, pre, art, orig) => pre + (art === 'del' ? 'de ' : art === 'al' ? 'a ' : '') + tok(orig, 'Adonay'));
+      t = t.replace(NOMBRE_DIVINO, (m, pre, art, orig) => pre + (art === 'del' ? 'de ' : art === 'al' ? 'a ' : '') + tok(orig, 'Adonay YAH'));
+      t = t.replace(TZEVAOT, (m, pre, orig) => pre + tok(orig, 'YAH Tzevaot'));
+      t = t.replace(ART_ADONAY, (m, pre, art, orig) => pre + (art === 'del' ? 'de ' : art === 'al' ? 'a ' : '') + tok(orig, 'YAH'));
       NOMBRES.forEach(([re, b]) => { t = t.replace(re, (m, pre, orig) => pre + tok(orig, b)); });
     }
     if (html) t = esc(t);
@@ -196,6 +214,23 @@
     gear: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/>',
     mark: '<path d="M7 3h10v18l-5-3.5L7 21Z"/><path d="M10 8h4"/>',
     bilingual: '<path d="M4 6h9M4 12h6M4 18h9"/><path d="M20 6h-3M20 12h-5M20 18h-3"/>',
+    sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+    ear: '<path d="M7 10a5 5 0 0 1 10 0c0 3-3 4-3 7a3 3 0 0 1-5.5 1.6"/><path d="M10 10a2 2 0 0 1 4 0"/>',
+    bread: '<path d="M5 11a7 4 0 0 1 14 0v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2Z"/><path d="M9 11v9M15 11v9"/>',
+    candle: '<path d="M9 21h6M10 21V10h4v11"/><path d="M12 7c-1.2-1.3-1.2-2.7 0-4 1.2 1.3 1.2 2.7 0 4Z"/>',
+    harp: '<path d="M6 21V4c6 0 12 4 12 11v6Z"/><path d="M10 8v13M14 11v10"/>',
+    heart: '<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z"/>',
+    ret: '<path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/>',
+    tree: '<path d="M12 22v-8"/><path d="M12 3 6 11h3l-3 4h12l-3-4h3Z"/>',
+    help: '<circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 .9-1 1.7M12 17h.01"/>',
+    mask: '<path d="M4 6h16v5a8 8 0 0 1-16 0Z"/><path d="M8 10h2M14 10h2M9 15c1.7 1.3 4.3 1.3 6 0"/>',
+    bolt: '<path d="M13 2 4 14h7l-1 8 9-12h-7Z"/>',
+    user: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+    cards: '<rect x="3" y="6" width="13" height="15" rx="2"/><path d="M8 3h11a2 2 0 0 1 2 2v13"/>',
+    dict: '<path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3Z"/><path d="M5 17a3 3 0 0 1 3-3h11"/><path d="M10 8h5"/>',
+    pray: '<path d="M12 21c-3-2-6-4.5-6-9.5V6l6-3 6 3v5.5c0 5-3 7.5-6 9.5Z"/><path d="M12 8v7M9.5 11h5"/>',
+    chat: '<path d="M4 5h16v11H9l-5 4Z"/><path d="M8 9h8M8 12h5"/>',
+    hash: '<path d="M9 4 7 20M17 4l-2 16M4 9h16M3 15h16"/>',
     play: '<path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="3" y="14" width="4" height="6" rx="1.5"/><rect x="17" y="14" width="4" height="6" rx="1.5"/>'
   };
   const ic = (n, extra) => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"' + (extra || '') + '>' + I[n] + '</svg>';
@@ -304,8 +339,9 @@
           const key = lm.replace(/\D/g, ''); const L = LX[key];
           const gl = L ? (L[3] || (L[4] ? L[4] + ' <span class="muted">(léxico de Strong, en inglés)</span>' : '')) : '';
           const verb = m[0] === 'V';
-          return '<div class="wa-seg"><span class="he" lang="he">' + esc(seg) + '</span><div><b>' + (L ? '<span class="he" lang="he">' + esc(L[0]) + '</span> ' : '') + (L && L[3] ? esc(L[3]) : gl) + '</b><span>' + esc(decodeSeg(m, lang)) + (L && L[1] ? ' · ' + esc(L[1]) : '') + '</span>' +
-            '<span class="wa-acts">' + (verb ? '<a href="#pealim-' + key + '" data-act="close-sheet-nav">Conjugaciones en PEALIM</a>' : '<a href="#lema-' + key + '" data-act="close-sheet-nav">Ficha de la palabra</a>') + (L && L[3] ? '<button data-act="w-save" data-k="' + key + '" data-ref="' + b + ' ' + c + ':' + v + '">Guardar para repasar</button>' : '') + '</span></div></div>';
+          const gv = EXT.gematria ? EXT.gematria(seg).std : '';
+          return '<div class="wa-seg"><span class="he" lang="he">' + esc(seg) + '</span><div><b>' + (L ? '<span class="he" lang="he">' + esc(L[0]) + '</span> ' : '') + (L && L[3] ? esc(L[3]) : gl) + '</b><span>' + esc(decodeSeg(m, lang)) + (L && L[1] ? ' · ' + esc(L[1]) : '') + (L && L[7] ? ' · raíz ' + esc(L[7]) : '') + (gv ? ' · gematría ' + gv : '') + '</span>' +
+            '<span class="wa-acts"><a href="#dic-' + key + '" data-act="close-sheet-nav">Diccionario</a>' + (verb ? '<a href="#pealim-' + key + '" data-act="close-sheet-nav">PEALIM</a>' : '') + '<a href="#concordancia-' + key + '" data-act="close-sheet-nav">Apariciones</a>' + (L && L[3] ? '<button data-act="w-save" data-k="' + key + '" data-ref="' + b + ' ' + c + ':' + v + '">Guardar para repasar</button>' : '') + '</span></div></div>';
         }
         return '<div class="wa-seg"><span class="he" lang="he">' + esc(seg) + '</span><div><span>' + esc(m[0] === 'S' ? decodeSeg(m, lang) : (PREFIX[lm] ? 'prefijo ' + PREFIX[lm] : decodeSeg(m, lang))) + '</span></div></div>';
       }).join('');
@@ -329,7 +365,7 @@
     const col = HL()[id]; const note = NOTES()[id];
     return '<article class="v' + (col ? ' hlc hlc-' + col : '') + '" id="v' + (opt.anchor || v) + '" data-v="' + id + '" tabindex="0">' + h +
       '<p class="ref">' + esc(bookName(b)) + ' ' + c + ':' + v + hn + fav + (note ? '<span class="note-ic" aria-label="Tiene nota">📝</span>' : '') + '</p>' +
-      esHTML(cell) + (note ? noteHTML(note) : '') + '</article>';
+      (cell[4] ? '<p class="gr-v" lang="el">' + esc(cell[4]) + '</p>' : '') + esHTML(cell) + (note ? noteHTML(note) : '') + '</article>';
   }
   function esHTML(cell) {
     const st = cell[3];
@@ -354,6 +390,8 @@
       (col ? '<button class="sw-clear" data-act="v-color" data-id="' + id + '" data-c="">Quitar</button>' : '') + '</div>' +
       '<button class="act" data-act="v-note" data-id="' + id + '">📝 ' + (note ? 'Editar mi nota' : 'Agregar nota') + '</button>' +
       (!BY[b].nt ? '<button class="act" data-act="v-words" data-id="' + id + '">' + ic('alef') + 'Analizar las palabras hebreas</button>' : '') +
+      '<button class="act" data-act="v-compare" data-id="' + id + '">' + ic('bilingual') + 'Comparar versiones</button>' +
+      '<button class="act" data-act="v-xref" data-id="' + id + '">' + ic('book') + 'Referencias cruzadas</button>' +
       '<button class="act" data-act="v-copy" data-id="' + id + '">' + ic('copy') + 'Copiar versículo</button>' +
       '<button class="act" data-act="v-wa" data-id="' + id + '">' + ic('wa') + 'Compartir por WhatsApp</button>' +
       '<button class="act" data-act="v-share" data-id="' + id + '">' + ic('share') + 'Compartir…</button>' +
@@ -409,6 +447,19 @@
   /* ----- Inicio ----- */
   const FEATURED = ['PSA 119:160', 'ISA 40:8', 'PSA 19:7', 'DEU 6:5', 'JOS 1:8', 'PSA 1:1', 'PRO 3:5', 'PSA 27:1', 'ISA 41:10', 'PSA 121:2', 'LAM 3:22', 'NUM 6:24', 'DEU 31:6', 'PSA 34:8'];
   const dayIndex = d => Math.floor((Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())) / 864e5);
+  const MODS = [
+    ['biblia', 'book', 'Biblia', 'Tanaj y Brit Hadashá', 'תַּנַ״ךְ'],
+    ['diccionario', 'dict', 'Diccionario', 'Hebreo, raíces y griego', 'מִלּוֹן'],
+    ['aprender', 'alef', 'Aprender hebreo', 'Escuela interactiva', 'עִבְרִית'],
+    ['parashiot', 'scroll', 'Parashiot', 'Las 54 porciones', 'פָּרָשׁוֹת'],
+    ['audio', 'play', 'Audio libro', 'Escucha las Escrituras', 'ספר שמע'],
+    ['tefilot', 'pray', 'Tefilot', 'Oraciones y bendiciones', 'תְּפִלּוֹת'],
+    ['besora', 'chat', 'Besorá', 'Evangelización y raíces', 'בְּשׂוֹרָה'],
+    ['gematria', 'hash', 'Gematría', 'Valor de las letras', 'גִּימַטְרִיָּה'],
+    ['pealim', 'text', 'PEALIM', 'Verbos hebreos', 'פְּעָלִים'],
+    ['estudios', 'study', 'Estudios', 'Biblioteca de estudio', 'לִמּוּד'],
+    ['calendario', 'cal', 'Calendario', 'Shabat y moedim', 'מוֹעֲדִים'],
+    ['buscar-todo', 'search', 'Buscar', 'En toda la aplicación', 'חִפּוּשׂ']];
   async function vInicio() {
     const w = await weekInfo();
     const E = await getJSON('estudios.json');
@@ -416,42 +467,34 @@
     const [fb, fcv] = fRef.split(' '); const { c: fc, v: fv } = parseCV(fcv);
     const fd = (await getBookV(fb)).c[fc - 1][fv - 1];
     const M = await getJSON('mensajes.json'); const msg = M[dayIndex(today) % M.length];
-    const last = Store.get('last', null);
+    const last = Store.get('last', null); const al = Store.get('audio:last', null);
     let parHTML = '';
     if (w) {
-      const names = w.list.map(p => p.he).join(' – ');
-      const tr = w.list.map(p => p.tr).join('–');
-      const sig = w.list.map(p => p.sig).join(' / ');
+      const names = w.list.map(p => p.he).join(' – '), tr = w.list.map(p => p.tr).join('–'), sig = w.list.map(p => p.sig).join(' / ');
       const chagNote = w.chag ? '<p class="sub">Este Shabat se lee la lectura de ' + esc(w.chag.map(c => CHAG[c] || c).join(', ')) + '. La siguiente parashá es:</p>' : '';
-      parHTML = '<section class="section"><h3>Parashá de la semana</h3><div class="scroll">' +
+      parHTML = '<section class="section"><h3 class="h-sec">Parashá de la semana</h3><div class="scroll">' +
         '<p class="kicker">Shabat ' + esc(fmtDate(w.date, { day: 'numeric', month: 'long' })) + '. ' + esc(hebDate(w.date)) + '</p>' + chagNote +
-        '<p class="he parasha-name" lang="he">' + esc(names) + '</p>' +
-        '<p class="title">' + esc(tr) + '</p><p class="sub">' + esc(sig) + '</p>' +
+        '<p class="he parasha-name" lang="he">' + esc(names) + '</p><p class="title">' + esc(tr) + '</p><p class="sub">' + esc(sig) + '</p>' +
         '<p class="sub">' + w.list.map(p => esc(fmtRange(p.lec))).join('; ') + '</p>' +
-        '<div class="btns"><a class="btn solid" href="#parasha-' + w.list[0].n + '">Estudiar</a><a class="btn" href="#lectura-' + w.list[0].n + '">Leer la parashá</a></div></div></section>';
+        '<div class="btns"><a class="btn solid" href="#parasha-' + w.list[0].n + '">Estudiar</a><a class="btn" href="#lectura-' + w.list[0].n + '">Leer</a><a class="btn" href="#vocabparasha-' + w.list[0].n + '">Hebreo</a></div></div></section>';
     }
-    const cont = last ? '<a class="row" href="#leer-' + last.b + '-' + last.c + '"><span class="t"><b>Continuar leyendo</b><span>' + esc(bookName(last.b)) + ' ' + last.c + '</span></span><span class="he">' + esc(BY[last.b].he) + '</span><span class="chev">' + ic('chev', ' width="18" height="18"') + '</span></a>' : '';
+    const cont = [];
+    if (last) cont.push('<a class="cont" href="#leer-' + last.b + '-' + last.c + '">' + ic('book') + '<span><small>Continuar leyendo</small><b>' + esc(bookName(last.b)) + ' ' + last.c + '</b></span></a>');
+    if (al && BY[al.b]) cont.push('<a class="cont" href="#audio-' + al.b + '-' + al.c + '-' + al.v + '">' + ic('play') + '<span><small>Continuar escuchando</small><b>' + esc(bookName(al.b)) + ' ' + al.c + ':' + al.v + '</b></span></a>');
     view().innerHTML =
       '<header class="top"><div class="wrap"><div class="brand"><img src="' + LOGO_SM + '" alt="" width="34" height="36"><span>Beit Hatzirah</span></div>' +
-      '<a class="icon-btn" href="#buscar" aria-label="Buscar">' + ic('search') + '</a>' +
+      '<a class="icon-btn" href="#buscar-todo" aria-label="Buscar en toda la aplicación">' + ic('search') + '</a>' +
       '<a class="icon-btn" href="#menu" aria-label="Menú">' + ic('menu') + '</a></div></header>' +
-      '<div class="wrap">' +
-      '<div class="hero"><img src="' + LOGO + '" alt="Logotipo de Beit Hatzirah" width="122" height="128"><div><p class="he" lang="he" style="margin:0">בית הצרעה</p><h2>Beit Hatzirah</h2></div></div>' +
-      '<p class="welcome">Biblioteca digital para estudiar las Sagradas Escrituras en hebreo y español. Shalom, bienvenido.</p>' +
+      '<div class="wrap home">' +
+      '<section class="hero2"><img src="' + LOGO + '" alt="Logotipo de Beit Hatzirah" width="150" height="157"><p class="he" lang="he">בית הצרעה</p><h2>BEIT HATZIRAH</h2>' +
+      '<p class="tagline">Una plataforma de estudio de las Escrituras, aprendizaje del hebreo bíblico y conocimiento de las raíces de nuestra fe.</p>' +
+      '<a class="credits-mini" href="#acerca"><span>Pertenece a Ha’roeh Eliyah ben Eleazar</span><span>Desarrollado por Moreh Gabriel ben Eliyah</span></a></section>' +
+      (cont.length ? '<section class="cont-row">' + cont.join('') + '</section>' : '') +
       parHTML +
-      (cont ? '<section class="section"><div class="rows">' + cont + '</div></section>' : '') +
-      (() => { const al = Store.get('audio:last', null); return '<section class="section"><a class="audio-card" href="#audio' + (al && BY[al.b] ? '-' + al.b + '-' + al.c + '-' + al.v : '') + '"><span class="au-ic" aria-hidden="true">🎧</span><span><b>Audio libro</b><span class="he" lang="he">ספר שמע</span><small>' + (al && BY[al.b] ? 'Continuar escuchando ' + esc(bookName(al.b)) + ' ' + al.c + ':' + al.v : 'Escucha las Escrituras en hebreo y en español') + '</small></span></a></section>'; })() +
-      '<section class="section"><a class="tefilot-card" href="#tefilot"><span class="he" lang="he">תְּפִלּוֹת</span><b>Tefilot</b><span>Sidur digital: Modé Aní, Shemá, bendiciones de alimentos, Shabat y más, en hebreo, transliteración y español.</span></a></section>' +
-      '<section class="section"><a class="besora-card" href="#besora"><span class="he" lang="he">בְּשׂוֹרָה</span><b>Besorá</b><span>La Buena Noticia desde las Escrituras: prepárate para conversar con judíos, evangélicos, católicos, Testigos de Jehová y ateos, con fundamento bíblico y respeto.</span></a></section>' +
-      '<section class="section"><a class="learn-card" href="#aprender"><span class="he" lang="he">אֲנִי לוֹמֵד עִבְרִית עִם הַתּוֹרָה</span><b>Yo aprendo hebreo con la Torá</b><span>Juegos de 3 a 5 minutos: letras, vocales, palabras y versículos reales. Gana XP y mantén tu racha.</span><span class="btn solid" style="align-self:flex-start">Empezar a jugar</span></a></section>' +
-      '<section class="section"><h3>Mensaje diario</h3><a class="row" href="#mensaje" style="border-top:1px solid var(--line)"><span class="t"><b>' + esc(msg.titulo) + '</b><span>' + esc(refLabel(msg.ref)) + '</span></span><span class="he">דְּבַר הַיּוֹם</span></a></section>' +
-      '<section class="section"><h3>Versículo destacado</h3><div class="verses" style="border-top:1px solid var(--line)">' + verseHTML(fb, fc, fv, fd) + '</div></section>' +
-      '<section class="section"><h3>Las Escrituras</h3><div class="rows">' +
-      '<a class="row" href="#biblia"><span class="t"><b>Tanaj</b><span>Torá, Neviim y Ketuvim en hebreo y español</span></span><span class="he">תַּנַ״ךְ</span></a>' +
-      '<a class="row" href="#biblia-nt"><span class="t"><b>Brit Hadashá</b><span>Los 27 libros en hebreo y español</span></span><span class="he">בְּרִית חֲדָשָׁה</span></a>' +
-      '<a class="row" href="#estudios"><span class="t"><b>Estudios</b><span>Parashiot y biblioteca de estudios</span></span><span class="he">לִמּוּד</span></a>' +
-      '<a class="row" href="#aprender"><span class="t"><b>Aprender hebreo</b><span>Mapa de 12 mundos, desde el Alef Bet hasta Bereshit 1</span></span><span class="he">עִבְרִית</span></a></div></section>' +
-      '<section class="section"><h3>Últimas publicaciones</h3><div class="rows">' +
+      '<section class="section"><h3 class="h-sec">Explorar</h3><div class="mod-grid">' + MODS.map(([r, i, t, sub, h]) => '<a class="mod" href="#' + r + '"><span class="mod-ic">' + ic(i) + '</span><b>' + esc(t) + '</b><small>' + esc(sub) + '</small><span class="he mod-he" lang="he">' + esc(h) + '</span></a>').join('') + '</div></section>' +
+      '<section class="section two"><a class="card-msg" href="#mensaje"><small>Mensaje diario · דְּבַר הַיּוֹם</small><b>' + esc(msg.titulo) + '</b><span>' + esc(refLabel(msg.ref)) + '</span></a></section>' +
+      '<section class="section"><h3 class="h-sec">Versículo destacado</h3><div class="verses feat">' + verseHTML(fb, fc, fv, fd) + '</div></section>' +
+      '<section class="section"><h3 class="h-sec">Últimas publicaciones</h3><div class="rows">' +
       E.publicaciones.map(p => '<div class="row"><span class="t"><b>' + esc(p.titulo) + '</b><span>' + esc(fmtDate(fromISO(p.fecha), { day: 'numeric', month: 'long', year: 'numeric' })) + '. ' + esc(p.texto) + '</span></span></div>').join('') +
       '</div></section></div>';
   }
@@ -499,7 +542,8 @@
   const VERDESC = {
     pdt: 'Traducción latinoamericana que conserva formas hebreas como ʼElohim y el Nombre (YAVÉ). Texto completo. © 2020 Asociación Bíblica Latinoamericana, CC BY-SA 4.0.',
     blm: 'Traducción moderna y literal, de dominio público. Distingue el Nombre (Yahvé). Es un borrador en revisión: faltan algunos versículos de Ezequiel.',
-    rv: 'La traducción clásica de 1909, con lenguaje antiguo («crió», «haz de la tierra»).'
+    rv: 'La traducción clásica de 1909, con lenguaje antiguo («crió», «haz de la tierra»).',
+    rv65: 'Revisión de 1865 de la Reina-Valera, de dominio público, con lenguaje antiguo.'
   };
   function verSheet() {
     sheet('<h4>Traducción al español</h4>' + Object.keys(VERS).map(k => '<button class="act" data-act="set-ver" data-v="' + k + '" aria-pressed="' + (prefs.ver === k) + '"><span style="width:22px;color:var(--accent)">' + (prefs.ver === k ? '✓' : '') + '</span><span><b>' + esc(VERS[k].name) + '</b><br><span class="muted" style="font-size:.86rem">' + esc(VERDESC[k]) + '</span></span></button>').join('') +
@@ -694,7 +738,7 @@
 
   /* ----- Menú ----- */
   function vMenu() {
-    const items = [['tefilot', 'book', 'Tefilot: oraciones y bendiciones', 'תְּפִלּוֹת'], ['besora', 'scroll', 'Besorá: evangelización y raíces hebreas', 'בְּשׂוֹרָה'], ['audio', 'play', 'Audio libro', 'ספר שמע'], ['estudios', 'study', 'Estudios', 'בֵּית מִדְרָשׁ'], ['aprender', 'alef', 'Yo aprendo hebreo con la Torá', 'עִבְרִית'], ['pealim', 'text', 'PEALIM: verbos hebreos', 'פְּעָלִים'], ['guardados-destacados', 'star', 'Mis versículos destacados', ''], ['guardados-notas', 'copy', 'Mis notas bíblicas', ''], ['mensaje', 'day', 'Mensaje diario', 'דְּבַר הַיּוֹם'], ['calendario', 'cal', 'Calendario bíblico', 'לוּחַ'], ['vocabulario', 'alef', 'Diccionario hebreo', 'מִלּוֹן'], ['historial', 'hist', 'Historial de lectura', ''], ['acerca', 'info', 'Acerca de Beit Hatzirah', ''], ['ajustes', 'gear', 'Configuración', '']];
+    const items = [['buscar-todo', 'search', 'Buscar en toda la aplicación', 'חִפּוּשׂ'], ['diccionario', 'dict', 'Diccionario bíblico', 'מִלּוֹן'], ['gematria', 'hash', 'Gematría', 'גִּימַטְרִיָּה'], ['tefilot', 'pray', 'Tefilot: oraciones y bendiciones', 'תְּפִלּוֹת'], ['besora', 'chat', 'Besorá: evangelización y raíces hebreas', 'בְּשׂוֹרָה'], ['audio', 'play', 'Audio libro', 'ספר שמע'], ['estudios', 'study', 'Estudios', 'בֵּית מִדְרָשׁ'], ['aprender', 'alef', 'Yo aprendo hebreo con la Torá', 'עִבְרִית'], ['pealim', 'text', 'PEALIM: verbos hebreos', 'פְּעָלִים'], ['guardados-destacados', 'star', 'Mis versículos destacados', ''], ['guardados-notas', 'copy', 'Mis notas bíblicas', ''], ['mensaje', 'day', 'Mensaje diario', 'דְּבַר הַיּוֹם'], ['calendario', 'cal', 'Calendario bíblico', 'לוּחַ'], ['vocabulario', 'alef', 'Vocabulario del curso', ''], ['historial', 'hist', 'Historial de lectura', ''], ['acerca', 'info', 'Acerca de Beit Hatzirah', ''], ['ajustes', 'gear', 'Configuración', '']];
     view().innerHTML = top('Menú', { back: 'inicio' }) + '<div class="wrap"><div class="menu-brand"><img src="' + LOGO + '" alt="Logotipo de Beit Hatzirah" width="110" height="115"><div><p class="he" lang="he">בית הצרעה</p><b>Beit Hatzirah</b></div></div><div class="rows" style="margin-top:12px">' +
       items.map(([r, i, t, h]) => '<a class="row" href="#' + r + '"><span style="color:var(--accent)">' + ic(i, ' width="22" height="22"') + '</span><span class="t"><b>' + t + '</b></span>' + (h ? '<span class="he" lang="he">' + h + '</span>' : '') + '</a>').join('') +
       '</div><p class="muted center" style="font-size:.85rem;margin-top:24px">Versión ' + VERSION + '</p></div>';
@@ -798,13 +842,16 @@
   /* ----- Acerca ----- */
   function vAcerca() {
     view().innerHTML = top('Acerca de Beit Hatzirah', { back: 'menu' }) + '<div class="wrap study about">' +
-      '<div class="about-name"><h2>ACERCA DE BEIT HATZIRAH</h2><p class="he" lang="he">בית הצרעה</p></div>' +
+      '<img class="about-logo" src="' + LOGO + '" alt="Logotipo oficial de Beit Hatzirah">' +
+      '<div class="about-name"><h2>BEIT HATZIRAH</h2><p class="he" lang="he">בית הצרעה</p></div>' +
+      '<p class="about-tagline">Una plataforma de estudio de las Escrituras, aprendizaje del hebreo bíblico y conocimiento de las raíces de nuestra fe.</p>' +
+      '<div class="about-credits"><div><span>Dirección espiritual y pertenencia</span><b>Beit Hatzirah pertenece a Ha’roeh Eliyah ben Eleazar.</b></div><div><span>Desarrollo y creación del proyecto</span><b>Proyecto desarrollado íntegramente por Moreh Gabriel ben Eliyah.</b></div></div>' +
       '<div class="about-text">' +
-      '<p>Beit Hatzirah es el Centro de Investigación Torática de la Kehilat Shivateinu Bayit, dirigido por el Ha’Roeh Eliyah ben Eleazar.</p>' +
-      '<p>Nuestra misión es traer a la existencia el Reino en nuestras vidas, poniendo en ejecución y práctica toda la base torática. No buscamos que la Toráh sea solamente conocimiento, lectura o teoría, sino que se convierta en una realidad vivida: una forma de caminar, actuar, pensar y manifestar los principios del Reino en nuestra vida cotidiana.</p>' +
-      '<p>Beit Hatzirah busca profundizar en la medida espiritual y en el nivel de obediencia, entrega y compromiso que alcanzaron hombres de las Escrituras como Yahoshua y Shimshon, comprendiendo sus caminos, sus acciones y las enseñanzas que podemos extraer de sus vidas.</p>' +
+      '<h3>Quiénes somos</h3><p>Beit Hatzirah es el Centro de Investigación Torática de la Kehilat Shivateinu Bayit, dirigido por el Ha’Roeh Eliyah ben Eleazar.</p>' +
+      '<h3>Misión</h3><p>Nuestra misión es traer a la existencia el Reino en nuestras vidas, poniendo en ejecución y práctica toda la base torática. No buscamos que la Toráh sea solamente conocimiento, lectura o teoría, sino que se convierta en una realidad vivida: una forma de caminar, actuar, pensar y manifestar los principios del Reino en nuestra vida cotidiana.</p>' +
+      '<h3>Visión</h3><p>Beit Hatzirah busca profundizar en la medida espiritual y en el nivel de obediencia, entrega y compromiso que alcanzaron hombres de las Escrituras como Yahoshua y Shimshon, comprendiendo sus caminos, sus acciones y las enseñanzas que podemos extraer de sus vidas.</p>' +
       '<p>Todo este proceso debe desarrollarse bajo un principio fundamental: la honra al liderazgo establecido. Reconocemos la importancia del orden, la autoridad espiritual, la instrucción y la honra hacia quienes han sido puestos para guiar y enseñar a la comunidad.</p>' +
-      '<p>Este centro existe para investigar, estudiar, comprender y llevar a la práctica los fundamentos de la Toráh, procurando que cada enseñanza produzca una transformación real en nuestras vidas y en nuestra comunidad.</p>' +
+      '<h3>Propósito educativo</h3><p>Este centro existe para investigar, estudiar, comprender y llevar a la práctica los fundamentos de la Toráh, procurando que cada enseñanza produzca una transformación real en nuestras vidas y en nuestra comunidad. Por eso Beit Hatzirah reúne en un solo lugar las Escrituras en hebreo y español, el diccionario y las raíces del hebreo bíblico, una escuela interactiva de hebreo, las parashiot, las tefilot, el audio de las Escrituras y herramientas para compartir la fe con fundamento.</p>' +
       '<p class="about-quote">La Toráh no es solamente para ser estudiada; es para ser vivida y puesta en ejecución.</p>' +
       '<div class="about-sign"><b>Moreh Gabriel ben Eliyah</b><span>Proyecto y dirección de contenido — Beit Hatzirah</span></div>' +
       '</div></div>';
@@ -819,6 +866,7 @@
       '<div class="group-title"><h3>Lectura</h3></div>' +
       '<div class="opt"><span class="t">Tamaño de letra<span>' + Math.round(prefs.scale * 100) + '%</span></span><span class="size-ctl"><button data-act="size-" aria-label="Reducir">A−</button><button data-act="size+" aria-label="Aumentar">A+</button></span></div>' +
       '<div class="opt"><span class="t">Idioma visible<span>Hebreo y español, solo hebreo o solo español</span></span><select data-act="set-view"><option value="ambos"' + (prefs.view === 'ambos' ? ' selected' : '') + '>Ambos</option><option value="he"' + (prefs.view === 'he' ? ' selected' : '') + '>Hebreo</option><option value="es"' + (prefs.view === 'es' ? ' selected' : '') + '>Español</option></select></div>' +
+      '<div class="opt"><span class="t">Griego en el Brit Hadashá<span>Statistical Restoration Greek New Testament (Alan Bunning, CNTR), licencia CC BY 4.0</span></span>' + sw(!!prefs.greek, 'tg-greek', 'Griego en el Brit Hadashá') + '</div>' +
       '<div class="opt"><span class="t">Signos de cantilación<span>Mostrar los te\'amim además de las vocales</span></span>' + sw(prefs.teamim, 'tg-teamim', 'Signos de cantilación') + '</div>' +
       '<div class="opt"><span class="t">Nombres hebreos<span>Adaptación de nombres sobre la Reina-Valera 1909</span></span>' + sw(prefs.nombres, 'tg-nombres', 'Nombres hebreos') + '</div>' +
       '<div class="opt"><span class="t">Traducción al español<span>' + esc(VERDESC[prefs.ver]) + '</span></span><select data-act="set-ver-sel">' + Object.keys(VERS).map(k => '<option value="' + k + '"' + (prefs.ver === k ? ' selected' : '') + '>' + esc(VERS[k].short) + '</option>').join('') + '</select></div>' +
@@ -962,6 +1010,21 @@
     },
     'note-del': el => { if (!confirm('¿Eliminar esta nota?')) return; const N = NOTES(); delete N[el.dataset.id]; Store.set('notes', N); closeSheet(); toast('Nota eliminada'); refreshVerse(el.dataset.id); if (location.hash.startsWith('#guardados')) route(); },
     'v-words': el => verseWords(el.dataset.id),
+    'v-compare': async el => {
+      const [b, c, v] = el.dataset.id.split('-'); sheet('<h4>Comparar versiones: ' + esc(refOfId(el.dataset.id)) + '</h4><div class="loading">Cargando…</div>');
+      const base = await getBook(b); const cell = base.c[c - 1][v - 1]; let h = '';
+      if (cell[1] && cell[1] !== '^') h += '<div class="cmp"><span>' + (BY[b].nt ? 'Hebreo (traducción de Delitzsch, sin vocales)' : 'Hebreo (Códice de Leningrado)') + '</span><p class="he" lang="he">' + esc(heb(cell[1])) + '</p></div>';
+      if (BY[b].nt) { const g = await getGr(b); const t = g && (g.c[c - 1] || [])[v - 1]; if (t) h += '<div class="cmp"><span>Griego (Statistical Restoration GNT)</span><p lang="el" class="gr-v">' + esc(t) + '</p></div>'; }
+      for (const k of Object.keys(VERS)) { let t = ''; if (k === 'rv') t = cell[0]; else { try { const e = await getEs(k, b); t = (e.c[c - 1] || [])[v - 1] || ''; } catch (x) { } } const save = prefs.ver; prefs.ver = k; const txt = t && t !== '^' ? es(t, true) : '<span class="muted">No figura en esta traducción.</span>'; prefs.ver = save; h += '<div class="cmp"><span>' + esc(VERS[k].name) + '</span><p>' + txt + '</p></div>'; }
+      sheet('<h4>Comparar versiones: ' + esc(refOfId(el.dataset.id)) + '</h4>' + h + '<p class="muted" style="font-size:.8rem">Los nombres se muestran según la configuración de Beit Hatzirah (YAH, Yahshúa, Elohim…).</p>');
+    },
+    'v-xref': async el => {
+      const [b, c, v] = el.dataset.id.split('-'); sheet('<h4>Referencias cruzadas</h4><div class="loading">Cargando…</div>');
+      let X = {}; try { X = await getJSON('xref/' + b + '.json'); } catch (e) { }
+      const refs = X[c + ':' + v] || []; let h = '';
+      for (const r of refs) { const m = r.match(/^(\w+) (\d+):(\d+)/); if (!m) continue; const d = await getBookV(m[1]); const cl = (d.c[+m[2] - 1] || [])[+m[3] - 1]; if (!cl) continue; const cross = BY[m[1]].nt !== BY[b].nt; h += '<a class="result" href="#leer-' + m[1] + '-' + m[2] + '-' + m[3] + '" data-act="close-sheet-nav"><b>' + esc(refLabel(r)) + (cross ? ' <span class="pill ok">' + (BY[m[1]].nt ? 'Brit Hadashá' : 'Tanaj') + '</span>' : '') + '</b><p>' + es(cl[0] || '', true) + '</p></a>'; }
+      sheet('<h4>Referencias cruzadas: ' + esc(refOfId(el.dataset.id)) + '</h4>' + (h || '<p class="muted">No hay referencias cruzadas registradas para este versículo.</p>') + '<p class="muted" style="font-size:.8rem">Referencias más votadas de OpenBible.info (CC BY). Son conexiones sugeridas para el estudio, no interpretaciones.</p>');
+    },
     'w-save': async el => { const LX = await getJSON('lexico.json'); const L = LX[el.dataset.k]; if (!L || !EXT.saveWord) return; EXT.saveWord({ id: 'lx-' + el.dataset.k, he: L[0], tr: L[1], es: L[3], ref: el.dataset.ref }); el.textContent = 'Guardada ✓'; el.disabled = true; },
     'hl-filter': el => { hlFilter = el.dataset.c; route(); },
     'ver-sheet': () => verSheet(),
@@ -980,13 +1043,14 @@
       const cell = (await getBookV(b)).c[c - 1][v - 1]; shareImage({ he: cell[1] || '', es: es(cell[0]), ref: bookName(b) + ' ' + c + ':' + v, title: m.titulo });
     },
     'vocab-search': el => { searchQ = el.dataset.q; go('buscar'); },
+    'tg-greek': () => { prefs.greek = !prefs.greek; savePrefs(); vAjustes(); },
     'tg-teamim': () => { prefs.teamim = !prefs.teamim; savePrefs(); vAjustes(); },
     'tg-nombres': () => { prefs.nombres = !prefs.nombres; savePrefs(); vAjustes(); },
     'tg-orto': () => { prefs.orto = !prefs.orto; savePrefs(); vAjustes(); },
     'install': async () => { if (!deferredPrompt) return; deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt = null; vAjustes(); },
     'offline': async el => {
       const st = $('#offline-status'); el.disabled = true; let n = 0;
-      for (const b of BOOKS) { try { await Promise.all([fetch('data/b/' + b.c + '.json'), fetch('data/es/pdt/' + b.c + '.json'), fetch('data/es/blm/' + b.c + '.json')].concat(b.nt ? [] : [fetch('data/morph/' + b.c + '.json')])); n++; if (st) st.textContent = 'Guardando… ' + n + ' de 66 libros'; } catch (e) { } }
+      for (const b of BOOKS) { try { await Promise.all([fetch('data/b/' + b.c + '.json'), fetch('data/es/pdt/' + b.c + '.json'), fetch('data/es/blm/' + b.c + '.json'), fetch('data/es/rv65/' + b.c + '.json'), fetch('data/xref/' + b.c + '.json')].concat(b.nt ? [fetch('data/gr/' + b.c + '.json')] : [fetch('data/morph/' + b.c + '.json')])); n++; if (st) st.textContent = 'Guardando… ' + n + ' de 66 libros'; } catch (e) { } }
       try { await Promise.all(['lexico.json', 'lemas.json', 'h2e.json', 'pealim/indice.json', 'pealim/binyanim.json'].concat([0, 1, 2, 3, 4, 5, 6, 7].map(i => 'pealim/p' + i + '.json')).map(f => fetch('data/' + f))); } catch (e) { }
       if (st) st.textContent = n === 66 ? 'Listo: los 66 libros están disponibles sin conexión.' : 'Se guardaron ' + n + ' de 66 libros. Vuelve a intentarlo con conexión.';
       el.disabled = false;
@@ -1044,7 +1108,7 @@
     }).catch(() => { });
   }
   if (/[?&]test\b/.test(location.search)) window.__bh = { es, getBookV, prefs };
-  if (EXT.init) EXT.init({ esc, ic, top, sheet, closeSheet, toast, Store, go, view, getJSON, getBook, getBookV, weekInfo, parseCV, bookName, fmtRange, refRoute, refLabel, decodeSeg, STEM, VTYPE, PRON, heb, hebPlain, norm, BOOKS, BY, es, LOGO, LOGO_SM });
+  if (EXT.init) EXT.init({ esc, ic, top, sheet, closeSheet, toast, Store, go, view, getJSON, getBook, getBookV, weekInfo, parseCV, bookName, fmtRange, refRoute, refLabel, decodeSeg, STEM, VTYPE, PRON, heb, hebPlain, norm, BOOKS, BY, es, LOGO, LOGO_SM, setSearch: q => { searchQ = q; go('buscar'); } });
   window.addEventListener('hashchange', route);
   route();
 })();
