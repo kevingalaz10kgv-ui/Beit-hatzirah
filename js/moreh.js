@@ -12,10 +12,26 @@
 
   /* ---------- Recursos gráficos ---------- */
   const SRC = n => { const E = window.__BH_EMBED; return (E && E.moreh && E.moreh[n]) || 'img/moreh/' + n + '.webp'; };
-  function fig(pose, cls) {   // figura completa animable
-    return '<span class="mo-fig ' + (pose ? 'p-' + pose : '') + ' ' + (cls || '') + '" aria-hidden="true"><span class="mo-flip"><img class="mo-arm" src="' + SRC('arm') + '" alt=""><img class="mo-head" src="' + SRC('head') + '" alt=""><img class="mo-body" src="' + SRC('body') + '" alt=""></span></span>';
+  /* Rasgos faciales (cejas, ojos y boca) dibujados sobre la misma ilustración; posiciones en la imagen original de 874 × 1600 */
+  const FEAT = { 'b-raised': [262, 124, 208, 58], 'b-furrow': [262, 124, 208, 58], 'b-concern': [262, 124, 208, 58], 'b-think': [262, 124, 208, 58], 'm-closed': [298, 254, 132, 66], 'm-neutral': [298, 254, 132, 66], 'm-serious': [298, 254, 132, 66], 'm-think': [298, 254, 132, 66], 'm-o': [298, 254, 132, 66], 'm-talk1': [298, 254, 132, 66], 'm-talk2': [298, 254, 132, 66], 'm-talk3': [298, 254, 132, 66], 'e-blink': [276, 174, 176, 50], 'e-half': [276, 174, 176, 50] };
+  function feats(ox, oy, w, h) { return Object.entries(FEAT).map(([n, [x, y, fw, fh]]) => '<img class="mx x-' + n + '" src="' + SRC(n) + '" alt="" style="left:' + ((x - ox) / w * 100).toFixed(3) + '%;top:' + ((y - oy) / h * 100).toFixed(3) + '%;width:' + (fw / w * 100).toFixed(3) + '%;height:' + (fh / h * 100).toFixed(3) + '%">').join(''); }
+  const WASP = (mode, cls) => '<span class="mo-wasp w-' + (mode || 'hover') + ' ' + (cls || '') + '" aria-hidden="true">' + (window.BH_WASP_ART ? window.BH_WASP_ART('main') : '') + '</span>';
+  function fig(pose, cls, expr, opt) {   // figura completa animable, con la avispa a su lado
+    opt = opt || {};
+    return '<span class="mo-team' + (opt.nowasp ? ' solo' : '') + '"><span class="mo-fig ' + (pose ? 'p-' + pose : '') + ' ' + (cls || '') + '" data-expr="' + (expr || EXPR_OF[pose] || 'sonriente') + '" aria-hidden="true"><span class="mo-flip"><img class="mo-arm" src="' + SRC('arm') + '" alt=""><span class="mo-headg"><img class="mo-head" src="' + SRC('head') + '" alt="">' + feats(0, 0, 874, 1600) + '</span><img class="mo-body" src="' + SRC('body') + '" alt=""></span></span>' + (opt.nowasp ? '' : WASP(opt.wasp || 'hover')) + '</span>';
   }
-  const avatar = (size, cls) => '<span class="mo-av ' + (cls || '') + '" style="--ms:' + (size || 40) + 'px" aria-hidden="true"><img src="' + SRC('avatar') + '" alt=""></span>';
+  const avatar = (size, cls, expr, wasp) => '<span class="mo-av ' + (cls || '') + '" data-expr="' + (expr || 'sonriente') + '" style="--ms:' + (size || 40) + 'px" aria-hidden="true"><span class="mo-avc"><img src="' + SRC('avatar') + '" alt="">' + feats(170, 0, 340, 340) + '</span>' + (wasp ? WASP('perch', 'mini') : '') + '</span>';
+  const EXPR_OF = { idle: 'sonriente', nod: 'atento', teach: 'entusiasmado', point: 'entusiasmado', explain: 'explicativo', welcome: 'sonriente', reflect: 'reflexivo', celebrate: 'celebracion', walk: 'sonriente', enter: 'sonriente', leave: 'sonriente' };
+  /* Expresiones: sonriente, serio, pensativo, sorprendido, entusiasmado, atento, reflexivo, comprensivo, celebracion, explicativo */
+  function expr(el, e) { if (!el) return; el.querySelectorAll('.mo-fig,.mo-av').forEach(f => f.dataset.expr = e); if (el.matches && el.matches('.mo-fig,.mo-av')) el.dataset.expr = e; }
+  /* Boca sincronizada con la voz: alterna formas mientras suena (y se reinicia con cada palabra) */
+  const talkers = new Map();
+  function talk(el, on) {
+    if (!el) return; const t = talkers.get(el); if (t) { clearInterval(t); talkers.delete(el); }
+    el.querySelectorAll('.mo-fig,.mo-av').forEach(f => f.removeAttribute('data-talk'));
+    if (!on) return; let k = 0; const seq = [1, 2, 3, 2, 1, 0, 2, 3, 1, 0];
+    const iv = setInterval(() => { k = (k + 1) % seq.length; el.querySelectorAll('.mo-fig,.mo-av').forEach(f => f.dataset.talk = seq[k]); }, 115); talkers.set(el, iv);
+  }
 
   /* ---------- Preferencias ---------- */
   const DEF = { on: true, anim: true, mode: 'guia', freq: 'normal', sound: true, tour: false };
@@ -76,13 +92,13 @@
   function tip(kind, seed, label, actions) {
     if (!B || !active()) return '';
     const t = seed === undefined ? TIPS[kind][Math.floor(Math.random() * TIPS[kind].length)] : seeded(TIPS[kind], seed);
-    return '<aside class="mo-tip">' + avatar(46, 'mo-nod') + '<div><small>' + esc(label || 'El Moreh') + '</small><p>' + esc(t) + '</p>' + (actions || '') + '</div></aside>';
+    return '<aside class="mo-tip">' + avatar(46, 'mo-nod', kind === 'estudio' ? 'reflexivo' : kind === 'gematria' ? 'sorprendido' : 'atento', true) + '<div><small>' + esc(label || 'El Moreh') + '</small><p>' + esc(t) + '</p>' + (actions || '') + '</div></aside>';
   }
   function inline(mode, size, variant, cls) {   // presencia integrada; se adapta al tamaño disponible
     if (!B || !active()) return '';
     if (variant === 'badge') return avatar(size || 72, 'mo-badge');
     if ((size || 44) >= 80) return '<span class="mo-inline ' + (cls || '') + '" style="--mh:' + size * 2 + 'px">' + fig(mode === 'hover' ? 'idle' : 'teach') + '</span>';
-    return avatar(size || 44, 'mo-' + (mode === 'still' ? 'still' : 'idle') + ' ' + (cls || ''));
+    return avatar(size || 44, 'mo-' + (mode === 'still' ? 'still' : 'idle') + ' ' + (cls || ''), mode === 'land' ? 'sorprendido' : 'sonriente', size >= 40);
   }
 
   /* ---------- Escena: el Moreh entra, señala, habla y se retira ---------- */
@@ -90,10 +106,10 @@
   function stage() {
     if (scene) return scene;
     scene = document.createElement('div'); scene.className = 'mo-scene'; scene.setAttribute('role', 'dialog'); scene.setAttribute('aria-live', 'polite');
-    scene.innerHTML = '<div class="mo-actor">' + fig('idle') + '</div><div class="mo-card"><button class="mo-x" data-act="mo-dismiss" aria-label="Cerrar">✕</button><p class="mo-say"></p><div class="mo-acts"></div></div>';
+    scene.innerHTML = '<div class="mo-actor">' + fig('idle', '', 'sonriente', { wasp: 'enter' }) + '</div><div class="mo-card"><button class="mo-x" data-act="mo-dismiss" aria-label="Cerrar">✕</button><p class="mo-say"></p><div class="mo-acts"></div></div>';
     document.body.appendChild(scene); return scene;
   }
-  function setPose(p) { const f = stage().querySelector('.mo-fig'); f.className = 'mo-fig p-' + p; }
+  function setPose(p, e) { const f = stage().querySelector('.mo-fig'); f.className = 'mo-fig p-' + p; f.dataset.expr = e || EXPR_OF[p] || 'sonriente'; }
   function appear(text, acts, opt) {
     if (!active()) return; opt = opt || {};
     const s = stage(); clearTimeout(sceneT);
@@ -101,7 +117,8 @@
     s.querySelector('.mo-acts').innerHTML = (acts || []).map(([l, a]) => '<button class="btn' + (a.startsWith('!') ? ' solid' : '') + '" data-act="mo-do" data-a="' + esc(a.replace(/^!/, '')) + '">' + esc(l) + '</button>').join('');
     s.dataset.size = opt.big ? 'big' : 'small';
     s.classList.remove('out'); void s.offsetWidth; s.classList.add('in');
-    setPose(opt.pose || 'enter'); setTimeout(() => setPose(opt.after || 'explain'), 1300); setTimeout(() => setPose('idle'), 4200);
+    setPose(opt.pose || 'enter'); setTimeout(() => setPose(opt.after || 'explain', opt.expr), 1300); setTimeout(() => setPose('idle', opt.expr), 4200);
+    const fg = s.querySelector('.mo-actor'); talk(fg, true); setTimeout(() => talk(fg, false), Math.min(4200, 900 + text.length * 45));
     if (!opt.stay) sceneT = setTimeout(retire, opt.ms || 7500);
     setTimeout(() => { const off = e => { if (!scene || scene.contains(e.target)) return; retire(); window.removeEventListener('scroll', off, true); document.removeEventListener('pointerdown', off, true); }; window.addEventListener('scroll', off, { capture: true, passive: true }); document.addEventListener('pointerdown', off, true); }, 600);
   }
@@ -116,28 +133,29 @@
     if (!B) return;
     if (!active()) { B.toast(text); return; }
     const c = document.createElement('div'); c.className = 'mo-celebrate'; c.setAttribute('role', 'status');
-    c.innerHTML = '<span class="mo-cfig">' + fig('celebrate') + '</span><p>' + esc(text) + '</p>';
+    c.innerHTML = '<span class="mo-cfig">' + fig('celebrate', '', 'celebracion', { wasp: 'orbit' }) + '</span><p>' + esc(text) + '</p>';
     document.body.appendChild(c); chime(); setTimeout(() => c.classList.add('out'), 3600); setTimeout(() => c.remove(), 4200);
   }
 
   /* ---------- Guía del curso de hebreo (compatibilidad con las llamadas del curso) ---------- */
   let place = 'home', guide = null;
   let gav = null;
-  function guideEl() { if (guide) return guide; guide = document.createElement('span'); guide.className = 'mo-guide'; guide.innerHTML = fig('idle'); guide.addEventListener('click', () => openPanel()); return guide; }
-  function avEl() { if (gav) return gav; gav = document.createElement('span'); gav.className = 'mo-guide mo-gav'; gav.innerHTML = avatar(36); gav.addEventListener('click', () => B.toast(seeded(TIPS.hebreo, Date.now()))); return gav; }
+  function guideEl() { if (guide) return guide; guide = document.createElement('span'); guide.className = 'mo-guide'; guide.innerHTML = fig('idle', '', 'sonriente', { wasp: 'enter' }); guide.addEventListener('click', () => openPanel()); return guide; }
+  function avEl() { if (gav) return gav; gav = document.createElement('span'); gav.className = 'mo-guide mo-gav'; gav.innerHTML = avatar(36, '', 'atento', true); gav.addEventListener('click', () => B.toast(seeded(TIPS.hebreo, Date.now()))); return gav; }
   function attach() {
     if (!active()) return false; const lesson = place === 'lesson'; const slot = document.querySelector(lesson ? '.lx-wsp-slot' : '.lx-hero-slot'); const el = lesson ? avEl() : guideEl();
     if (slot && el.parentNode !== slot) { slot.innerHTML = ''; slot.appendChild(el); if (!lesson) { gpose('enter'); setTimeout(() => gpose('idle'), 1400); } }
     return !!slot;
   }
-  function gpose(p) {
-    if (place === 'lesson' && gav) { gav.className = 'mo-guide mo-gav a-' + p; clearTimeout(gpose.t); gpose.t = setTimeout(() => { gav.className = 'mo-guide mo-gav'; }, 1500); return; }
-    if (guide) guide.querySelector('.mo-fig').className = 'mo-fig p-' + p;
+  function gpose(p, e) {
+    const ex = e || EXPR_OF[p] || 'sonriente';
+    if (place === 'lesson' && gav) { gav.className = 'mo-guide mo-gav a-' + p; expr(gav, ex); clearTimeout(gpose.t); gpose.t = setTimeout(() => { gav.className = 'mo-guide mo-gav'; expr(gav, 'atento'); }, 1800); return; }
+    if (guide) { guide.querySelector('.mo-fig').className = 'mo-fig p-' + p; expr(guide, ex); }
   }
   function say(text) {
     if (!active()) return;
     if (place === 'lesson' && document.querySelector('.lx-wsp-slot')) {
-      setTimeout(() => { const host = document.querySelector('#lx-fb .lx-fb') || document.querySelector('.lx-card.intro'); if (!host) return; const old = host.querySelector('.mo-line'); if (old) old.remove(); host.insertAdjacentHTML('beforeend', '<div class="mo-line">' + avatar(34) + '<span>' + esc(text) + '</span></div>'); }, 40);
+      setTimeout(() => { const host = document.querySelector('#lx-fb .lx-fb') || document.querySelector('.lx-card.intro'); if (!host) return; const old = host.querySelector('.mo-line'); if (old) old.remove(); host.insertAdjacentHTML('beforeend', '<div class="mo-line">' + avatar(34, '', /intenta|aprende|preocup|fuerte/i.test(text) ? 'comprensivo' : 'sonriente', true) + '<span>' + esc(text) + '</span></div>'); }, 40);
       return;
     }
     const sp = document.querySelector('.lx-hero-say'); if (sp) { sp.textContent = text; sp.classList.add('on'); clearTimeout(say.t); say.t = setTimeout(() => sp.classList.remove('on'), 6500); }
@@ -158,8 +176,12 @@
     hide: () => { }, home: () => show('home', msgFor('aprender')), lesson: () => show('lesson'),
     letter: it => { gpose('teach'); setTimeout(() => gpose('idle'), 1800); if (Date.now() - lastTip > 20000) { lastTip = Date.now(); say(it && it.kind === 'letters' ? pick(M.letter) : seeded(TIPS.hebreo, Date.now())); } },
     buzz: () => { gpose('nod'); setTimeout(() => gpose('idle'), 1200); },
-    ok: combo => { gpose('nod'); setTimeout(() => gpose('idle'), 1100); if (combo && (combo === 3 || combo === 5 || combo % 10 === 0)) say(pick(M.streak).replace('{n}', combo)); },
-    bad: () => { gpose('reflect'); setTimeout(() => gpose('idle'), 1600); say(pick(M.bad)); },
+    ok: combo => { gpose('nod', 'sonriente'); setTimeout(() => gpose('idle'), 1100); if (combo && (combo === 3 || combo === 5 || combo % 10 === 0)) say(pick(M.streak).replace('{n}', combo)); },
+    bad: it => {
+      gpose('reflect', 'comprensivo'); setTimeout(() => gpose('idle', 'comprensivo'), 1600);
+      let why = ''; if (it && it.he) why = it.kind === 'letters' || /^l-/.test(it.id || '') ? ' Esta es ' + it.tr + ' (' + it.he + '): ' + (it.es || '') + '.' : it.es ? ' «' + it.he + '»' + (it.tr ? ' (' + it.tr + ')' : '') + ' significa «' + it.es + '».' : '';
+      say(pick(M.bad) + why);
+    },
     done: () => { show('done'); gpose('celebrate'); setTimeout(() => gpose('idle'), 2200); say(pick(M.done)); },
     level: () => { show('done'); celebrate(pick(M.level)); },
     unit: () => { show('done'); celebrate(pick(M.unit)); },
@@ -300,8 +322,9 @@
   }
   function renderStep(l) {
     const s = LS.steps[LS.i]; const n = LS.steps.length;
+    setTimeout(() => { const st = document.querySelector('.mo-stage'); if (st) { talk(st, true); setTimeout(() => talk(st, false), Math.min(5000, 800 + (s.t || '').length * 40)); } }, 300);
     B.view().innerHTML = B.top('Aprende con el Moreh', { back: 'inicio' }) + '<div class="wrap mo-learnv">' +
-      '<div class="mo-stage">' + fig(s.pose || 'teach') + '<div class="mo-board"><small>' + esc(l.t) + ' · ' + (LS.i + 1) + ' de ' + n + '</small>' +
+      '<div class="mo-stage">' + fig(s.pose || 'teach', '', s.expr, { nowasp: !!s.big }) + '<div class="mo-board">' + (s.big ? WASP('land', 'mo-letter-wasp') : '') + '<small>' + esc(l.t) + ' · ' + (LS.i + 1) + ' de ' + n + '</small>' +
       (s.big ? '<p class="he mo-big' + (s.small ? ' sm' : '') + '" lang="he" dir="rtl">' + esc(s.big) + '</p>' : '') +
       (s.es ? '<p class="mo-es">' + esc(s.es) + '</p>' : '') +
       '<p class="mo-text">' + esc(s.t) + '</p>' +
@@ -327,7 +350,7 @@
   function startTour() {
     if (!B) return; if (location.hash && location.hash !== '#inicio') { B.go('inicio'); setTimeout(startTour, 700); return; }
     retire(); TI = 0; if (!tourEl) { tourEl = document.createElement('div'); tourEl.className = 'mo-tour'; document.body.appendChild(tourEl); }
-    tourEl.innerHTML = '<div class="mo-spot"></div><div class="mo-tcard" role="dialog" aria-live="polite"><div class="mo-tactor">' + fig('enter') + '</div><p></p><div class="btns"><button class="btn" data-act="mo-tour" data-d="end">Omitir</button><button class="btn" data-act="mo-tour" data-d="-1">Anterior</button><button class="btn solid" data-act="mo-tour" data-d="1">Siguiente</button></div><small></small></div>';
+    tourEl.innerHTML = '<div class="mo-spot"></div>' + WASP('hover', 'mo-twasp') + '<div class="mo-tcard" role="dialog" aria-live="polite"><div class="mo-tactor">' + fig('enter', '', 'sonriente', { nowasp: true }) + '</div><p></p><div class="btns"><button class="btn" data-act="mo-tour" data-d="end">Omitir</button><button class="btn" data-act="mo-tour" data-d="-1">Anterior</button><button class="btn solid" data-act="mo-tour" data-d="1">Siguiente</button></div><small></small></div>';
     tourEl.classList.add('on'); tourStep();
   }
   function tourStep() {
@@ -343,6 +366,8 @@
       const below = r.top + r.height / 2 < vh / 2; card.style.top = below ? Math.min(vh - 220, r.bottom + 16) + 'px' : ''; card.style.bottom = below ? '' : (vh - r.top + 16) + 'px';
       // la tarjeta (con el Moreh) se desplaza junto al elemento; el Moreh camina y lo señala
       const toLeft = r.left + r.width / 2 < vw / 2; card.classList.toggle('flip', toLeft);
+      const wsp = tourEl.querySelector('.mo-twasp'); Object.assign(wsp.style, { left: Math.min(vw - 60, Math.max(4, r.right - 34)) + 'px', top: Math.max(60, r.top - 30) + 'px' });
+      expr(actor, TI === 0 ? 'sonriente' : TI === TOUR.length - 1 ? 'sonriente' : 'entusiasmado'); talk(actor, true); setTimeout(() => talk(actor, false), 2200);
       actor.querySelector('.mo-fig').className = 'mo-fig p-walk' + (toLeft ? ' mirror' : '');
       setTimeout(() => { actor.querySelector('.mo-fig').className = 'mo-fig p-point' + (toLeft ? ' mirror' : ''); }, 900);
     }, 380);
@@ -372,7 +397,7 @@
     const pr = progress(); const got = B.Store.get('camino', {}) || {};
     const card = (n, l, h, i) => '<div class="mo-stat"><span>' + B.ic(i) + '</span><b>' + n + '</b><small>' + l + '</small>' + (h ? '<a href="#' + h + '">Continuar</a>' : '') + '</div>';
     B.view().innerHTML = B.top('Mi camino de aprendizaje', { back: 'inicio' }) + '<div class="wrap mo-camino">' +
-      '<div class="mo-chero">' + fig('welcome') + '<div><h2>Mi camino de aprendizaje</h2><p>' + esc(pr.lessons || pr.words || pr.chapters ? '¡Muy bien! Sigamos avanzando en el estudio de la Torá.' : 'Shalom (paz). Cada paso cuenta: comencemos hoy.') + '</p></div></div>' +
+      '<div class="mo-chero">' + fig('welcome', '', pr.lessons || pr.words ? 'celebracion' : 'sonriente') + '<div><h2>Mi camino de aprendizaje</h2><p>' + esc(pr.lessons || pr.words || pr.chapters ? '¡Muy bien! Sigamos avanzando en el estudio de la Torá.' : 'Shalom (paz). Cada paso cuenta: comencemos hoy.') + '</p></div></div>' +
       '<div class="mo-stats">' + card(pr.letters + '/22', 'letras hebreas', 'aprender', 'alef') + card(pr.lessons, 'lecciones completadas', 'aprender', 'check') + card(pr.words, 'palabras consultadas', 'diccionario', 'dict') + card(pr.studies, 'estudios realizados', 'parashiot', 'study') + card(pr.chapters, 'capítulos escuchados', 'audio', 'play') + card(pr.tefilot, 'tefilot leídas', 'tefilot', 'pray') + card(pr.xp, 'puntos de experiencia', 'perfil-hebreo', 'star') + card(pr.badges, 'insignias del curso', 'perfil-hebreo', 'mark') + '</div>' +
       '<h3 class="h-sec" style="margin-top:22px">Reconocimientos</h3><div class="mo-goals">' + GOALS.map(([k, n, t, d]) => { const ok = !!got[k + n] || pr[k] >= n; return '<div class="mo-goal' + (ok ? ' ok' : '') + '">' + avatar(44, ok ? '' : 'mo-dim') + '<div><b>' + esc(t) + '</b><small>' + esc(ok ? d : 'Progreso: ' + Math.min(pr[k], n) + ' de ' + n) + '</small></div></div>'; }).join('') + '</div></div>';
     checkGoals();
@@ -393,7 +418,7 @@
 
   /* ---------- Acciones ---------- */
   Object.assign(EXT.act, {
-    'moreh-open': () => openPanel(),
+    'moreh-open': () => { if (EXT.morehChat) { B.closeSheet && B.closeSheet(); B.go('moreh'); } else openPanel(); },
     'mo-do': el => { const a = el.dataset.a; if (a === 'dismiss-tour') { setP('tour', true); return retire(); } retire(); doAction(a); },
     'mo-dismiss': () => retire(),
     'mo-ask': () => { const i = document.getElementById('mo-q'); if (i && i.value.trim()) answer(i.value); },
@@ -417,7 +442,8 @@
       '<div class="opt"><span class="t">Efectos sonoros<span>Sonidos de acierto, error y celebración</span></span>' + sw(p.sound, 'mo-set" data-k="sound" data-v="toggle', 'Efectos sonoros') + '</div>' +
       '<div class="btns" style="margin:10px 0 18px"><button class="btn" data-act="mo-tourstart">Iniciar el recorrido guiado</button><button class="btn" data-act="moreh-open">Pedir ayuda al Moreh</button><a class="btn" href="#camino">Mi camino de aprendizaje</a></div>';
   };
-  API.headerBtn = () => active() ? '<button class="icon-btn mo-hdr" data-act="moreh-open" aria-label="Pedir ayuda al Moreh">' + avatar(30) + '</button>' : '';
+  API.headerBtn = () => active() ? '<button class="icon-btn mo-hdr" data-act="moreh-open" aria-label="Conversar con el Moreh">' + avatar(30, '', 'sonriente', true) + '</button>' : '';
+  Object.assign(API, { fig, avatar, expr, talk, WASP, ctxOf, CTX, msgFor, LESSONS, active, P });
 
   const prevInit = EXT.init;
   EXT.init = api => { if (prevInit) prevInit(api); B = api; apply(); };

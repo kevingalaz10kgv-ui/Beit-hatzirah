@@ -377,7 +377,7 @@
     if (ex.t !== 'intro' && ex.t !== 'orderVerse') srsUpdate(s, ex.it.id, ok);
     if (ex.t === 'orderVerse') (SES.unit.items || []).forEach(x => srsUpdate(s, x.id, ok));
     SES.tot++; s.st.tot++;
-    if (EXT.moreh) { if (ok) { SES.combo = (SES.combo || 0) + 1; EXT.moreh.ok(SES.combo); } else { SES.combo = 0; EXT.moreh.bad(); } }
+    if (EXT.moreh) { if (ok) { SES.combo = (SES.combo || 0) + 1; EXT.moreh.ok(SES.combo); } else { SES.combo = 0; EXT.moreh.bad(ex.it); } }
     if (ok) { SES.ok++; s.st.ok++; week(s).ok++; SES.xp += SES.mode === 'review' ? 5 : 10; SES.coins += 1; xpFloat(SES.mode === 'review' ? 5 : 10); }
     else {
       SES.wrongIds.add(ex.it.id);

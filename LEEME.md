@@ -4,7 +4,7 @@ Biblioteca digital de las Sagradas Escrituras en hebreo y español.
 Proyecto y dirección de contenido: **Moreh Gabriel ben Eliyah**
 Autoridad rabínica: **Rab Eliyah ben Eleazar**
 
-Versión 0.12.0. Incluye el módulo «Yo aprendo hebreo con la Torá».
+Versión 0.13.0. Incluye el módulo «Yo aprendo hebreo con la Torá».
 
 ---
 
@@ -314,3 +314,17 @@ El Moreh reemplaza a la avispa como guía oficial y conserva todas sus funciones
 **Mi camino de aprendizaje** (`#camino`, en el menú y en el inicio): letras aprendidas, lecciones, palabras consultadas, estudios y parashiot, capítulos escuchados, tefilot leídas, XP e insignias, y 14 reconocimientos con celebración del Moreh.
 
 **Configuración → El Moreh:** activar o desactivar el asistente, animaciones, modo guía o discreto, frecuencia (baja, normal, alta), efectos sonoros (también los del curso), iniciar el recorrido, pedir ayuda y «Mi camino». «Ocultar por ahora» lo esconde hasta volver a abrir la app.
+
+## 22. Moreh Gabriel ben Eliyah y la avispa (versión 0.13)
+
+**Expresiones.** Sobre la misma ilustración se dibujaron rasgos intercambiables (cejas, párpados y bocas) en el estilo del dibujo; el resto del rostro, los lentes, el cabello, la kipá y el talit no se modifican. Expresiones: sonriente, serio, pensativo, sorprendido, entusiasmado, atento, reflexivo, comprensivo, celebración y explicativo. Parpadeo natural; la boca se mueve mientras el Moreh habla (con la voz del teléfono se sincroniza con cada palabra) y en sus intervenciones escritas.
+
+**La avispa compañera.** Vuelve la avispa metálica, ahora junto al Moreh en todas sus apariciones: entra volando con él, revolotea mientras explica, presta atención cuando responde, vuela hasta la letra o la palabra que él enseña, aterriza junto al elemento que señala en el recorrido y celebra con él en un vuelo circular. En espacios pequeños (encabezado, lección, consejos) aparece posada sobre su avatar.
+
+**Conversación (`#moreh`, botón con su rostro en el encabezado).** Historial guardado, preguntas sugeridas según la sección, respuestas organizadas por tipo (texto bíblico, traducción, análisis lingüístico, contexto, interpretación, enseñanza de Beit Hatzirah), referencias seleccionables, botones «Ver fuente en Beit Hatzirah», «Escuchar» (con la boca sincronizada) y «En hebreo», y preguntas de seguimiento. Recuerda la palabra, el versículo, la parashá o el estudio de los que se está hablando, y también la pantalla desde la que se abrió.
+
+**Motor de consulta.** Recibe la pregunta, identifica tema y módulo, recupera el contenido (léxico y raíces, primera aparición y apariciones, texto hebreo y traducciones, referencias cruzadas, parashiot con aliyot y haftarot, moedim, profecías y temas de Besorá, tefilot, gematría, curso) y compone la respuesta con sus fuentes. Responde, entre otras: qué significa una palabra o un nombre (Bereshit), su raíz, pronunciación, primera aparición y apariciones; diferencias entre dos palabras; el contexto de un capítulo; qué enseña la parashá de la semana y su relación con otros pasajes; versículos sobre un concepto; referencias cruzadas; qué dice el Tanaj sobre el Mashíaj; fiestas; tefilot; gematría; «explícame este estudio» y «qué referencias lo respaldan»; «más sencillo». No es un modelo de lenguaje: no inventa; si no encuentra información, lo dice y sugiere dónde buscar.
+
+**Aprendizaje.** «Hazme preguntas» genera un cuestionario (de la parashá, de las palabras que el usuario estudia o del vocabulario frecuente) y explica cada error; «¿por qué mi respuesta está equivocada?» lo explica. En las lecciones del curso, el mensaje del Moreh tras un error explica la respuesta correcta.
+
+**Estudiemos juntos (`#estudiemos-N`).** Ocho pasos para cada parashá: presentación, estructura (aliyot), pasajes principales (texto hebreo y traducción), palabras hebreas importantes (calculadas sobre el texto), enseñanzas disponibles (resumen, temas, personajes y temas de Besorá relacionados), referencias (haftará y referencias cruzadas), preguntas con corrección y profundización (marcar como estudiada).

@@ -2,7 +2,7 @@
    Aplicación principal (JavaScript sin dependencias). */
 (function () {
   'use strict';
-  const VERSION = '0.12.0';
+  const VERSION = '0.13.0';
   const EMBED = window.__BH_EMBED || null;
   const LOGO = (EMBED && EMBED.logo) || 'img/logo.webp';
   const LOGO_SM = (EMBED && (EMBED.logoSm || EMBED.logo)) || 'img/logo-sm.webp';

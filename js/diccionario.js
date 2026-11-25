@@ -92,7 +92,7 @@
       '<div class="btns" style="justify-content:center"><button class="btn" data-act="dc-say" data-h="' + esc(L[0]) + '">🔊 Pronunciación</button>' + (L[2] === 'v' ? '<a class="btn" href="#pealim-' + k + '">Conjugaciones (PEALIM)</a>' : '') + '<a class="btn" href="#concordancia-' + k + '">Concordancia</a>' + (L[3] ? '<button class="btn" data-act="dc-save" data-k="' + k + '">Guardar para repasar</button>' : '') + '</div></div>' +
       '<dl class="meta dc-meta"><dt>Categoría</dt><dd>' + esc(posName(L[2])) + '</dd>' +
       (/^n-[mf]/.test(L[2]) ? '<dt>Género y número</dt><dd>' + (L[2].startsWith('n-f') ? 'femenino' : 'masculino') + ', forma de diccionario (singular)</dd>' : '') +
-      '<dt>Raíz (shóresh)</dt><dd>' + (L[7] ? '<a href="#raiz-' + encodeURIComponent(plain(L[7])) + '" class="he" lang="he">' + esc(L[7].split('').join('־')) + '</a>' : '<span class="muted">sin raíz registrada en el índice BDB</span>') + '</dd>' +
+      '<dt>Raíz (shóresh)</dt><dd>' + (L[7] ? '<a href="#raiz-' + encodeURIComponent(plain(L[7])) + '" class="he" lang="he">' + esc((L[7].match(/[\u05D0-\u05EA][\u05C1\u05C2]?/g) || []).join('־')) + '</a>' : '<span class="muted">sin raíz registrada en el índice BDB</span>') + '</dd>' +
       '<dt>Frecuencia</dt><dd>' + L[5].toLocaleString('es') + ' veces en el Tanaj</dd>' +
       '<dt>Primera aparición</dt><dd>' + (L[6] ? '<a href="#' + B.refRoute(L[6]) + '">' + esc(B.refLabel(L[6])) + '</a>' : '—') + '</dd>' +
       '<dt>Gematría</dt><dd><a href="#gematria" data-act="dc-gem" data-w="' + esc(plain(L[0])) + '">' + g.std + '</a> <span class="muted">(estándar) · ' + g.katan + ' (reducida) · ' + g.siduri + ' (ordinal)</span></dd>' +
@@ -130,7 +130,7 @@
     await data();
     if (p[0] === 'raiz') {
       const r = decodeURIComponent(p.slice(1).join('-')); const key = Object.keys(RA).find(x => plain(x) === r); const ks = key ? RA[key] : [];
-      B.view().innerHTML = B.top('Raíz ' + esc(r.split('').join('־')), { back: 'dicraices' }) + '<div class="wrap dc"><div class="dc-head">' + (EXT.moreh ? EXT.moreh.inline('observe', 58, 'main', 'dc-wsp') : '') + '<p class="he dc-word" lang="he">' + esc(r.split('').join('־')) + '</p><p class="muted">' + ks.length + ' palabras de esta raíz en el Tanaj (según el índice Brown-Driver-Briggs)</p></div>' +
+      B.view().innerHTML = B.top('Raíz ' + esc((r.match(/[\u05D0-\u05EA][\u05C1\u05C2]?/g) || []).join('־')), { back: 'dicraices' }) + '<div class="wrap dc"><div class="dc-head">' + (EXT.moreh ? EXT.moreh.inline('observe', 58, 'main', 'dc-wsp') : '') + '<p class="he dc-word" lang="he">' + esc((r.match(/[\u05D0-\u05EA][\u05C1\u05C2]?/g) || []).join('־')) + '</p><p class="muted">' + ks.length + ' palabras de esta raíz en el Tanaj (según el índice Brown-Driver-Briggs)</p></div>' +
         '<div class="rows">' + ks.map(k => row(k, posName(LX[k][2]) + ' · ' + LX[k][5] + ' veces')).join('') + '</div>' +
         (ks.some(k => LX[k][2] === 'v') ? '<p><a class="btn" href="#pealim-' + ks.find(k => LX[k][2] === 'v') + '">Ver las conjugaciones del verbo</a></p>' : '') + '</div>';
       return;
@@ -138,7 +138,7 @@
     const top = Object.entries(RA).map(([r, ks]) => [r, ks, ks.reduce((a, k) => a + LX[k][5], 0)]).sort((a, b) => b[2] - a[2]);
     B.view().innerHTML = B.top('Raíces hebreas', { back: 'diccionario' }) + '<div class="wrap dc"><p style="margin-top:16px">La mayoría de las palabras hebreas se forman sobre una raíz de tres consonantes. Escribe una raíz para ver su familia de palabras, o elige una de las más frecuentes.</p>' +
       '<div class="field">' + B.ic('search') + '<input id="rq" placeholder="Escribe una raíz (ej.: קדש)" aria-label="Buscar raíz" dir="auto" lang="he"></div><div class="dc-kbd" id="rkbd">' + kbd('rq') + '</div><div id="rres"></div>' +
-      '<div class="group-title"><h3>Las raíces más frecuentes</h3></div><div class="dc-roots">' + top.slice(0, 120).map(([r, ks, n]) => '<a href="#raiz-' + encodeURIComponent(plain(r)) + '"><span class="he" lang="he">' + esc(r.split('').join('־')) + '</span><small>' + ks.length + ' palabras</small></a>').join('') + '</div></div>';
+      '<div class="group-title"><h3>Las raíces más frecuentes</h3></div><div class="dc-roots">' + top.slice(0, 120).map(([r, ks, n]) => '<a href="#raiz-' + encodeURIComponent(plain(r)) + '"><span class="he" lang="he">' + esc((r.match(/[\u05D0-\u05EA][\u05C1\u05C2]?/g) || []).join('־')) + '</span><small>' + ks.length + ' palabras</small></a>').join('') + '</div></div>';
   }
   const kbd = target => LET.concat(['ך', 'ם', 'ן', 'ף', 'ץ']).map(l => '<button class="he" lang="he" data-act="dc-key" data-t="' + target + '" data-l="' + l + '">' + l + '</button>').join('') + '<button data-act="dc-key" data-t="' + target + '" data-l="⌫" aria-label="Borrar">⌫</button>';
   document.addEventListener('input', e => {
@@ -148,7 +148,7 @@
   function rootSearch(v) {
     const c = plain(v); const out = document.getElementById('rres'); if (!out) return; if (c.length < 2) { out.innerHTML = ''; return; }
     const hits = Object.keys(RA).filter(r => plain(r).includes(c)).slice(0, 30);
-    out.innerHTML = hits.length ? '<div class="dc-roots">' + hits.map(r => '<a href="#raiz-' + encodeURIComponent(plain(r)) + '"><span class="he" lang="he">' + esc(r.split('').join('־')) + '</span><small>' + RA[r].length + ' palabras</small></a>').join('') + '</div>' : '<p class="muted">No se encontró esa raíz.</p>';
+    out.innerHTML = hits.length ? '<div class="dc-roots">' + hits.map(r => '<a href="#raiz-' + encodeURIComponent(plain(r)) + '"><span class="he" lang="he">' + esc((r.match(/[\u05D0-\u05EA][\u05C1\u05C2]?/g) || []).join('־')) + '</span><small>' + RA[r].length + ' palabras</small></a>').join('') + '</div>' : '<p class="muted">No se encontró esa raíz.</p>';
   }
   async function vNombres() {
     await data();
