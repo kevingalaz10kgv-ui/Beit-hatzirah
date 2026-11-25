@@ -846,3 +846,8 @@ main>*{animation:pagein .28s ease-out both}
 .lx-hero-slot .wsp-bubble{display:none}
 .lx-hero-say{margin:2px auto 0;max-width:30em;font-size:.95rem;color:var(--accent);font-weight:500;min-height:1.4em;opacity:0;transform:translateY(-4px);transition:opacity .35s,transform .35s;text-align:center}
 .lx-hero-say.on{opacity:1;transform:none}
+.im-feat{display:flex;gap:10px;overflow-x:auto;padding:2px 0 6px}
+.im-ft{flex:none;width:118px;border-radius:12px;overflow:hidden;border:2px solid transparent;background:var(--surface);padding:0;text-align:left}
+.im-ft.on{border-color:var(--dorado)}
+.im-ft img{display:block;width:100%;aspect-ratio:2/3;object-fit:cover}
+.im-ft span{display:block;font-size:.78rem;padding:6px 8px;font-weight:600}

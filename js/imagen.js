@@ -10,10 +10,16 @@
   EXT.init = api => { if (prevInit) prevInit(api); B = api; };
   const esc = s => B.esc(s);
   const HEF = '"BH Hebrew", "Noto Serif Hebrew", serif', ESF = '"BH Serif", Georgia, serif';
-  const TPL = [['min', 'Minimalista'], ['insp', 'Inspiración bíblica'], ['heb', 'Hebreo original'], ['perg', 'Pergamino'], ['cine', 'Cinematográfico'], ['mod', 'Moderno']];
-  const FMT = [['1:1', 'Cuadrado 1:1', 1080], ['4:5', 'Vertical 4:5', 1350], ['9:16', 'Historia 9:16', 1920]];
+  /* Fondos oficiales: la imagen se usa tal cual (sin recortes ni cambios). text = zona del texto y avoid = zona del logo,
+     en coordenadas de la imagen original. Para sumar un fondo nuevo basta con agregar otra entrada. */
+  const FONDOS = [
+    { id: 'jerusalen', name: 'Jerusalén (oficial)', src: 'img/fondos/jerusalen.png', w: 1024, h: 1536, text: { x: 84, y: 392, w: 856, h: 660 }, avoid: { x: 650, y: 30, w: 350, h: 350 }, logo: true }
+  ];
+  const FONDO = id => FONDOS.find(f => 'f-' + f.id === id);
+  const TPL = FONDOS.map(f => ['f-' + f.id, f.name]).concat([['min', 'Minimalista'], ['insp', 'Inspiración bíblica'], ['heb', 'Hebreo original'], ['perg', 'Pergamino'], ['cine', 'Cinematográfico'], ['mod', 'Moderno']]);
+  const FMT = [['1:1', 'Cuadrado 1:1', 1080], ['4:5', 'Vertical 4:5', 1350], ['9:16', 'Historia 9:16', 1920], ['2:3', 'Original 2:3', 1620]];
   const SCN = [['amanecer', 'Amanecer'], ['desierto', 'Desierto'], ['montanas', 'Montañas'], ['olivos', 'Olivos'], ['mar', 'Mar de Galilea'], ['noche', 'Cielo estrellado']];
-  let ST = { id: null, tpl: 'insp', fmt: '4:5', lang: 'both', tr: true, scn: 'amanecer', seed: 7 };
+  let ST = { id: null, tpl: 'f-jerusalen', fmt: '2:3', lang: 'both', tr: true, scn: 'amanecer', seed: 7 };
 
   /* ---------- Transliteración (reglas de Beit Hatzirah: ו = V, ח/כ = J, צ = TZ) ---------- */
   const CONS = { 'א': '', 'ב': 'v', 'ג': 'g', 'ד': 'd', 'ה': 'h', 'ו': 'v', 'ז': 'z', 'ח': 'j', 'ט': 't', 'י': 'y', 'כ': 'j', 'ך': 'j', 'ל': 'l', 'מ': 'm', 'ם': 'm', 'נ': 'n', 'ן': 'n', 'ס': 's', 'ע': '', 'פ': 'f', 'ף': 'f', 'צ': 'tz', 'ץ': 'tz', 'ק': 'k', 'ר': 'r', 'ש': 'sh', 'ת': 't' };
@@ -113,6 +119,8 @@
   function wrap(x, text, maxW) { const words = text.split(/\s+/); const lines = []; let line = ''; for (const w of words) { const t = line ? line + ' ' + w : w; if (x.measureText(t).width > maxW && line) { lines.push(line); line = w; } else line = t; } if (line) lines.push(line); return lines; }
   function block(x, text, font, size, maxW, dir) { x.font = font.replace('{s}', size); x.direction = dir || 'ltr'; const l = wrap(x, text, maxW); x.direction = 'ltr'; return l; }
   async function draw(cv, data) {
+    const F = FONDO(ST.tpl); if (F) return drawFondo(cv, data, F);
+    if (ST.fmt === '2:3') ST.fmt = '4:5';
     const W = 1080, H = FMT.find(f => f[0] === ST.fmt)[2]; cv.width = W; cv.height = H; const x = cv.getContext('2d');
     rnd = seeded(ST.seed + (ST.scn.length * 13));
     const T = ST.tpl; const dark = T === 'insp' || T === 'cine' || T === 'heb' || T === 'mod' || (T === 'min' && ST.seed % 2 === 0);
@@ -157,6 +165,59 @@
     x.font = '600 24px ' + ESF; x.fillStyle = T === 'perg' ? '#5A3E1C' : dark ? 'rgba(246,241,231,.85)' : '#252525'; x.fillText('BEIT HATZIRAH  ·  בית הצרעה', W / 2, fy + lh + 34);
     return overflow;
   }
+  const IMG = {};
+  function loadImg(src) { return IMG[src] || (IMG[src] = new Promise(res => { const i = new Image(); i.onload = () => res(i); i.onerror = () => res(null); i.src = src; })); }
+  function fondoSrc(f) { const E = window.__BH_EMBED; return (E && E.fondos && E.fondos[f.id]) || f.src; }
+  /* Plantilla con fondo oficial: la imagen se dibuja completa y sin recortes, a su resolución original.
+     En formatos de otra proporción, el espacio sobrante se completa con la misma imagen difuminada (sin objetos nuevos). */
+  async function drawFondo(cv, data, f) {
+    const img = await loadImg(fondoSrc(f)); if (!img) return false;
+    const iw = f.w, ih = f.h; const ratio = { '1:1': 1, '4:5': 4 / 5, '9:16': 9 / 16, '2:3': 2 / 3 }[ST.fmt] || 2 / 3;
+    let W, H; if (ratio >= iw / ih) { H = ih; W = Math.round(ih * ratio); } else { W = iw; H = Math.round(iw / ratio); }
+    cv.width = W; cv.height = H; const x = cv.getContext('2d');
+    const ox = Math.round((W - iw) / 2), oy = Math.round((H - ih) / 2);
+    if (ox > 0 || oy > 0) {
+      const sc = Math.max(W / iw, H / ih); x.save(); x.filter = 'blur(28px) brightness(.5) saturate(.9)';
+      x.drawImage(img, (W - iw * sc) / 2 - 40, (H - ih * sc) / 2 - 40, iw * sc + 80, ih * sc + 80); x.restore();
+      x.fillStyle = 'rgba(0,0,0,.18)'; x.fillRect(0, 0, W, H);
+    }
+    x.drawImage(img, ox, oy, iw, ih);            // la imagen original, intacta
+    if (ox > 0 || oy > 0) { x.save(); x.shadowColor = 'rgba(0,0,0,.5)'; x.shadowBlur = 30; x.strokeStyle = 'rgba(0,0,0,0)'; x.strokeRect(ox, oy, iw, ih); x.restore(); }
+    // zona del texto (coordenadas de la imagen) y escala tipográfica relativa al ancho de la imagen
+    const k = iw / 1080; const tz = { x: ox + f.text.x, y: oy + f.text.y, w: f.text.w, h: f.text.h };
+    const showHe = (ST.lang === 'he' || ST.lang === 'both') && data.he; const showEs = ST.lang !== 'he' || !data.he;
+    let hs = 74 * k, es = 62 * k; let he = [], esL = [], total = 0; const maxW = tz.w - 60 * k;
+    const MIN_ES = 30 * k; let room = tz.h;
+    for (let it = 0; it < 60; it++) {
+      he = showHe ? block(x, data.he, '700 {s}px ' + HEF, hs, maxW, 'rtl') : [];
+      esL = showEs ? block(x, data.es, 'italic 400 {s}px ' + ESF, es, maxW) : [];
+      total = he.length * hs * 1.7 + esL.length * es * 1.42 + (he.length && esL.length ? 40 * k : 0) + 118 * k;
+      if (total <= room) break;
+      if (es <= MIN_ES) { room = Math.min(H - tz.y - 60 * k, room + 40 * k); if (room >= H - tz.y - 60 * k) break; continue; }   // versículos largos: se amplía la zona hacia abajo antes de seguir reduciendo
+      hs *= 0.95; es *= 0.95;
+    }
+    const overflow = total > H - tz.y - 40 * k;
+    const top = tz.y + Math.max(0, (Math.min(room, tz.h) - total) / 2);
+    // velo suave para dar contraste; se aparta del logo con una transición gradual (el logo queda intacto)
+    const cy = top + total / 2, ry = total / 2 + 70 * k, rx = tz.w / 2 + 90 * k;
+    const vc = document.createElement('canvas'); vc.width = W; vc.height = H; const v = vc.getContext('2d');
+    v.save(); v.translate(W / 2, cy); v.scale(rx / ry, 1); const g = v.createRadialGradient(0, 0, 0, 0, 0, ry * 1.15);
+    g.addColorStop(0, 'rgba(10,8,6,.62)'); g.addColorStop(.62, 'rgba(10,8,6,.42)'); g.addColorStop(1, 'rgba(10,8,6,0)'); v.fillStyle = g; v.beginPath(); v.arc(0, 0, ry * 1.15, 0, Math.PI * 2); v.fill(); v.restore();
+    if (f.avoid) {
+      const lx = ox + f.avoid.x + f.avoid.w / 2, ly = oy + f.avoid.y + f.avoid.h / 2, r0 = Math.max(f.avoid.w, f.avoid.h) / 2;
+      const e = v.createRadialGradient(lx, ly, r0 * 1.1, lx, ly, r0 * 1.75); e.addColorStop(0, 'rgba(0,0,0,1)'); e.addColorStop(1, 'rgba(0,0,0,0)');
+      v.globalCompositeOperation = 'destination-out'; v.fillStyle = e; v.fillRect(0, 0, W, H); v.globalCompositeOperation = 'source-over';
+    }
+    x.drawImage(vc, 0, 0);
+    let y = top; x.textAlign = 'center'; x.shadowColor = 'rgba(0,0,0,.65)'; x.shadowBlur = 16 * k; x.shadowOffsetY = 2 * k;
+    if (he.length) { x.fillStyle = '#F6E7BE'; x.font = '700 ' + hs + 'px ' + HEF; x.direction = 'rtl'; he.forEach(l => { y += hs * 1.3; x.fillText(l, W / 2, y); y += hs * 0.4; }); x.direction = 'ltr'; }
+    if (esL.length) { y += he.length ? 40 * k : 0; x.fillStyle = '#FFFFFF'; x.font = 'italic 400 ' + es + 'px ' + ESF; esL.forEach(l => { y += es * 1.42; x.fillText(l, W / 2, y); }); }
+    y += 56 * k; x.shadowBlur = 0; x.shadowOffsetY = 0; x.fillStyle = '#E4C989'; x.fillRect(W / 2 - 46 * k, y - 22 * k, 92 * k, 3 * k);
+    x.shadowColor = 'rgba(0,0,0,.6)'; x.shadowBlur = 10 * k; x.font = '600 ' + Math.round(38 * k) + 'px ' + ESF; x.fillText(data.ref, W / 2, y + 26 * k);
+    if (showEs && data.ver) { x.font = '400 ' + Math.round(24 * k) + 'px ' + ESF; x.globalAlpha = .85; x.fillText(data.ver, W / 2, y + 60 * k); x.globalAlpha = 1; }
+    x.shadowColor = 'transparent';
+    return overflow;
+  }
   let LG = null;
   function logo() { return new Promise(res => { if (LG) return res(LG); const i = new Image(); i.onload = () => { LG = i; res(i); }; i.onerror = () => res(null); i.src = window.BH_LOGO; }); }
 
@@ -174,13 +235,14 @@
     const chips = (list, key) => list.map(([k, l]) => '<button class="chip' + (ST[key] === k ? ' on' : '') + '" data-act="im-set" data-k="' + key + '" data-v="' + k + '" aria-pressed="' + (ST[key] === k) + '">' + esc(l) + '</button>').join('');
     B.view().innerHTML = B.top('Imagen del versículo', { back: 'leer-' + id.split('-').slice(0, 2).join('-') }) + '<div class="wrap im">' +
       '<div class="im-stage"><canvas id="im-cv" aria-label="Vista previa de la imagen"></canvas></div><p id="im-warn" class="notice" hidden></p>' +
-      '<div class="im-panel"><h3>Estilo</h3><div class="chips">' + chips(TPL, 'tpl') + '</div>' +
+      '<div class="im-panel"><h3>Plantillas destacadas</h3><div class="im-feat">' + FONDOS.map(f => '<button class="im-ft' + (ST.tpl === 'f-' + f.id ? ' on' : '') + '" data-act="im-set" data-k="tpl" data-v="f-' + f.id + '" aria-pressed="' + (ST.tpl === 'f-' + f.id) + '"><img src="' + fondoSrc(f) + '" alt="" loading="lazy"><span>' + esc(f.name) + '</span></button>').join('') + '</div>' +
+      '<h3>Otros estilos</h3><div class="chips">' + chips(TPL.filter(t => !FONDO(t[0])), 'tpl') + '</div>' +
       (ST.tpl === 'insp' || ST.tpl === 'cine' ? '<h3>Paisaje</h3><div class="chips">' + chips(SCN, 'scn') + '</div>' : '') +
-      '<h3>Formato</h3><div class="chips">' + chips(FMT.map(f => [f[0], f[1]]), 'fmt') + '</div>' +
+      '<h3>Formato</h3><div class="chips">' + chips(FMT.filter(f => f[0] !== '2:3' || FONDO(ST.tpl)).map(f => [f[0], f[1]]), 'fmt') + '</div>' +
       (data.he && ST.tpl !== 'heb' ? '<h3>Idioma</h3><div class="chips">' + chips([['es', 'Español'], ['he', 'Hebreo'], ['both', 'Ambos']], 'lang') + '</div>' : '') +
       (ST.tpl === 'heb' && data.tr ? '<label class="im-check"><input type="checkbox" data-act="im-tr"' + (ST.tr ? ' checked' : '') + '> Incluir transliteración</label>' : '') +
-      (ST.tpl !== 'heb' && ST.tpl !== 'perg' ? '<button class="btn" data-act="im-seed">🎨 Otra variación</button>' : '') +
-      '<p class="im-note">' + (data.nt && data.he ? 'El hebreo del Brit Hadashá es la traducción de Delitzsch (sin vocales). ' : '') + (ST.tpl === 'heb' && data.tr ? 'La transliteración se genera automáticamente según las reglas de Beit Hatzirah (ו = v, ח = j): revísala antes de compartir. ' : '') + 'El texto bíblico no se modifica; los nombres siguen la configuración de la app (YAH, Yahshúa, Elohim). Los fondos son ilustraciones generadas por la app.</p></div>' +
+      (ST.tpl !== 'heb' && ST.tpl !== 'perg' && !FONDO(ST.tpl) ? '<button class="btn" data-act="im-seed">🎨 Otra variación</button>' : '') +
+      '<p class="im-note">' + (data.nt && data.he ? 'El hebreo del Brit Hadashá es la traducción de Delitzsch (sin vocales). ' : '') + (ST.tpl === 'heb' && data.tr ? 'La transliteración se genera automáticamente según las reglas de Beit Hatzirah (ו = v, ח = j): revísala antes de compartir. ' : '') + (FONDO(ST.tpl) ? 'Fondo oficial de Beit Hatzirah: se usa completo, sin recortes ni cambios; en los formatos de otra proporción, el espacio sobrante se completa con la misma imagen difuminada. ' : 'Los fondos de estos estilos son ilustraciones generadas por la app. ') + 'El texto bíblico no se modifica; los nombres siguen la configuración de la app (YAH, Yahshúa, Elohim).</p></div>' +
       '<div class="btns im-actions"><button class="btn solid" data-act="im-share">Compartir</button><button class="btn" data-act="im-save">Descargar</button></div></div>';
     if (document.fonts) { try { await Promise.all(['700 60px "BH Hebrew"', '400 40px "BH Serif"', 'italic 400 40px "BH Serif"', '600 30px "BH Serif"'].map(f => document.fonts.load(f, f.includes('Hebrew') ? 'אבג' : 'Abc'))); } catch (e) { } }
     const over = await draw(document.getElementById('im-cv'), data);

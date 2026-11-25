@@ -4,7 +4,7 @@ Biblioteca digital de las Sagradas Escrituras en hebreo y español.
 Proyecto y dirección de contenido: **Moreh Gabriel ben Eliyah**
 Autoridad rabínica: **Rab Eliyah ben Eleazar**
 
-Versión 0.11.0. Incluye el módulo «Yo aprendo hebreo con la Torá».
+Versión 0.11.1. Incluye el módulo «Yo aprendo hebreo con la Torá».
 
 ---
 
@@ -285,3 +285,12 @@ Las expresiones hebreas de sus mensajes llevan traducción: Shalom (paz), Kol ha
 - Cargas y estados vacíos: la avispa simplificada vuela en las pantallas de carga y acompaña los mensajes de «sin contenido».
 
 **Configuración.** «Animaciones de la avispa»: al desactivarlas, la avispa sigue presente (identidad gráfica) pero sin movimiento. También se respeta la opción «reducir movimiento» del teléfono.
+
+## 20. Fondo oficial para versículos: «Jerusalén» (versión 0.11.1)
+
+La imagen oficial entregada por Beit Hatzirah (`img/fondos/jerusalen.png`, 1024 × 1536, copia idéntica al archivo original) es la primera plantilla destacada del estudio de imágenes y la que se abre por defecto.
+
+- **La imagen no se modifica:** se dibuja completa, a su resolución original, sin recortes, sin cambios de color y sin objetos nuevos. El logo que contiene queda idéntico (se verificó píxel por píxel en todos los formatos).
+- **Formatos:** Original 2:3 (la imagen exacta), 1:1, 4:5 y 9:16. En los formatos de otra proporción, el espacio sobrante se completa con la misma imagen difuminada y oscurecida, para no recortar el logo, el marco dorado ni el paisaje. La exportación es en PNG a la resolución de la imagen (1024 × 1536, 1536 × 1536, 1229 × 1536 o 1024 × 1820).
+- **Texto:** se compone encima (nunca se regenera la imagen), centrado en el cielo y la ciudad, debajo del logo; hebreo en dorado claro y español en blanco, con un velo oscuro suave para el contraste que se aparta del logo. El tamaño se adapta a la extensión del versículo; en versículos muy largos la zona de texto se amplía hacia abajo antes de reducir más la letra, sin cortar palabras.
+- **Nuevos fondos:** se agregan en el registro `FONDOS` de `js/imagen.js` (archivo, tamaño, zona del texto y zona del logo). En la vista previa de Claude se usa una copia JPEG de alta calidad por límite de tamaño; la app publicada usa el PNG original.
