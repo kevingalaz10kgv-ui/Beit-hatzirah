@@ -4,7 +4,7 @@ Biblioteca digital de las Sagradas Escrituras en hebreo y español.
 Proyecto y dirección de contenido: **Moreh Gabriel ben Eliyah**
 Autoridad rabínica: **Rab Eliyah ben Eleazar**
 
-Versión 0.13.0. Incluye el módulo «Yo aprendo hebreo con la Torá».
+Versión 0.14.0. Incluye el módulo «Yo aprendo hebreo con la Torá».
 
 ---
 
@@ -328,3 +328,19 @@ El Moreh reemplaza a la avispa como guía oficial y conserva todas sus funciones
 **Aprendizaje.** «Hazme preguntas» genera un cuestionario (de la parashá, de las palabras que el usuario estudia o del vocabulario frecuente) y explica cada error; «¿por qué mi respuesta está equivocada?» lo explica. En las lecciones del curso, el mensaje del Moreh tras un error explica la respuesta correcta.
 
 **Estudiemos juntos (`#estudiemos-N`).** Ocho pasos para cada parashá: presentación, estructura (aliyot), pasajes principales (texto hebreo y traducción), palabras hebreas importantes (calculadas sobre el texto), enseñanzas disponibles (resumen, temas, personajes y temas de Besorá relacionados), referencias (haftará y referencias cruzadas), preguntas con corrección y profundización (marcar como estudiada).
+
+## 23. Los Compañeros de Beit Hatzirah (versión 0.14)
+
+El Moreh y la avispa interactúan como un equipo.
+
+**Miradas.** Nuevas variantes de la mirada (derecha, arriba a la derecha, izquierda, abajo), hechas desplazando el iris original dentro del ojo; el Moreh mira a la avispa cuando llega, se posa o celebra, e inclina la cabeza hacia ella.
+
+**La avispa con personalidad propia.** Estados: vuelo (con orientación según la dirección), vuelo estacionario, reposo (posada, con un movimiento de alas ocasional), curiosidad, atención, entusiasmo y celebración. Lugares: el hombro del Moreh, su mano que señala, junto a su cabeza o al frente. Vuela con trayectorias en arco y rodea al Moreh en las celebraciones.
+
+**Escenas.** Bienvenida (la avispa entra volando, él la mira y sonríe, ella se posa en su hombro y ambos saludan), enseñanza (ella se adelanta con curiosidad y él señala), descubrimiento (él se sorprende y ella acude rápidamente a observar), celebración (él celebra y la saluda; ella vuela a su alrededor y se posa en su mano), complicidad (él piensa; ella se acerca y llama su atención; él la mira, sonríe y explica), despedida (ella vuelve a su mano y ambos saludan antes de retirarse), calma (para lectura, oración y escucha) y presentación. Las escenas se eligen según la sección y evitan repetirse; de vez en cuando aparecen pequeñas escenas espontáneas en las figuras visibles, nunca en la lectura bíblica, las tefilot ni el audio.
+
+**Interacción del usuario.** Tocar al Moreh: mira a su compañera y asiente. Tocar a la avispa: vuela hacia él. Tocarlos dos veces seguidas: animación conjunta. A veces el Moreh comenta: «Parece que mi compañera quiere mostrarte algo nuevo», «¡Muy bien! Hoy hemos aprendido algo juntos».
+
+**Los Compañeros presentan.** Tarjeta reconocible en la que ambos presentan algo: novedades (en el inicio, se puede cerrar), la parashá de la semana con «Estudiemos juntos» (en el inicio) y el desafío diario (en el curso). Las celebraciones de logros, el asistente y «Aprende con el Moreh» también usan las escenas conjuntas.
+
+**Configuración.** Con «Animaciones» desactivadas, la avispa queda posada en el hombro del Moreh y no hay movimiento; también se respeta «reducir movimiento» del teléfono.

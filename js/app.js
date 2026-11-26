@@ -2,7 +2,7 @@
    Aplicación principal (JavaScript sin dependencias). */
 (function () {
   'use strict';
-  const VERSION = '0.13.0';
+  const VERSION = '0.14.0';
   const EMBED = window.__BH_EMBED || null;
   const LOGO = (EMBED && EMBED.logo) || 'img/logo.webp';
   const LOGO_SM = (EMBED && (EMBED.logoSm || EMBED.logo)) || 'img/logo-sm.webp';
@@ -479,6 +479,7 @@
       '<p class="tagline">Una plataforma de estudio de las Escrituras, aprendizaje del hebreo bíblico y conocimiento de las raíces de nuestra fe.</p>' +
       '<a class="credits-mini" href="#acerca"><span>Pertenece a Ha’roeh Eliyah ben Eleazar</span><span>Desarrollado por Moreh Gabriel ben Eliyah</span></a></section>' +
       (cont.length ? '<section class="cont-row">' + cont.join('') + '</section>' : '') +
+      (EXT.moreh && EXT.moreh.presenter ? (!EXT.moreh.presSeen('v014') ? EXT.moreh.presenter({ title: 'Nuevo: los Compañeros de Beit Hatzirah', text: 'El Moreh y su compañera te acompañan en la aplicación. Tócalos para ver cómo interactúan; tócalos dos veces seguidas para una sorpresa.', cta: ['Conversar con el Moreh', 'moreh'], close: 'v014' }) : (w ? EXT.moreh.presenter({ title: 'Parashá de la semana: ' + w.list.map(p => p.tr).join('–'), text: '«' + w.list.map(p => p.sig).join(' / ') + '». Estudiémosla juntos, paso a paso.', cta: ['Estudiemos juntos', 'estudiemos-' + w.list[0].n] }) : '')) : '') +
       parHTML +
       '<section class="section"><h3 class="h-sec">Explorar</h3><div class="mod-grid">' + MODS.map(([r, i, t, sub, h]) => '<a class="mod" href="#' + r + '"><span class="mod-ic">' + ic(i) + '</span><b>' + esc(t) + '</b><small>' + esc(sub) + '</small><span class="he mod-he" lang="he">' + esc(h) + '</span></a>').join('') + '</div></section>' +
       '<section class="section two"><a class="card-msg" href="#mensaje">' + (EXT.moreh ? EXT.moreh.inline('still', 56, 'avatar', 'msg-wsp') : '') + '<small>Mensaje diario · דְּבַר הַיּוֹם</small><b>' + esc(msg.titulo) + '</b><span>' + esc(refLabel(msg.ref)) + '</span></a></section>' +

@@ -13,12 +13,13 @@
   /* ---------- Recursos gráficos ---------- */
   const SRC = n => { const E = window.__BH_EMBED; return (E && E.moreh && E.moreh[n]) || 'img/moreh/' + n + '.webp'; };
   /* Rasgos faciales (cejas, ojos y boca) dibujados sobre la misma ilustración; posiciones en la imagen original de 874 × 1600 */
-  const FEAT = { 'b-raised': [262, 124, 208, 58], 'b-furrow': [262, 124, 208, 58], 'b-concern': [262, 124, 208, 58], 'b-think': [262, 124, 208, 58], 'm-closed': [298, 254, 132, 66], 'm-neutral': [298, 254, 132, 66], 'm-serious': [298, 254, 132, 66], 'm-think': [298, 254, 132, 66], 'm-o': [298, 254, 132, 66], 'm-talk1': [298, 254, 132, 66], 'm-talk2': [298, 254, 132, 66], 'm-talk3': [298, 254, 132, 66], 'e-blink': [276, 174, 176, 50], 'e-half': [276, 174, 176, 50] };
+  const FEAT = { 'b-raised': [262, 124, 208, 58], 'b-furrow': [262, 124, 208, 58], 'b-concern': [262, 124, 208, 58], 'b-think': [262, 124, 208, 58], 'm-closed': [298, 254, 132, 66], 'm-neutral': [298, 254, 132, 66], 'm-serious': [298, 254, 132, 66], 'm-think': [298, 254, 132, 66], 'm-o': [298, 254, 132, 66], 'm-talk1': [298, 254, 132, 66], 'm-talk2': [298, 254, 132, 66], 'm-talk3': [298, 254, 132, 66], 'e-right': [276, 174, 176, 50], 'e-upright': [276, 174, 176, 50], 'e-left': [276, 174, 176, 50], 'e-down': [276, 174, 176, 50], 'e-blink': [276, 174, 176, 50], 'e-half': [276, 174, 176, 50] };
   function feats(ox, oy, w, h) { return Object.entries(FEAT).map(([n, [x, y, fw, fh]]) => '<img class="mx x-' + n + '" src="' + SRC(n) + '" alt="" style="left:' + ((x - ox) / w * 100).toFixed(3) + '%;top:' + ((y - oy) / h * 100).toFixed(3) + '%;width:' + (fw / w * 100).toFixed(3) + '%;height:' + (fh / h * 100).toFixed(3) + '%">').join(''); }
-  const WASP = (mode, cls) => '<span class="mo-wasp w-' + (mode || 'hover') + ' ' + (cls || '') + '" aria-hidden="true">' + (window.BH_WASP_ART ? window.BH_WASP_ART('main') : '') + '</span>';
+  const WSTATE = { hover: 'hover', enter: 'fly', point: 'curious', orbit: 'celebrate', perch: 'rest', land: 'rest', fly: 'fly', rest: 'rest', curious: 'curious', attn: 'attn', excited: 'excited' };
+  const WASP = (mode, cls, spot) => '<span class="mo-wasp ' + (cls || '') + '" data-ws="' + (WSTATE[mode] || 'hover') + '" data-spot="' + (spot || (mode === 'enter' ? 'away' : 'shoulder')) + '" aria-hidden="true"><span class="mo-wbody">' + (window.BH_WASP_ART ? window.BH_WASP_ART('main') : '') + '</span></span>';
   function fig(pose, cls, expr, opt) {   // figura completa animable, con la avispa a su lado
     opt = opt || {};
-    return '<span class="mo-team' + (opt.nowasp ? ' solo' : '') + '"><span class="mo-fig ' + (pose ? 'p-' + pose : '') + ' ' + (cls || '') + '" data-expr="' + (expr || EXPR_OF[pose] || 'sonriente') + '" aria-hidden="true"><span class="mo-flip"><img class="mo-arm" src="' + SRC('arm') + '" alt=""><span class="mo-headg"><img class="mo-head" src="' + SRC('head') + '" alt="">' + feats(0, 0, 874, 1600) + '</span><img class="mo-body" src="' + SRC('body') + '" alt=""></span></span>' + (opt.nowasp ? '' : WASP(opt.wasp || 'hover')) + '</span>';
+    return '<span class="mo-team' + (opt.nowasp ? ' solo' : '') + '"><span class="mo-fig ' + (pose ? 'p-' + pose : '') + ' ' + (cls || '') + '" data-expr="' + (expr || EXPR_OF[pose] || 'sonriente') + '" aria-hidden="true"><span class="mo-flip"><img class="mo-arm" src="' + SRC('arm') + '" alt=""><span class="mo-headg"><img class="mo-head" src="' + SRC('head') + '" alt="">' + feats(0, 0, 874, 1600) + '</span><img class="mo-body" src="' + SRC('body') + '" alt=""></span></span>' + (opt.nowasp ? '' : WASP(opt.wasp || 'rest', '', opt.wasp === 'enter' ? 'away' : opt.spot)) + '</span>';
   }
   const avatar = (size, cls, expr, wasp) => '<span class="mo-av ' + (cls || '') + '" data-expr="' + (expr || 'sonriente') + '" style="--ms:' + (size || 40) + 'px" aria-hidden="true"><span class="mo-avc"><img src="' + SRC('avatar') + '" alt="">' + feats(170, 0, 340, 340) + '</span>' + (wasp ? WASP('perch', 'mini') : '') + '</span>';
   const EXPR_OF = { idle: 'sonriente', nod: 'atento', teach: 'entusiasmado', point: 'entusiasmado', explain: 'explicativo', welcome: 'sonriente', reflect: 'reflexivo', celebrate: 'celebracion', walk: 'sonriente', enter: 'sonriente', leave: 'sonriente' };
@@ -101,13 +102,93 @@
     return avatar(size || 44, 'mo-' + (mode === 'still' ? 'still' : 'idle') + ' ' + (cls || ''), mode === 'land' ? 'sorprendido' : 'sonriente', size >= 40);
   }
 
+  /* ---------- Los Compañeros: coreografía del Moreh y la avispa ---------- */
+  // Lugares de la avispa, en % de la figura del Moreh (874 × 1600): hombro, mano que señala, junto a la cabeza, al frente, lejos
+  const SPOT = { shoulder: [65.5, 22.5], hand: [95, 26.3], head: [62, 4], front: [108, 32], near: [96, 11], low: [104, 46], left: [-12, 20], away: [165, -22] };
+  const motionOn = () => P().anim && !matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function wEl(t) { return t && t.querySelector(':scope > .mo-wasp'); }
+  function fEl(t) { return t && t.querySelector(':scope > .mo-fig'); }
+  function wState(t, st) { const w = wEl(t); if (w) w.dataset.ws = st; }
+  function wplace(t, spot) { const w = wEl(t); if (!w) return; const [x, y] = SPOT[spot] || SPOT.shoulder; w.style.left = x + '%'; w.style.top = y + '%'; w.dataset.spot = spot; }
+  function flyTo(t, spot, dur, lift) {
+    const w = wEl(t); if (!w) return; const from = SPOT[w.dataset.spot] || SPOT.shoulder; const to = SPOT[spot] || SPOT.shoulder;
+    if (!motionOn()) return wplace(t, spot);
+    w.dataset.face = to[0] < from[0] ? 'l' : 'r'; wState(t, 'fly');
+    const mid = [(from[0] + to[0]) / 2, Math.min(from[1], to[1]) - (lift === undefined ? 12 : lift)];
+    try { w.animate([{ left: from[0] + '%', top: from[1] + '%' }, { left: mid[0] + '%', top: mid[1] + '%', offset: .5 }, { left: to[0] + '%', top: to[1] + '%' }], { duration: dur || 900, easing: 'cubic-bezier(.45,.05,.3,1)' }); } catch (e) { }
+    wplace(t, spot); setTimeout(() => { w.dataset.face = 'r'; }, (dur || 900));
+  }
+  function orbit(t, dur) {
+    const w = wEl(t); if (!w || !motionOn()) return; wState(t, 'celebrate'); const cx = 50, cy = 36, rx = 72, ry = 30; const k = [];
+    for (let i = 0; i <= 16; i++) { const a = -Math.PI / 2 + i / 16 * Math.PI * 2; k.push({ left: (cx + rx * Math.cos(a)) + '%', top: (cy + ry * Math.sin(a)) + '%' }); }
+    const s0 = SPOT[w.dataset.spot] || SPOT.shoulder; k.unshift({ left: s0[0] + '%', top: s0[1] + '%' });
+    try { w.animate(k, { duration: dur || 1800, easing: 'ease-in-out' }); } catch (e) { }
+  }
+  function look(t, dir) { const f = fEl(t); if (f) { if (dir) f.dataset.look = dir; else f.removeAttribute('data-look'); } }
+  function tilt(t, on) { const f = fEl(t); if (f) f.classList.toggle('tilt-r', !!on); }
+  function pose(t, p, e) { const f = fEl(t); if (!f) return; f.className = f.className.replace(/\bp-\S+/g, '').trim() + ' p-' + p; if (e) f.dataset.expr = e; }
+  function run(t, steps) {
+    if (!t) return; (t._tm || []).forEach(clearTimeout); t._tm = [];
+    if (!motionOn()) { wplace(t, 'shoulder'); wState(t, 'rest'); return; }
+    steps.forEach(([ms, fn]) => t._tm.push(setTimeout(() => { try { fn(); } catch (e) { } }, ms)));
+  }
+  const SCENES = {
+    bienvenida: t => run(t, [[0, () => { wplace(t, 'away'); pose(t, 'welcome', 'sonriente'); look(t, null); }], [350, () => flyTo(t, 'front', 950, 16)], [1300, () => { look(t, 'right'); tilt(t, true); wState(t, 'excited'); }], [2100, () => flyTo(t, 'shoulder', 700, 8)], [2850, () => { wState(t, 'rest'); look(t, null); tilt(t, false); pose(t, 'welcome', 'sonriente'); }], [3700, () => wState(t, 'attn')], [4600, () => { wState(t, 'rest'); pose(t, 'idle', 'sonriente'); }]]),
+    ensenanza: t => run(t, [[0, () => pose(t, 'explain', 'entusiasmado')], [300, () => flyTo(t, 'front', 800, 10)], [1100, () => { wState(t, 'curious'); look(t, 'right'); pose(t, 'point', 'entusiasmado'); }], [3200, () => { look(t, null); flyTo(t, 'hand', 700, 6); }], [3950, () => { wState(t, 'rest'); pose(t, 'idle', 'sonriente'); }]]),
+    descubrimiento: t => run(t, [[0, () => pose(t, 'idle', 'sorprendido')], [150, () => flyTo(t, 'front', 420, 4)], [600, () => { wState(t, 'curious'); look(t, 'right'); tilt(t, true); }], [2300, () => { pose(t, 'point', 'entusiasmado'); }], [3600, () => { tilt(t, false); look(t, null); flyTo(t, 'shoulder', 800); }], [4450, () => { wState(t, 'rest'); pose(t, 'idle', 'sonriente'); }]]),
+    celebracion: t => run(t, [[0, () => { pose(t, 'celebrate', 'celebracion'); look(t, null); }], [200, () => orbit(t, 1800)], [2050, () => { wplace(t, 'hand'); wState(t, 'excited'); look(t, 'upright'); tilt(t, true); }], [2900, () => { pose(t, 'nod', 'sonriente'); wState(t, 'rest'); }], [3700, () => { look(t, null); tilt(t, false); pose(t, 'idle', 'sonriente'); }]]),
+    complicidad: t => run(t, [[0, () => pose(t, 'reflect', 'pensativo')], [500, () => flyTo(t, 'near', 700, 6)], [1250, () => wState(t, 'attn')], [1700, () => { look(t, 'upright'); tilt(t, true); pose(t, 'idle', 'sonriente'); }], [2600, () => { look(t, null); tilt(t, false); pose(t, 'explain', 'explicativo'); flyTo(t, 'shoulder', 700, 4); }], [3400, () => wState(t, 'rest')]]),
+    despedida: t => run(t, [[0, () => { pose(t, 'welcome', 'sonriente'); look(t, null); flyTo(t, 'hand', 600, 6); }], [650, () => wState(t, 'excited')], [1300, () => wState(t, 'rest')]]),
+    tocarMoreh: t => run(t, [[0, () => { const w = wEl(t); look(t, w && (SPOT[w.dataset.spot] || [0, 50])[1] < 15 ? 'upright' : 'right'); tilt(t, true); pose(t, 'nod', 'sonriente'); wState(t, 'attn'); }], [1300, () => { look(t, null); tilt(t, false); pose(t, 'idle', 'sonriente'); wState(t, 'rest'); }]]),
+    tocarAvispa: t => run(t, [[0, () => wState(t, 'excited')], [250, () => { const w = wEl(t); flyTo(t, w && w.dataset.spot === 'shoulder' ? 'hand' : 'shoulder', 650, 10); }], [400, () => { look(t, 'right'); pose(t, 'idle', 'sonriente'); }], [1100, () => { wState(t, 'rest'); look(t, null); }]]),
+    juntos: t => run(t, [[0, () => pose(t, 'celebrate', 'celebracion')], [100, () => orbit(t, 1500)], [1650, () => { wplace(t, 'shoulder'); wState(t, 'excited'); look(t, 'right'); tilt(t, true); }], [2500, () => { look(t, null); tilt(t, false); pose(t, 'welcome', 'sonriente'); wState(t, 'rest'); }]]),
+    calma: t => run(t, [[0, () => { wplace(t, 'shoulder'); wState(t, 'rest'); pose(t, 'idle', 'sonriente'); }]]),
+    presentacion: t => run(t, [[0, () => { wplace(t, 'away'); pose(t, 'enter', 'sonriente'); }], [400, () => flyTo(t, 'front', 900, 14)], [1300, () => orbit(t, 1300)], [2650, () => { wplace(t, 'hand'); wState(t, 'rest'); pose(t, 'point', 'entusiasmado'); look(t, 'right'); }], [4000, () => { look(t, null); pose(t, 'idle', 'sonriente'); }]])
+  };
+  const LINES = { tocar: ['Parece que mi compañera quiere mostrarte algo nuevo.', 'Ella siempre llega primero a las letras.', 'Somos un buen equipo: yo explico y ella encuentra.'], juntos: ['¡Muy bien! Hoy hemos aprendido algo juntos.', '¡Kol hakavod! (Muy bien hecho.) Seguimos juntos.'] };
+  let lastScene = [];
+  function scene(t, name) { if (!t || !SCENES[name]) return; t._ts = Date.now(); lastScene = [name].concat(lastScene).slice(0, 3); SCENES[name](t); }
+  function pickScene(c) {
+    const opts = { inicio: ['bienvenida', 'complicidad', 'presentacion'], diccionario: ['descubrimiento', 'complicidad'], gematria: ['descubrimiento', 'ensenanza'], aprender: ['ensenanza', 'bienvenida'], besora: ['complicidad', 'ensenanza'], imagen: ['bienvenida'], otro: ['bienvenida', 'complicidad'] }[c] || ['calma'];
+    const fresh = opts.filter(o => !lastScene.includes(o)); const L = fresh.length ? fresh : opts; return L[Math.floor(Math.random() * L.length)];
+  }
+  const QUIET = /^#(leer|lectura|biblia|tefilot-t|audio|buscar$)/;
+  function animateNew() {
+    document.querySelectorAll('.mo-team:not([data-anim])').forEach(t => {
+      t.dataset.anim = '1'; const w = wEl(t); if (!w) return; wplace(t, w.dataset.spot || 'shoulder');
+      const want = t.dataset.scene || (QUIET.test(location.hash) ? 'calma' : t.closest('.mo-present') ? 'presentacion' : t.closest('.mo-celebrate') ? 'celebracion' : t.closest('.mc-head') ? 'bienvenida' : t.closest('.mo-stage') ? 'ensenanza' : w.dataset.spot === 'away' ? 'bienvenida' : 'calma');
+      setTimeout(() => scene(t, want), 60);
+    });
+  }
+  new MutationObserver(ms => { if (ms.some(m => m.addedNodes.length)) animateNew(); }).observe(document.documentElement, { childList: true, subtree: true });
+  let tapT = 0, tapTeam = null;
+  document.addEventListener('click', e => {
+    const t = e.target.closest && e.target.closest('.mo-team'); if (!t || e.target.closest('a,button')) return;
+    const now = Date.now(); if (tapTeam === t && now - tapT < 500) { scene(t, 'juntos'); if (Math.random() < .5) { const m = LINES.juntos[Math.floor(Math.random() * 2)]; if (document.querySelector('.lx-hero-say')) say(m); else B.toast(m); } tapT = 0; return; }
+    tapT = now; tapTeam = t; scene(t, e.target.closest('.mo-wasp') ? 'tocarAvispa' : 'tocarMoreh');
+    if (Math.random() < .34) { const m = LINES.tocar[Math.floor(Math.random() * LINES.tocar.length)]; if (document.querySelector('.lx-hero-say')) say(m); else B.toast(m); }
+  });
+  setInterval(() => {
+    if (!B || !active() || !motionOn() || document.hidden || QUIET.test(location.hash) || P().freq === 'baja') return;
+    if (Math.random() > (P().freq === 'alta' ? .6 : .35)) return;
+    const ts = [...document.querySelectorAll('.mo-team')].filter(t => { const r = t.getBoundingClientRect(); return r.bottom > 0 && r.top < innerHeight && r.width > 40 && Date.now() - (t._ts || 0) > 6000; });
+    const t = ts[Math.floor(Math.random() * ts.length)]; if (!t) return;
+    scene(t, ['tocarMoreh', 'tocarAvispa', 'complicidad', 'descubrimiento'][Math.floor(Math.random() * 4)]);
+  }, 14000);
+
+  /* ---------- Los Compañeros presentan ---------- */
+  function presenter(o) {
+    if (!B || !active()) return '';
+    return '<section class="mo-present" role="region" aria-label="Los Compañeros de Beit Hatzirah"><div class="mo-pteam">' + fig('enter', '', 'sonriente', { wasp: 'enter' }) + '</div><div class="mo-ptext"><small>Los Compañeros de Beit Hatzirah presentan</small><b>' + esc(o.title) + '</b><p>' + esc(o.text) + '</p>' + (o.cta ? (o.cta[1].startsWith('act:') ? '<button class="btn solid" data-act="' + o.cta[1].slice(4) + '">' + esc(o.cta[0]) + '</button>' : '<a class="btn solid" href="#' + o.cta[1] + '">' + esc(o.cta[0]) + '</a>') : '') + (o.close ? '<button class="mo-px" data-act="mo-pclose" data-k="' + esc(o.close) + '" aria-label="Cerrar">✕</button>' : '') + '</div></section>';
+  }
+
   /* ---------- Escena: el Moreh entra, señala, habla y se retira ---------- */
-  let scene = null, sceneT = null;
+  let sceneEl = null, sceneT = null;
   function stage() {
-    if (scene) return scene;
-    scene = document.createElement('div'); scene.className = 'mo-scene'; scene.setAttribute('role', 'dialog'); scene.setAttribute('aria-live', 'polite');
-    scene.innerHTML = '<div class="mo-actor">' + fig('idle', '', 'sonriente', { wasp: 'enter' }) + '</div><div class="mo-card"><button class="mo-x" data-act="mo-dismiss" aria-label="Cerrar">✕</button><p class="mo-say"></p><div class="mo-acts"></div></div>';
-    document.body.appendChild(scene); return scene;
+    if (sceneEl) return sceneEl;
+    sceneEl = document.createElement('div'); sceneEl.className = 'mo-scene'; sceneEl.setAttribute('role', 'dialog'); sceneEl.setAttribute('aria-live', 'polite');
+    sceneEl.innerHTML = '<div class="mo-actor">' + fig('idle', '', 'sonriente', { wasp: 'enter' }) + '</div><div class="mo-card"><button class="mo-x" data-act="mo-dismiss" aria-label="Cerrar">✕</button><p class="mo-say"></p><div class="mo-acts"></div></div>';
+    document.body.appendChild(sceneEl); return sceneEl;
   }
   function setPose(p, e) { const f = stage().querySelector('.mo-fig'); f.className = 'mo-fig p-' + p; f.dataset.expr = e || EXPR_OF[p] || 'sonriente'; }
   function appear(text, acts, opt) {
@@ -119,10 +200,15 @@
     s.classList.remove('out'); void s.offsetWidth; s.classList.add('in');
     setPose(opt.pose || 'enter'); setTimeout(() => setPose(opt.after || 'explain', opt.expr), 1300); setTimeout(() => setPose('idle', opt.expr), 4200);
     const fg = s.querySelector('.mo-actor'); talk(fg, true); setTimeout(() => talk(fg, false), Math.min(4200, 900 + text.length * 45));
+    const tm = s.querySelector('.mo-team'); if (tm) { tm.dataset.anim = '1'; scene(tm, opt.scene || pickScene(ctxOf())); }
     if (!opt.stay) sceneT = setTimeout(retire, opt.ms || 7500);
-    setTimeout(() => { const off = e => { if (!scene || scene.contains(e.target)) return; retire(); window.removeEventListener('scroll', off, true); document.removeEventListener('pointerdown', off, true); }; window.addEventListener('scroll', off, { capture: true, passive: true }); document.addEventListener('pointerdown', off, true); }, 600);
+    setTimeout(() => { const off = e => { if (!sceneEl || sceneEl.contains(e.target)) return; retire(); window.removeEventListener('scroll', off, true); document.removeEventListener('pointerdown', off, true); }; window.addEventListener('scroll', off, { capture: true, passive: true }); document.addEventListener('pointerdown', off, true); }, 600);
   }
-  function retire() { if (!scene) return; setPose('leave'); scene.classList.add('out'); scene.classList.remove('in'); }
+  function retire() {
+    if (!sceneEl || !sceneEl.classList.contains('in')) return; const tm = sceneEl.querySelector('.mo-team');
+    const out = () => { setPose('leave'); sceneEl.classList.add('out'); sceneEl.classList.remove('in'); };
+    if (tm && motionOn()) { scene(tm, 'despedida'); setTimeout(out, 1100); } else out();
+  }
 
   /* ---------- Celebraciones ---------- */
   function chime() {
@@ -134,7 +220,7 @@
     if (!active()) { B.toast(text); return; }
     const c = document.createElement('div'); c.className = 'mo-celebrate'; c.setAttribute('role', 'status');
     c.innerHTML = '<span class="mo-cfig">' + fig('celebrate', '', 'celebracion', { wasp: 'orbit' }) + '</span><p>' + esc(text) + '</p>';
-    document.body.appendChild(c); chime(); setTimeout(() => c.classList.add('out'), 3600); setTimeout(() => c.remove(), 4200);
+    document.body.appendChild(c); chime(); const tm = c.querySelector('.mo-team'); if (tm) { tm.dataset.anim = '1'; scene(tm, 'celebracion'); } setTimeout(() => c.classList.add('out'), 4000); setTimeout(() => c.remove(), 4600);
   }
 
   /* ---------- Guía del curso de hebreo (compatibilidad con las llamadas del curso) ---------- */
@@ -176,13 +262,13 @@
     hide: () => { }, home: () => show('home', msgFor('aprender')), lesson: () => show('lesson'),
     letter: it => { gpose('teach'); setTimeout(() => gpose('idle'), 1800); if (Date.now() - lastTip > 20000) { lastTip = Date.now(); say(it && it.kind === 'letters' ? pick(M.letter) : seeded(TIPS.hebreo, Date.now())); } },
     buzz: () => { gpose('nod'); setTimeout(() => gpose('idle'), 1200); },
-    ok: combo => { gpose('nod', 'sonriente'); setTimeout(() => gpose('idle'), 1100); if (combo && (combo === 3 || combo === 5 || combo % 10 === 0)) say(pick(M.streak).replace('{n}', combo)); },
+    ok: combo => { if (guide && guide.isConnected) scene(guide.querySelector('.mo-team'), 'tocarAvispa'); gpose('nod', 'sonriente'); setTimeout(() => gpose('idle'), 1100); if (combo && (combo === 3 || combo === 5 || combo % 10 === 0)) say(pick(M.streak).replace('{n}', combo)); },
     bad: it => {
       gpose('reflect', 'comprensivo'); setTimeout(() => gpose('idle', 'comprensivo'), 1600);
       let why = ''; if (it && it.he) why = it.kind === 'letters' || /^l-/.test(it.id || '') ? ' Esta es ' + it.tr + ' (' + it.he + '): ' + (it.es || '') + '.' : it.es ? ' «' + it.he + '»' + (it.tr ? ' (' + it.tr + ')' : '') + ' significa «' + it.es + '».' : '';
       say(pick(M.bad) + why);
     },
-    done: () => { show('done'); gpose('celebrate'); setTimeout(() => gpose('idle'), 2200); say(pick(M.done)); },
+    done: () => { show('done'); if (guide) setTimeout(() => scene(guide.querySelector('.mo-team'), 'celebracion'), 500); gpose('celebrate'); setTimeout(() => gpose('idle'), 2200); say(pick(M.done)); },
     level: () => { show('done'); celebrate(pick(M.level)); },
     unit: () => { show('done'); celebrate(pick(M.unit)); },
     badge: name => celebrate('Nueva insignia: ' + name + '. ¡Kol hakavod! (Muy bien hecho.)'),
@@ -428,7 +514,8 @@
     'mo-say': el => { if (EXT.speak) EXT.speak(el.dataset.h); },
     'mo-tour': el => { const d = el.dataset.d; if (d === 'end' || (d === '1' && TI === TOUR.length - 1)) return endTour(); TI = Math.max(0, TI + +d); tourStep(); },
     'mo-set': el => { const k = el.dataset.k; let v = el.dataset.v; if (v === 'toggle') v = !P()[k]; setP(k, v); if (k === 'on' && v) hiddenSession = false; if (EXT.refreshSettings) EXT.refreshSettings(); },
-    'mo-tourstart': () => startTour()
+    'mo-tourstart': () => startTour(),
+    'mo-pclose': el => { const k = el.dataset.k; const d = B.Store.get('moreh:pres', {}) || {}; d[k] = 1; B.Store.set('moreh:pres', d); const sec = el.closest('.mo-present'); if (sec) sec.remove(); }
   });
   document.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target && e.target.id === 'mo-q') { e.preventDefault(); answer(e.target.value); } });
   // panel de configuración (lo usa la pantalla de Configuración)
@@ -443,7 +530,7 @@
       '<div class="btns" style="margin:10px 0 18px"><button class="btn" data-act="mo-tourstart">Iniciar el recorrido guiado</button><button class="btn" data-act="moreh-open">Pedir ayuda al Moreh</button><a class="btn" href="#camino">Mi camino de aprendizaje</a></div>';
   };
   API.headerBtn = () => active() ? '<button class="icon-btn mo-hdr" data-act="moreh-open" aria-label="Conversar con el Moreh">' + avatar(30, '', 'sonriente', true) + '</button>' : '';
-  Object.assign(API, { fig, avatar, expr, talk, WASP, ctxOf, CTX, msgFor, LESSONS, active, P });
+  Object.assign(API, { fig, avatar, expr, talk, WASP, ctxOf, CTX, msgFor, LESSONS, active, P, scene, presenter, presSeen: k => !!((B.Store.get('moreh:pres', {}) || {})[k]) });
 
   const prevInit = EXT.init;
   EXT.init = api => { if (prevInit) prevInit(api); B = api; apply(); };

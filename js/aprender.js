@@ -593,6 +593,7 @@
     const wk = week(s); save(s);
     const dailyDone = s.daily && s.daily.d === todayKey();
     const goals = GOALS.map(([k, t, n, r]) => { const v = Math.min(n, wk[k] || 0); const done = v >= n, cl = wk.claimed.includes(k); return '<div class="lx-goal"><div><b>' + esc(t) + '</b><div class="progress"><i style="width:' + Math.round(v / n * 100) + '%"></i></div><span>' + v + ' / ' + n + '</span></div>' + (cl ? '<span class="pill ok">✓</span>' : done ? '<button class="btn solid" data-act="lx-claim" data-g="' + k + '">+' + r + ' 🪙</button>' : '<span class="muted">+' + r + ' 🪙</span>') + '</div>'; }).join('');
+    if (!dailyDone && EXT.moreh && EXT.moreh.presenter) map += EXT.moreh.presenter({ title: 'Desafío del día', text: '8 preguntas para practicar lo que aprendiste. Ganarás 30 puntos y 5 monedas.', cta: ['Aceptar el desafío', 'act:lx-daily'] });
     map += '<div class="lx-challenges"><button class="lx-daily' + (dailyDone ? ' done' : '') + '" data-act="lx-daily"' + (dailyDone ? ' disabled' : '') + '><span class="lx-dicon">' + (dailyDone ? '✅' : '🎯') + '</span><span><b>Desafío diario</b><small>' + (dailyDone ? 'Completado hoy. Vuelve mañana.' : '8 preguntas · +30 XP y +5 monedas') + '</small></span></button>' +
       '<details class="lx-week"><summary><b>Metas de la semana</b><span>' + wk.claimed.length + ' de 4</span></summary>' + goals + '</details></div>';
     let themeHeader = false;

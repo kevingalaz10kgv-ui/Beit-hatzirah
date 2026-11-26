@@ -948,29 +948,14 @@ main>*{animation:pagein .28s ease-out both}
 .p-reflect .mo-headg{animation:mreflect 1.6s ease-in-out both}
 /* la avispa compañera */
 .mo-team{position:relative;display:inline-block}
-.mo-wasp{position:absolute;width:44%;right:-14%;top:10%;z-index:3;pointer-events:none;filter:drop-shadow(0 3px 4px rgba(0,0,0,.25))}
-.mo-wasp .wsp-art{display:block;width:100%;height:auto;overflow:visible}
-.mo-wasp .wsp-wing{transform-box:fill-box;animation:wflut .07s linear infinite alternate}
-.mo-wasp .wsp-wing-b{transform-origin:100% 100%}.mo-wasp .wsp-wing-f{transform-origin:0% 100%}
 @keyframes wflut{from{transform:rotate(-7deg) scaleY(.94)}to{transform:rotate(5deg) scaleY(1)}}
-.w-hover{animation:whov 3.4s ease-in-out infinite}
 @keyframes whov{0%,100%{transform:translate(0,0) rotate(-4deg)}50%{transform:translate(-6px,-8px) rotate(2deg)}}
-.w-enter{animation:wenter 1.5s cubic-bezier(.25,.8,.3,1) both,whov 3.4s ease-in-out 1.5s infinite}
 @keyframes wenter{0%{transform:translate(120px,-120px) rotate(-14deg);opacity:0}70%{opacity:1}100%{transform:none}}
-.w-point{right:auto;left:62%;top:2%;animation:wpoint 2.4s ease-in-out infinite}
 @keyframes wpoint{0%,100%{transform:translate(0,0)}50%{transform:translate(14px,-4px) rotate(6deg)}}
-.w-orbit{animation:worb 1.8s ease-in-out 2}
 @keyframes worb{0%{transform:rotate(0) translateX(0) rotate(0)}20%{transform:rotate(60deg) translateX(30px) rotate(-60deg)}80%{transform:rotate(300deg) translateX(30px) rotate(-300deg)}100%{transform:rotate(360deg) translateX(0) rotate(-360deg)}}
-.mo-wasp.mini{width:58%;right:-26%;top:-18%}
-.w-perch{animation:wperch 6s ease-in-out infinite}
 @keyframes wperch{0%,80%,100%{transform:none}86%{transform:translateY(-3px) rotate(-6deg)}92%{transform:translateY(-1px)}}
-.w-attn .mo-wasp{animation:wattn .5s ease-in-out infinite alternate}
-@keyframes wattn{to{transform:translate(-4px,-6px) rotate(-8deg)}}
-.w-party .mo-wasp{animation:worb 1.4s ease-in-out}
-.mo-team.solo .mo-wasp{display:none}
-.mo-twasp{position:fixed!important;width:56px;z-index:4;transition:left .9s cubic-bezier(.3,.8,.3,1),top .9s cubic-bezier(.3,.8,.3,1);right:auto}
-.mo-hdr .mo-av{overflow:visible}.mo-hdr .mo-wasp.mini{width:62%;right:-30%;top:-22%}
-/* conversación */
+.w-attn @keyframes wattn{to{transform:translate(-4px,-6px) rotate(-8deg)}}
+.w-party .mo-team.solo .mo-hdr .mo-av{overflow:visible}.mo-hdr /* conversación */
 .mc-head{display:flex;align-items:flex-end;gap:10px;margin:8px 0 6px}
 .mc-head .mo-fig{--mh:150px}
 .mc-intro b{display:block;font-size:1.05rem}.mc-intro span{font-size:.84rem;color:var(--muted);line-height:1.4;display:block}
@@ -1010,6 +995,56 @@ main>*{animation:pagein .28s ease-out both}
 .mo-still .mo-wasp,.mo-still .mo-wasp *,.mo-still .mx{animation:none!important}
 @media (prefers-reduced-motion:reduce){.mo-wasp,.mo-wasp *,.x-e-blink{animation:none!important}}
 .mo-board{position:relative}
-.mo-letter-wasp{position:absolute!important;width:54px;right:10px;left:auto;top:22px;z-index:2;animation:wtoletter 1.4s cubic-bezier(.25,.8,.3,1) both,whov 3.4s ease-in-out 1.4s infinite}
 @keyframes wtoletter{0%{transform:translate(-220px,-30px) rotate(-12deg);opacity:0}60%{opacity:1}100%{transform:none}}
-.mo-celebrate{overflow:visible}.mo-cfig .mo-wasp{width:50%;right:-30%;top:0}
+.mo-celebrate{overflow:visible}
+.mo-cfig .mo-fig{--mh:120px}
+/* ======================================================================
+   LOS COMPAÑEROS DE BEIT HATZIRAH (0.14): el Moreh y la avispa interactúan
+   ====================================================================== */
+/* la avispa: posición (left/top, animada en vuelo) y cuerpo con estados propios */
+.mo-wasp{position:absolute;left:65.5%;top:22.5%;width:40%;transform:translate(-50%,-50%);z-index:3;cursor:pointer;filter:drop-shadow(0 3px 4px rgba(0,0,0,.25))}
+.mo-wbody{display:block}
+.mo-wasp .wsp-art{display:block;width:100%;height:auto;overflow:visible;transition:transform .3s}
+.mo-wasp[data-face="l"] .wsp-art{transform:scaleX(-1)}
+.mo-wasp .wsp-wing{transform-box:fill-box;animation:wflut .07s linear infinite alternate}
+.mo-wasp .wsp-wing-b{transform-origin:100% 100%}.mo-wasp .wsp-wing-f{transform-origin:0% 100%}
+/* estados: vuelo, estacionario, reposo, curiosidad, atención, entusiasmo, celebración */
+.mo-wasp[data-ws="hover"] .mo-wbody{animation:whov 3.4s ease-in-out infinite}
+.mo-wasp[data-ws="fly"] .mo-wbody{animation:wfly .36s ease-in-out infinite alternate}
+@keyframes wfly{from{transform:rotate(-10deg) translateY(0)}to{transform:rotate(-6deg) translateY(-6%)}}
+.mo-wasp[data-ws="rest"] .wsp-wing{animation:wtwitch 6s ease-in-out infinite}
+.mo-wasp[data-ws="rest"] .mo-wbody{animation:wbreath 4s ease-in-out infinite}
+@keyframes wtwitch{0%,86%,100%{transform:none}90%{transform:rotate(-8deg)}94%{transform:rotate(4deg)}}
+@keyframes wbreath{50%{transform:translateY(-2%)}}
+.mo-wasp[data-ws="curious"] .mo-wbody{animation:wcur 1.8s ease-in-out infinite}
+@keyframes wcur{0%,100%{transform:rotate(0)}30%{transform:rotate(-12deg) translateX(-4%)}60%{transform:rotate(8deg) translateX(3%)}}
+.mo-wasp[data-ws="attn"] .mo-wbody{animation:wattn2 .42s ease-in-out infinite alternate}
+@keyframes wattn2{to{transform:translate(-5%,-10%) rotate(-8deg)}}
+.mo-wasp[data-ws="excited"] .mo-wbody{animation:wexc .9s ease-in-out infinite}
+@keyframes wexc{0%,100%{transform:translate(0,0)}25%{transform:translate(12%,-12%) rotate(10deg)}50%{transform:translate(0,-4%)}75%{transform:translate(-12%,-12%) rotate(-10deg)}}
+.mo-wasp[data-ws="celebrate"] .mo-wbody{animation:wfly .3s ease-in-out infinite alternate}
+@keyframes whov{0%,100%{transform:translate(0,0) rotate(-4deg)}50%{transform:translate(-6%,-10%) rotate(2deg)}}
+@keyframes wflut{from{transform:rotate(-7deg) scaleY(.94)}to{transform:rotate(5deg) scaleY(1)}}
+/* el Moreh mira a la avispa */
+.mo-headg{transition:transform .45s ease}
+.mo-fig.tilt-r .mo-headg{animation:none!important;transform:rotate(3.5deg)}
+[data-look="right"] .x-e-right,[data-look="upright"] .x-e-upright,[data-look="left"] .x-e-left,[data-look="down"] .x-e-down{opacity:1}
+/* variantes con posición propia */
+.mo-wasp.mini{left:auto;top:-20%;right:-30%;width:60%;transform:none}
+.mo-hdr .mo-av{overflow:visible}.mo-hdr .mo-wasp.mini{width:62%;right:-30%;top:-22%}
+.mo-wasp.mo-letter-wasp{left:auto;right:10px;top:22px;width:54px;transform:none;z-index:2;animation:wtoletter 1.4s cubic-bezier(.25,.8,.3,1) both}
+@keyframes wtoletter{0%{transform:translate(-220px,-30px) rotate(-12deg);opacity:0}60%{opacity:1}100%{transform:none}}
+.mo-wasp.mo-twasp{position:fixed!important;width:56px;z-index:4;transform:none;transition:left .9s cubic-bezier(.3,.8,.3,1),top .9s cubic-bezier(.3,.8,.3,1)}
+.mo-celebrate{overflow:visible}
+.mo-team{position:relative;display:inline-block;-webkit-tap-highlight-color:transparent}
+.mo-team.solo .mo-wasp{display:none}
+/* Los Compañeros presentan */
+.mo-present{position:relative;display:flex;align-items:flex-end;gap:10px;margin:16px 0;padding:14px 16px 12px 8px;border-radius:20px;background:linear-gradient(135deg,color-mix(in srgb,var(--dorado) 22%,var(--surface)),var(--surface));border:1px solid color-mix(in srgb,var(--dorado) 45%,transparent);box-shadow:var(--sh-card);overflow:visible}
+.mo-pteam .mo-fig{--mh:150px}
+.mo-ptext{flex:1;min-width:0;align-self:center}
+.mo-ptext small{display:block;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:700}
+.mo-ptext b{display:block;font-size:1.12rem;margin:3px 0}.mo-ptext p{margin:0 0 10px;font-size:.92rem;color:var(--muted);line-height:1.45}
+.mo-ptext .btn{padding:7px 14px;font-size:.88rem}
+.mo-px{position:absolute;top:8px;right:10px;color:var(--muted)}
+.mo-still .mo-wasp *,.mo-still .mo-wbody{animation:none!important}
+@media (prefers-reduced-motion:reduce){.mo-wasp *,.mo-wbody{animation:none!important}}
