@@ -515,6 +515,7 @@
     'mo-tour': el => { const d = el.dataset.d; if (d === 'end' || (d === '1' && TI === TOUR.length - 1)) return endTour(); TI = Math.max(0, TI + +d); tourStep(); },
     'mo-set': el => { const k = el.dataset.k; let v = el.dataset.v; if (v === 'toggle') v = !P()[k]; setP(k, v); if (k === 'on' && v) hiddenSession = false; if (EXT.refreshSettings) EXT.refreshSettings(); },
     'mo-tourstart': () => startTour(),
+    'mo-ia-save': () => { const v = (document.getElementById('mo-ia').value || '').trim(); if (v && !/^https:\/\//.test(v)) return B.toast('La dirección debe comenzar con https://'); setP('ia', v); B.toast(v ? 'Servidor de IA guardado' : 'Servidor de IA quitado'); },
     'mo-pclose': el => { const k = el.dataset.k; const d = B.Store.get('moreh:pres', {}) || {}; d[k] = 1; B.Store.set('moreh:pres', d); const sec = el.closest('.mo-present'); if (sec) sec.remove(); }
   });
   document.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target && e.target.id === 'mo-q') { e.preventDefault(); answer(e.target.value); } });
@@ -527,6 +528,7 @@
       '<div class="opt col"><span class="t">Modo<span>Guía: aparece al entrar en las secciones. Discreto: solo cuando lo llamas.</span></span>' + seg('mode', [['guia', 'Guía'], ['discreto', 'Discreto']]) + '</div>' +
       '<div class="opt col"><span class="t">Frecuencia de apariciones</span>' + seg('freq', [['baja', 'Baja'], ['normal', 'Normal'], ['alta', 'Alta']]) + '</div>' +
       '<div class="opt"><span class="t">Efectos sonoros<span>Sonidos de acierto, error y celebración</span></span>' + sw(p.sound, 'mo-set" data-k="sound" data-v="toggle', 'Efectos sonoros') + '</div>' +
+      '<div class="opt col"><span class="t">Servidor de IA (opcional)<span>Para preguntas de conocimiento general. Sin él, el Moreh responde solo con la biblioteca de Beit Hatzirah. Ver herramientas/MOREH_IA.md.</span></span><div class="mo-ia"><input id="mo-ia" type="url" placeholder="https://…" value="' + esc(p.ia || '') + '" aria-label="Dirección del servidor de IA"><button class="btn" data-act="mo-ia-save">Guardar</button></div></div>' +
       '<div class="btns" style="margin:10px 0 18px"><button class="btn" data-act="mo-tourstart">Iniciar el recorrido guiado</button><button class="btn" data-act="moreh-open">Pedir ayuda al Moreh</button><a class="btn" href="#camino">Mi camino de aprendizaje</a></div>';
   };
   API.headerBtn = () => active() ? '<button class="icon-btn mo-hdr" data-act="moreh-open" aria-label="Conversar con el Moreh">' + avatar(30, '', 'sonriente', true) + '</button>' : '';

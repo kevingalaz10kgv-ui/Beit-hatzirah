@@ -520,6 +520,7 @@
   };
 
   /* ---------- API para otras secciones (Biblia, PEALIM) ---------- */
+  EXT.nextLesson = async () => { await data(); const s = S(); const u = s.last && UNIT[s.last] ? UNIT[s.last] : nextUnit(s); return u ? { id: u.id, name: u.name, world: u.world.theme ? 'Mundo temático' : 'Mundo ' + u.world.n } : null; };
   EXT.saveWord = it => {
     const s = S(); s.custom = s.custom || {}; const id = it.id;
     s.custom[id] = { he: it.he, tr: it.tr || '', es: it.es, ref: it.ref || '', kind: 'words' };

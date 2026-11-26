@@ -4,7 +4,7 @@ Biblioteca digital de las Sagradas Escrituras en hebreo y español.
 Proyecto y dirección de contenido: **Moreh Gabriel ben Eliyah**
 Autoridad rabínica: **Rab Eliyah ben Eleazar**
 
-Versión 0.14.0. Incluye el módulo «Yo aprendo hebreo con la Torá».
+Versión 0.15.0. Incluye el módulo «Yo aprendo hebreo con la Torá».
 
 ---
 
@@ -344,3 +344,25 @@ El Moreh y la avispa interactúan como un equipo.
 **Los Compañeros presentan.** Tarjeta reconocible en la que ambos presentan algo: novedades (en el inicio, se puede cerrar), la parashá de la semana con «Estudiemos juntos» (en el inicio) y el desafío diario (en el curso). Las celebraciones de logros, el asistente y «Aprende con el Moreh» también usan las escenas conjuntas.
 
 **Configuración.** Con «Animaciones» desactivadas, la avispa queda posada en el hombro del Moreh y no hay movimiento; también se respeta «reducir movimiento» del teléfono.
+
+## 24. El cerebro del Moreh (versión 0.15)
+
+**Diccionario.** 509 palabras más con significado en español redactado por Beit Hatzirah: ahora 1.036 palabras, que cubren el 82,3 % de todas las apariciones del texto hebreo del Tanaj (antes, 72,3 %). Las demás muestran la definición de Strong en inglés, indicada como tal.
+
+**Diccionario español-hebreo** (`#dices`): 26 fichas curadas con los distintos equivalentes hebreos según el contexto (amor, vida, muerte, luz, oscuridad, sabiduría, conocimiento, justicia, misericordia, fidelidad, verdad, paz, santidad, redención, salvación, reino, espíritu, alma, corazón, alianza, pacto, creación, bendición, obediencia, fe, esperanza) y un índice inverso automático para cualquier palabra española presente en los significados.
+
+**Biblioteca del Moreh** (`#biblioteca`): 92 registros estructurados con fuente, fecha y nivel de confiabilidad: 35 conceptos toráticos (21 nuevos y 14 de Besorá), 23 temas de gramática hebrea bíblica, 18 temas bíblicos y teológicos (personajes, Éxodo, Sinaí, Mishkán, sacerdocio, reyes, profetas, exilio, restauración, Reino, redención, resurrección, juicio, mundo venidero, mandamientos) y 12 registros de historia, geografía, cultura y arqueología. Las 32 categorías del proyecto enlazan a sus registros o al módulo de la app correspondiente. Todas las referencias bíblicas y los lemas se verifican al generar la biblioteca. Cada registro se presenta con el método del Moreh: respuesta directa, explicación sencilla, desarrollo, palabras hebreas, referencias, relación con parashiot, interpretación y fuente.
+
+**Fuentes y licencias** (`#fuentes`): catálogo de las 14 fuentes de datos, con autor, versión, licencia, uso y confiabilidad.
+
+**Estudio completo de una palabra** (`#estudio-palabra-N`, botón en cada ficha del diccionario): diez pasos y **mapa de conexiones** palabra → raíz → verbo → conjugación → gramática → apariciones → parashá → estudio.
+
+**Verbos.** Cada verbo de PEALIM muestra su clase (primera נ, primera י/ו, guturales, «hueco», geminado, tercera ה o א) con su explicación.
+
+**El Moreh** consulta además la biblioteca; reconoce «profundiza más», «muéstrame las referencias», «enséñame el hebreo», «desarrolla un estudio completo» y «retomemos»; actúa como agente («abre la ficha de jésed», «llévame a la parashá Noaj», «recomiéndame una lección»); pide confirmación antes de modificar datos («guarda esta palabra», «marca la parashá como estudiada»); explica verbos y equivalentes español-hebreo.
+
+**Conocimiento general.** Sin servidor de IA, el Moreh dice con honestidad que la pregunta no está en la biblioteca. Con el servidor opcional (`herramientas/MOREH_IA.md`), responde marcando la información como externa.
+
+**Panel para ampliar la biblioteca** (`#biblioteca-admin`): crear, editar, validar (referencias y lemas), importar y exportar registros en JSON. Los registros quedan en el dispositivo hasta que se agregan al proyecto.
+
+**Evaluación del Moreh** (`#moreh-evaluacion`): 35 preguntas fáciles, intermedias y avanzadas con comprobación automática del contenido, incluidas preguntas que debe reconocer que no puede responder. Resultado en esta versión: 35 de 35.

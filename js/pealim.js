@@ -2,6 +2,22 @@
    Las conjugaciones son las formas que realmente aparecen en el Tanaj, según el análisis
    morfológico del Open Scriptures Hebrew Bible (CC BY 4.0). No se generan formas. */
 (function () {
+  /* Clase del verbo según las letras de su raíz (verbos guturales, débiles y geminados) */
+  window.BH_EXT.verbClass = r => {
+    const L = (r || '').replace(/[\u05C1\u05C2]/g, '').split('־').filter(Boolean); if (L.length !== 3) return L.length ? [['Raíz de ' + L.length + ' letras', 'No sigue el patrón habitual de tres consonantes.']] : [];
+    const G = 'אהחע', out = [];
+    if (L[0] === 'נ') out.push(['Primera נ', 'La נ suele asimilarse a la letra siguiente: נתן → יִתֵּן.']);
+    if (L[0] === 'י' || L[0] === 'ו') out.push(['Primera י/ו', 'La primera radical desaparece o cambia en varias formas: ישׁב → יֵשֵׁב, הוֹשִׁיב.']);
+    if (L[0] === 'א' && /^(אכל|אמר|אבד|אבה|אפה)$/.test(L.join(''))) out.push(['Primera א', 'En el yiqtol la א se vuelve muda: אמר → יֹאמַר.']);
+    else if (G.includes(L[0])) out.push(['Primera gutural', 'La gutural inicial prefiere vocales tipo «a» o «e» compuestas (jatef).']);
+    if (L[1] === 'ו' || L[1] === 'י') out.push(['Segunda ו/י (verbo «hueco»)', 'La segunda radical funciona como vocal: קום → קָם, יָקוּם.']);
+    else if (G.includes(L[1]) || L[1] === 'ר') out.push(['Segunda gutural', 'La gutural central no admite daguesh fuerte y altera la vocal.']);
+    if (L[1] === L[2]) out.push(['Geminado', 'Las dos últimas radicales son iguales y a menudo se contraen: סבב → סַב.']);
+    if (L[2] === 'ה') out.push(['Tercera ה', 'La ה final se comporta como vocal: בנה → בָּנָה, יִבְנֶה, בְּנוֹת.']);
+    else if (L[2] === 'א') out.push(['Tercera א', 'La א final se vuelve muda y alarga la vocal: מצא → מָצָא.']);
+    else if (L[2] === 'ח' || L[2] === 'ע') out.push(['Tercera gutural', 'Ante la gutural final aparece a menudo la vocal «a»: שׁמע → יִשְׁמַע.']);
+    return out;
+  };
   'use strict';
   const EXT = window.BH_EXT;
   let B = null;
@@ -118,6 +134,7 @@
       '<p class="pl-es">' + (v.es ? esc(v.es) : esc(v.en || '') + ' <span class="muted">(léxico de Strong, en inglés; significado en español pendiente)</span>') + '</p>' +
       '<div class="pl-root"><span>Raíz (shóresh)</span>' + v.r.split('־').map(l => '<b class="he" lang="he">' + esc(l) + '</b>').join('') + '</div>' +
       '<p class="muted" style="margin:6px 0 0">Aparece ' + v.n + ' veces en el Tanaj · Binyanim: ' + stems.map(binName).join(', ') + '</p>' +
+      (EXT.verbClass ? (c => c.length ? '<div class="pl-class"><span>Clase del verbo</span>' + c.map(x => '<b title="' + esc(x[1]) + '">' + esc(x[0]) + '</b>').join('') + '<p>' + c.map(x => esc(x[1])).join(' ') + ' <a href="#bib-g-verbos-debiles">Más sobre los verbos débiles</a></p></div>' : '<div class="pl-class"><span>Clase del verbo</span><b>Regular (fuerte)</b></div>')(EXT.verbClass(v.r)) : '') +
       '<div class="btns" style="justify-content:center"><button class="btn" data-act="pl-say" data-h="' + esc(v.he) + '">🔊 Escuchar</button><button class="btn solid" data-act="pl-practice" data-id="' + id + '">🎮 Practicar conjugaciones</button><button class="btn" data-act="pl-learned" data-id="' + id + '">' + (learned ? '✓ Aprendido' : 'Marcar como aprendido') + '</button></div></div>' +
       '<div class="pl-tabs" role="tablist">' + stems.map((sk, i) => '<button role="tab" data-act="pl-tab" data-s="' + sk + '" aria-selected="' + !i + '">' + esc(binName(sk)) + ' <small>' + (counts[sk] || 0) + '</small></button>').join('') + '</div>' +
       tables +

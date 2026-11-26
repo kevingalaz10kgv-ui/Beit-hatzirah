@@ -2,7 +2,7 @@
    Aplicación principal (JavaScript sin dependencias). */
 (function () {
   'use strict';
-  const VERSION = '0.14.0';
+  const VERSION = '0.15.0';
   const EMBED = window.__BH_EMBED || null;
   const LOGO = (EMBED && EMBED.logo) || 'img/logo.webp';
   const LOGO_SM = (EMBED && (EMBED.logoSm || EMBED.logo)) || 'img/logo-sm.webp';
@@ -728,7 +728,7 @@
 
   /* ----- Menú ----- */
   function vMenu() {
-    const items = [['camino', 'star', 'Mi camino de aprendizaje', 'דֶּרֶךְ'], ['buscar-todo', 'search', 'Buscar en toda la aplicación', 'חִפּוּשׂ'], ['diccionario', 'dict', 'Diccionario bíblico', 'מִלּוֹן'], ['gematria', 'hash', 'Gematría', 'גִּימַטְרִיָּה'], ['tefilot', 'pray', 'Tefilot: oraciones y bendiciones', 'תְּפִלּוֹת'], ['besora', 'chat', 'Besorá: evangelización y raíces hebreas', 'בְּשׂוֹרָה'], ['audio', 'play', 'Audio libro', 'ספר שמע'], ['estudios', 'study', 'Estudios', 'בֵּית מִדְרָשׁ'], ['aprender', 'alef', 'Yo aprendo hebreo con la Torá', 'עִבְרִית'], ['pealim', 'text', 'PEALIM: verbos hebreos', 'פְּעָלִים'], ['guardados-destacados', 'star', 'Mis versículos destacados', ''], ['guardados-notas', 'copy', 'Mis notas bíblicas', ''], ['mensaje', 'day', 'Mensaje diario', 'דְּבַר הַיּוֹם'], ['calendario', 'cal', 'Calendario bíblico', 'לוּחַ'], ['vocabulario', 'alef', 'Vocabulario del curso', ''], ['historial', 'hist', 'Historial de lectura', ''], ['acerca', 'info', 'Acerca de Beit Hatzirah', ''], ['ajustes', 'gear', 'Configuración', '']];
+    const items = [['biblioteca', 'study', 'Biblioteca del Moreh', 'סִפְרִיָּה'], ['camino', 'star', 'Mi camino de aprendizaje', 'דֶּרֶךְ'], ['buscar-todo', 'search', 'Buscar en toda la aplicación', 'חִפּוּשׂ'], ['diccionario', 'dict', 'Diccionario bíblico', 'מִלּוֹן'], ['gematria', 'hash', 'Gematría', 'גִּימַטְרִיָּה'], ['tefilot', 'pray', 'Tefilot: oraciones y bendiciones', 'תְּפִלּוֹת'], ['besora', 'chat', 'Besorá: evangelización y raíces hebreas', 'בְּשׂוֹרָה'], ['audio', 'play', 'Audio libro', 'ספר שמע'], ['estudios', 'study', 'Estudios', 'בֵּית מִדְרָשׁ'], ['aprender', 'alef', 'Yo aprendo hebreo con la Torá', 'עִבְרִית'], ['pealim', 'text', 'PEALIM: verbos hebreos', 'פְּעָלִים'], ['guardados-destacados', 'star', 'Mis versículos destacados', ''], ['guardados-notas', 'copy', 'Mis notas bíblicas', ''], ['mensaje', 'day', 'Mensaje diario', 'דְּבַר הַיּוֹם'], ['calendario', 'cal', 'Calendario bíblico', 'לוּחַ'], ['vocabulario', 'alef', 'Vocabulario del curso', ''], ['historial', 'hist', 'Historial de lectura', ''], ['acerca', 'info', 'Acerca de Beit Hatzirah', ''], ['ajustes', 'gear', 'Configuración', '']];
     view().innerHTML = top('Menú', { back: 'inicio' }) + '<div class="wrap"><div class="menu-brand"><img src="' + LOGO + '" alt="Logotipo de Beit Hatzirah" width="110" height="115"><div><p class="he" lang="he">בית הצרעה</p><b>Beit Hatzirah</b></div></div><div class="rows" style="margin-top:12px">' +
       items.map(([r, i, t, h]) => '<a class="row" href="#' + r + '"><span style="color:var(--accent)">' + ic(i, ' width="22" height="22"') + '</span><span class="t"><b>' + t + '</b></span>' + (h ? '<span class="he" lang="he">' + h + '</span>' : '') + '</a>').join('') +
       '</div><p class="muted center" style="font-size:.85rem;margin-top:24px">Versión ' + VERSION + '</p></div>';

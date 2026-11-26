@@ -178,6 +178,68 @@
     return { expr: 'explicativo', title: 'Sobre «' + term + '» en las Escrituras', blocks, sources: ks.map(k => ['Concordancia de ' + D.LX[k][0], 'concordancia-' + k]), ctx: { word: ks[0] } };
   }
 
+  /* ---------- Biblioteca central ---------- */
+  const CATT = { conceptos: 'ling', gramatica: 'ling', teologia: 'ense', personajes: 'ense', culto: 'ense', historia: 'hist', arqueologia: 'hist', geografia: 'hist', cultura: 'hist' };
+  TYPES.hist = 'Investigación histórica'; TYPES.trad2 = 'Tradición interpretativa'; TYPES.ext = 'Conocimiento general (fuente externa)';
+  const LSTOP = new Set('los las del de la el y en un una siete antiguo antigua biblico biblica biblicos hebreo hebrea israel mundo'.split(' '));
+  async function libFind(q) {
+    if (!EXT.biblioteca) return null; await EXT.biblioteca.data(); const n = norm(q); const qt = new Set(n.split(' ')); const RS = EXT.biblioteca.all();
+    let best = null, bs = 0;
+    for (const r of RS) {
+      let sc = 0;
+      if (r.he && plain(q).length > 1 && plain(r.he) && plain(q).includes(plain(r.he))) sc = 20;
+      const tr = r.tr ? norm(r.tr) : ''; if (tr && tr.split(/[ /]+/).some(x => x.length > 2 && qt.has(x))) sc = Math.max(sc, 15);
+      const toks = norm(r.t.replace(/\s*\(.*\)/, '')).split(' ').filter(x => x.length > 3 && !LSTOP.has(x));
+      const hit = toks.filter(x => qt.has(x) || qt.has(x.replace(/s$/, '')) || [...qt].some(y => y.length > 5 && (y.startsWith(x) || x.startsWith(y))));
+      if (toks.length && hit.length && (hit.length / toks.length >= .5 || hit.some(x => x.length >= 7))) sc = Math.max(sc, hit.reduce((a, x) => a + x.length, 0) / toks.length + hit.length * 2);
+      if (sc > bs) { bs = sc; best = r; }
+    }
+    return bs >= 5 ? best : null;
+  }
+  async function aRecord(r, level) {
+    const t = CATT[r.cat] || 'ense'; let refs = ''; for (const x of r.refs.slice(0, level === 'deep' ? 6 : 3)) refs += await verseBlock(x, false);
+    const words = (r.palabras || []).filter(k => D.LX[k]);
+    const blocks = [blk(t, '<p>' + esc(r.directa) + '</p>' + (r.sencillo && r.sencillo !== r.directa ? '<p>' + esc(r.sencillo) + '</p>' : ''))];
+    if (r.ejemplo) blocks.push(blk('ling', '<p class="he mc-he" lang="he" dir="rtl">' + esc(r.ejemplo[0]) + '</p><p><i>' + esc(r.ejemplo[1]) + '</i> — «' + esc(r.ejemplo[2]) + '»</p>'));
+    if (level === 'deep' && (r.profundo || []).length) blocks.push(blk(r.cat === 'conceptos' ? 'texto' : t, r.profundo.map(x => '<p>' + esc(x) + '</p>').join('')));
+    if (words.length) blocks.push(blk('ling', '<p>Palabras hebreas: ' + words.map(k => '<a href="#dic-' + k + '"><span class="he" lang="he">' + esc(D.LX[k][0]) + '</span> «' + esc(gl(k)) + '»</a>').join(', ') + '.</p>'));
+    if (refs) blocks.push(blk('trad', refs));
+    if (r.interp) blocks.push(blk('trad2', '<p>' + esc(r.interp) + '</p>'));
+    return { expr: r.cat === 'conceptos' ? 'reflexivo' : 'explicativo', title: r.t, blocks, sources: [['Abrir en la Biblioteca del Moreh', 'bib-' + r.id]].concat((r.parashot || []).slice(0, 1).map(n => ['Parashá ' + (D.PAR.find(x => +x.n === +n) || {}).tr, 'parasha-' + n])),
+      say: r.directa + ' ' + (r.sencillo || ''), short: r.sencillo || r.directa, deep: r.id, refsAll: r.refs, words, ctx: { rec: r.id, word: words[0] || CH.ctx.word }, follow: [['Profundiza más', 'profundiza más'], ['Muéstrame las referencias', 'muéstrame las referencias'], ['Hazme preguntas', 'hazme preguntas']] };
+  }
+  async function aEsHe(w) {
+    const E = EXT.biblioteca && (await EXT.biblioteca.data()).eshe || {}; const n = norm(w); const cur = E[n] || E[n.replace(/s$/, '')];
+    const auto = Object.keys(D.LX).filter(k => D.LX[k][3] && norm(D.LX[k][3]).split(/[ ,;()]+/).includes(n) && !(cur || []).some(x => x[0] === k)).sort((a, b) => D.LX[b][5] - D.LX[a][5]).slice(0, 5);
+    if (!cur && !auto.length) return null;
+    return { expr: 'entusiasmado', title: '«' + w + '» en hebreo', blocks: [blk('ling', (cur ? '<p>En hebreo bíblico hay ' + (cur.length > 1 ? 'varios equivalentes, según el contexto' : 'un equivalente principal') + ':</p><ul>' + cur.map(([k, m]) => '<li><a href="#dic-' + k + '"><b class="he" lang="he">' + esc(D.LX[k][0]) + '</b></a> (' + esc(pron(k)) + ') — ' + esc(m) + '</li>').join('') + '</ul>' : '') + (auto.length ? '<p>' + (cur ? 'Otras palabras' : 'Palabras') + ' con ese significado: ' + auto.map(k => '<a href="#dic-' + k + '"><span class="he" lang="he">' + esc(D.LX[k][0]) + '</span> «' + esc(D.LX[k][3]) + '»</a>').join(', ') + '.</p>' : ''))],
+      sources: [['Diccionario español-hebreo', 'dices']], ctx: { word: (cur ? cur[0][0] : auto[0]) }, hePron: D.LX[cur ? cur[0][0] : auto[0]][0] };
+  }
+  async function aVerb(k) {
+    const v = D.PI.find(x => x.id === k); if (!v) return null; const cls = EXT.verbClass ? EXT.verbClass(v.r) : [];
+    const BIN = { q: 'Qal', N: 'Nifal', p: 'Piel', P: 'Pual', h: 'Hifil', H: 'Hofal', t: 'Hitpael' };
+    return { expr: 'explicativo', title: 'El verbo ' + v.he, blocks: [blk('ling', '<p><b class="he" lang="he">' + esc(v.he) + '</b> (' + esc(v.tr) + '): <b>' + esc(v.es || gl(k)) + '</b>. Raíz <span class="he" lang="he">' + esc(v.r) + '</span>; aparece ' + v.n + ' veces. Binyanim documentados en el Tanaj: ' + (v.st || '').split('').map(c => BIN[c]).filter(Boolean).join(', ') + '.</p>' + (cls.length ? '<p>Clase: ' + cls.map(c => '<b>' + esc(c[0]) + '</b> — ' + esc(c[1])).join(' ') + '</p>' : '<p>Es un verbo regular (fuerte).</p>'))],
+      sources: [['Tablas de conjugación en PEALIM', 'pealim-' + k], ['Los siete binyanim', 'bib-g-binyanim']], ctx: { word: k }, hePron: v.he, follow: [['¿Qué son los binyanim?', '¿qué son los binyanim?'], ['Conexiones', 'muéstrame las conexiones de ' + v.he]] };
+  }
+  async function aConnections(k) {
+    const c = await EXT.biblioteca.connections(k);
+    return { expr: 'sorprendido', title: 'Conexiones de ' + D.LX[k][0], blocks: [blk('ling', '<p>Así se conecta esta palabra con los módulos de Beit Hatzirah (palabra → raíz → verbo → conjugación → gramática → apariciones → parashá → estudio):</p>' + EXT.biblioteca.mapHTML(k, c))], sources: [['Estudio completo de la palabra', 'estudio-palabra-' + k]], ctx: { word: k } };
+  }
+  /* Conocimiento general: solo con un servidor de IA configurado (opcional); si no, se dice con honestidad */
+  async function aGeneral(q) {
+    const url = (B.Store.get('moreh', {}) || {}).ia; const context = [];
+    if (url) {
+      try {
+        const lib = await libFind(q); if (lib) context.push({ fuente: 'Biblioteca de Beit Hatzirah', titulo: lib.t, texto: lib.directa + ' ' + (lib.sencillo || '') });
+        const ws = findWords(q, true).slice(0, 2); ws.forEach(k => context.push({ fuente: 'Diccionario de Beit Hatzirah', titulo: D.LX[k][0], texto: gl(k) + '; raíz ' + (D.LX[k][7] || '—') + '; primera aparición ' + (D.LX[k][6] || '—') }));
+        const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ pregunta: q, contexto: context }) });
+        if (!r.ok) throw new Error('HTTP ' + r.status); const d = await r.json();
+        return { expr: 'explicativo', blocks: [blk('ext', '<p>' + esc(d.respuesta || '').replace(/\n\n/g, '</p><p>') + '</p>' + '<p class="mc-small">Respuesta generada por el servidor de IA configurado' + (context.length ? ', con ' + context.length + ' datos de la biblioteca interna como contexto' : '') + '. Verifica la información importante.</p>')], sources: [] };
+      } catch (e) { return { expr: 'comprensivo', blocks: [blk('dato', '<p>No pude comunicarme con el servidor de IA configurado (' + esc(e.message) + ').</p>')] }; }
+    }
+    return { expr: 'comprensivo', blocks: [blk('dato', '<p>Esa pregunta es de conocimiento general y no está en la biblioteca de Beit Hatzirah, así que no tengo una respuesta respaldada. No la voy a inventar.</p><p class="mc-small">Puedo responder preguntas generales si la administración configura el servidor de IA del Moreh (Configuración → El Moreh). Mientras tanto, puedo ayudarte con las Escrituras, el hebreo, las parashiot, las fiestas, la historia y la arqueología bíblica de la biblioteca.</p>')], sources: [['Biblioteca del Moreh', 'biblioteca']] };
+  }
+
   /* ---------- Preguntas para comprobar lo aprendido ---------- */
   async function parashaWords(p) {
     const MO = await B.getJSON('morph/' + p.lec.b + '.json'); const cnt = {};
@@ -203,6 +265,32 @@
   async function respond(q) {
     await data(); const n = norm(q); const C = CH.ctx;
     const ctxWord = () => C.word || null;
+    // niveles de respuesta sobre lo anterior
+    if (/^(profundiza|ampl[ií]a|desarrolla mas|mas profundo|explica(me)? mas)/.test(n) && CH.last) { const L = CH.last; if (L.deep) { const r = EXT.biblioteca.rec(L.deep); if (r) return aRecord(r, 'deep'); } if (C.word) return Object.assign(await aConnections(C.word), { intro: 'Profundicemos en la palabra y sus conexiones:' }); if (C.parasha) return { expr: 'entusiasmado', blocks: [blk('dato', '<p>Para profundizar, estudiemos la parashá paso a paso.</p>')], sources: [['Estudiemos juntos', 'estudiemos-' + C.parasha]] }; }
+    if (/muestrame las referencias|que referencias|dame las referencias|citas biblicas/.test(n) && CH.last && (CH.last.refsAll || C.ref)) { const refs = CH.last.refsAll || [C.ref]; let h = ''; for (const r of refs.slice(0, 8)) h += await verseBlock(r, false); return { expr: 'explicativo', title: 'Referencias', blocks: [blk('trad', h)], sources: CH.last.sources }; }
+    if (/ensename el hebreo|las palabras hebreas|palabras en hebreo/.test(n) && CH.last && (CH.last.words || C.word)) { const ws = (CH.last.words && CH.last.words.length ? CH.last.words : [C.word]); return { expr: 'entusiasmado', blocks: [blk('ling', ws.map(k => '<p><a href="#dic-' + k + '"><b class="he" lang="he">' + esc(D.LX[k][0]) + '</b></a> — ' + esc(pron(k)) + ': «' + esc(gl(k)) + '»' + (D.LX[k][7] ? ', raíz ' + esc(rootStr(D.LX[k][7])) : '') + '.</p>').join(''))], hePron: D.LX[ws[0]][0], ctx: { word: ws[0] } }; }
+    if (/(desarrolla|hazme|prepara(me)?) (un )?estudio completo|estudio completo/.test(n)) { if (C.rec) return { expr: 'entusiasmado', blocks: [blk('dato', '<p>Abro el estudio completo en la Biblioteca del Moreh.</p>')], sources: [['Abrir el estudio', 'bib-' + C.rec]], go: 'bib-' + C.rec }; const wk = findWords(q)[0] || C.word; if (wk) return { expr: 'entusiasmado', blocks: [blk('dato', '<p>Preparé un estudio completo de <b class="he" lang="he">' + esc(D.LX[wk][0]) + '</b> en diez pasos.</p>')], sources: [['Abrir el estudio', 'estudio-palabra-' + wk]], go: 'estudio-palabra-' + wk }; if (C.parasha) return { expr: 'entusiasmado', blocks: [blk('dato', '<p>Estudiemos la parashá paso a paso.</p>')], go: 'estudiemos-' + C.parasha, sources: [['Estudiemos juntos', 'estudiemos-' + C.parasha]] }; }
+    if (/(de que|sobre que) (estabamos hablando|hablabamos)|retomemos|retomar (la |el )?(conversacion|tema)|donde nos quedamos/.test(n)) { const s = B.Store.get('moreh:ctx', null); if (!s) return { expr: 'comprensivo', blocks: [blk('dato', '<p>No tengo guardado un tema anterior.</p>')] }; Object.assign(C, s); const label = s.word ? 'la palabra ' + D.LX[s.word][0] : s.parasha ? 'la parashá ' + (D.PAR.find(x => +x.n === +s.parasha) || {}).tr : s.ref ? B.refLabel(s.ref) : s.rec ? (EXT.biblioteca.rec(s.rec) || {}).t : 'un tema'; return { expr: 'sonriente', blocks: [blk('dato', '<p>Estábamos estudiando ' + esc(label) + '. ¿Seguimos? Puedes pedirme «profundiza más», «muéstrame las referencias» o «hazme preguntas».</p>')], follow: [['Profundiza más', 'profundiza más'], ['Hazme preguntas', 'hazme preguntas']] }; }
+    // acciones de agente: abrir, buscar, llevar a…
+    const go = n.match(/^(abre|abrir|abreme|llevame a|llevame|muestrame|ir a|ve a|busca|buscame|encuentra|localiza)\s+(.*)$/);
+    if (go && !/referencias|conexiones|hebreo/.test(n)) {
+      const what = go[2]; const MOD = { diccionario: 'diccionario', tefilot: 'tefilot', gematria: 'gematria', audio: 'audio', 'audio libro': 'audio', besora: 'besora', biblioteca: 'biblioteca', calendario: 'calendario', parashiot: 'parashiot', biblia: 'biblia', pealim: 'pealim', curso: 'aprender', 'mi camino': 'camino' };
+      for (const m in MOD) if (norm(what).replace(/^(el|la|los|las) /, '') === m) return { expr: 'sonriente', blocks: [blk('dato', '<p>Te llevo a ' + esc(m) + '.</p>')], go: MOD[m] };
+      const ref = findRef(what); if (ref) return { expr: 'sonriente', blocks: [blk('dato', '<p>Abro ' + esc(B.bookName(ref.b) + ' ' + ref.c + (ref.v ? ':' + ref.v : '')) + '.</p>')], go: 'leer-' + ref.b + '-' + ref.c + (ref.v ? '-' + ref.v : ''), ctx: { ref: ref.b + ' ' + ref.c + ':' + (ref.v || 1) } };
+      const p = findParasha(what); if (p && /parash/.test(n)) return { expr: 'sonriente', blocks: [blk('dato', '<p>Abro la parashá ' + esc(p.tr) + '.</p>')], go: 'parasha-' + p.n, ctx: { parasha: p.n } };
+      const t = findTefila(what + ' bendicion oracion'); if (t && /tefil|oracion|bendic/.test(n)) return { expr: 'sonriente', blocks: [blk('dato', '<p>Abro ' + esc(t.es) + '.</p>')], go: 'tefilot-t-' + t.id };
+      const r = await libFind(what); if (r) return { expr: 'sonriente', blocks: [blk('dato', '<p>Abro «' + esc(r.t) + '» en la biblioteca.</p>')], go: 'bib-' + r.id, ctx: { rec: r.id } };
+      const w = findWords(what)[0]; if (w) { if (/raiz/.test(n) && D.LX[w][7]) return { expr: 'sonriente', blocks: [blk('dato', '<p>Abro la raíz ' + esc(rootStr(D.LX[w][7])) + '.</p>')], go: 'raiz-' + encodeURIComponent(plain(D.LX[w][7])), ctx: { word: w } }; if (/verbo|conjug/.test(n) && D.PI.some(v => v.id === w)) return { expr: 'sonriente', blocks: [blk('dato', '<p>Abro las conjugaciones.</p>')], go: 'pealim-' + w, ctx: { word: w } }; return { expr: 'sonriente', blocks: [blk('dato', '<p>Abro la ficha de <b class="he" lang="he">' + esc(D.LX[w][0]) + '</b>.</p>')], go: 'dic-' + w, ctx: { word: w } }; }
+    }
+    const qe = n.match(/quiero estudiar (?:el significado de )?(?:la palabra )?(.+)$/); if (qe && !/parash/.test(n)) { const wk = findWords(qe[1])[0]; if (wk) { const a0 = await aMeaning(wk); a0.intro = 'Estudiemos la palabra juntos. Aquí está lo esencial; abro también el estudio completo en diez pasos.'; a0.go = 'estudio-palabra-' + wk; a0.sources = [['Estudio completo', 'estudio-palabra-' + wk]].concat(a0.sources); return a0; } }
+    if (/recomiendame una leccion|que leccion|siguiente leccion|que estudio hoy|que me recomiendas estudiar/.test(n)) { const nx = EXT.nextLesson ? await EXT.nextLesson() : null; const w = await thisWeek(); return { expr: 'entusiasmado', blocks: [blk('dato', (nx ? '<p>En el curso de hebreo te recomiendo continuar con «' + esc(nx.name) + '» (' + esc(nx.world) + ').</p>' : '') + '<p>Y para la Torá, la parashá de esta semana es ' + esc(w.tr) + '.</p>')], sources: (nx ? [['Continuar el curso', 'leccion-' + nx.id + '-l']] : []).concat([['Estudiemos juntos ' + w.tr, 'estudiemos-' + w.n]]) }; }
+    // acciones que modifican datos del usuario: siempre con confirmación
+    if (/(guarda|guardar|agrega|agregar|anade)( esta| la)? palabra|a mis palabras/.test(n)) { const wk = findWords(q.replace(/guarda|palabra|mis palabras/gi, ''))[0] || C.word; if (!wk) return { expr: 'comprensivo', blocks: [blk('dato', '<p>¿Qué palabra quieres guardar? Abre primero su ficha o escríbela.</p>')] }; return { expr: 'atento', blocks: [blk('dato', '<p>¿Agrego <b class="he" lang="he">' + esc(D.LX[wk][0]) + '</b> («' + esc(gl(wk)) + '») a tus palabras para repasar?</p><div class="btns"><button class="btn solid" data-act="mc-confirm" data-do="save" data-k="' + wk + '">Sí, guardarla</button><button class="btn" data-act="mc-confirm" data-do="no">No</button></div>')] }; }
+    if (/marca(r)?( la parasha)? como estudiada/.test(n) && C.parasha) { const p = D.PAR.find(x => +x.n === +C.parasha); return { expr: 'atento', blocks: [blk('dato', '<p>¿Marco la parashá ' + esc(p.tr) + ' como estudiada en tu progreso?</p><div class="btns"><button class="btn solid" data-act="mc-confirm" data-do="studied" data-n="' + p.n + '">Sí, marcarla</button><button class="btn" data-act="mc-confirm" data-do="no">No</button></div>')] }; }
+    // conexiones, español-hebreo y verbos
+    if (/conexion|relaciones de|como se conecta/.test(n)) { const wk = findWords(q.replace(/conexion(es)?/gi, ''))[0] || C.word; if (wk) return aConnections(wk); }
+    const sh = n.match(/como se dice (.+?) en hebreo|(?:^|\s)(.+?) en hebreo$|traduce (.+?) al hebreo/); if (sh) { const r = await aEsHe((sh[1] || sh[2] || sh[3]).replace(/^(el|la|los|las|un|una) /, '')); if (r) return r; }
+    if (/(el )?verbo|conjuga/.test(n)) { const wk = findWords(q.replace(/verbo|conjuga\w*/gi, ''))[0] || C.word; if (wk && D.PI.some(v => v.id === wk)) return aVerb(wk); }
     if (/hazme preguntas|ponme a prueba|evaluame|examiname|comprobar si aprendi|preguntame/.test(n)) { const p = findParasha(q); CH.quiz = await makeQuiz(p ? { parasha: p.n } : C.parasha ? { parasha: C.parasha } : null); return Object.assign(quizMsg(CH.quiz), { intro: 'Muy bien. Te haré ' + CH.quiz.qs.length + ' preguntas.' }); }
     if (/por que .*(equivocad|incorrect|mal|error)|explicame (mi )?error/.test(n)) {
       const w = CH.lastWrong; if (!w) return { expr: 'comprensivo', blocks: [blk('dato', '<p>Todavía no tengo una respuesta tuya equivocada para explicar. Pídeme «hazme preguntas» y te explico cada error.</p>')] };
@@ -236,12 +324,15 @@
     // enseñanzas (Besorá) y «este estudio»
     if (/este estudio|esta ensenanza|este tema/.test(n) && C.topic) { const t = D.BS.temas.find(x => x.id === C.topic); if (/referencias|respald|textos/.test(n)) return { expr: 'explicativo', blocks: [blk('texto', '<p>Textos que respaldan «' + esc(t.t) + '»: ' + t.refs.map(refLink).join(', ') + '.</p>'), blk('interp', t.pos.map(p => '<p><b>' + esc(p.q) + ':</b> ' + p.refs.map(refLink).join(', ') + '</p>').join(''))], sources: [['Estudio completo', 'besora-tema-' + t.id]] }; return aTopic(t); }
     if (/referencias .*respald|que textos respaldan/.test(n) && C.topic) { const t = D.BS.temas.find(x => x.id === C.topic); return { expr: 'explicativo', blocks: [blk('texto', '<p>' + t.refs.map(refLink).join(', ') + '</p>')], sources: [['Estudio completo', 'besora-tema-' + t.id]] }; }
+    // biblioteca central (conceptos, temas, mundo bíblico, gramática)
+    if (!/[\u05D0-\u05EA]/.test(q) || /que es|explica/.test(n)) { const r = await libFind(q); if (r && (/que es|que son|explica|que significa|que fue|quien|como|cual|habla|cuentame|historia/.test(n) || norm(r.t).length > 5)) return aRecord(r, /profund|detall|completo/.test(n) ? 'deep' : ''); }
     // palabras
     const hasHe = /[\u05D0-\u05EA]/.test(q); const followUp = /^(y )?(cual es )?(su|esta|la) |^(como se pronuncia|donde aparece|cuantas veces)|su raiz|esta palabra/.test(n);
     const words = (followUp && !hasHe && ctxWord()) ? [] : findWords(q); const wk = words[0] || (/esta palabra|la palabra|su raiz|se pronuncia|aparece|raiz/.test(n) ? ctxWord() : null);
     if (wk) { if (/raiz|shoresh/.test(n)) return aRoot(wk); if (/pronunci|se dice|se lee/.test(n)) return aPron(wk); if (/primera vez|primera aparicion|primer lugar/.test(n)) return aFirst(wk); if (/donde (mas )?aparece|cuantas veces|apariciones|donde se encuentra/.test(n)) return aOcc(wk); return aMeaning(wk); }
     const tops = findTopics(q); if (tops.length) return aTopic(tops[0]);
     if (ctxWord() && /raiz|pronuncia|aparece/.test(n)) return aRoot(ctxWord());
+    if (!/[\u05D0-\u05EA]/.test(q) && !findWords(q, true).length && !findTopics(q).length) return aGeneral(q);
     return { expr: 'comprensivo', blocks: [blk('dato', '<p>No encontré información suficiente en Beit Hatzirah para responder eso. Puedo ayudarte con palabras hebreas (significado, raíz, pronunciación, apariciones), versículos y capítulos, parashiot, fiestas, tefilot, gematría, profecías y los estudios de Besorá. Prueba con otras palabras o usa la búsqueda global.</p>')], sources: [['Búsqueda global', 'buscar-todo']], follow: [['¿Qué significa shalom?', '¿qué significa shalom?'], ['Parashá de esta semana', '¿qué enseña la parashá de esta semana?'], ['Hazme preguntas', 'hazme preguntas']] };
   }
   async function thisWeek() { const w = await B.weekInfo(); return w && w.list && w.list[0] ? D.PAR.find(x => +x.n === +w.list[0].n) : D.PAR[0]; }
@@ -295,7 +386,7 @@
     let a; try { a = await respond(q); } catch (e) { a = { expr: 'comprensivo', blocks: [blk('dato', '<p>No pude consultar esa información en este momento.</p>')] }; }
     await new Promise(r => setTimeout(r, 450));
     log.querySelector('.mc-think') && log.querySelector('.mc-think').remove();
-    if (a.ctx) Object.assign(CH.ctx, a.ctx); CH.last = a;
+    if (a.ctx) { Object.assign(CH.ctx, a.ctx); B.Store.set('moreh:ctx', CH.ctx); } CH.last = a;
     const html = render(a); H.push({ w: 'm', h: html }); saveHist(H);
     log.insertAdjacentHTML('beforeend', bubble('m', html)); const last = log.lastElementChild; M().expr(last, a.expr || 'sonriente');
     M().expr(head, a.expr || 'sonriente'); head.classList.remove('w-attn'); M().talk(head, true); setTimeout(() => M().talk(head, false), Math.min(3500, 900 + (a.say || '').length * 30));
@@ -356,6 +447,12 @@
     'mc-ask': el => { if (el.dataset.go) return B.go(el.dataset.go); ask(el.dataset.q); },
     'mc-say': el => { const b = el.closest('.mc-b'); if (b) speakES(b.innerText.replace(/Ver fuente en Beit Hatzirah:[\s\S]*/, '').replace(/(Texto bíblico|Traducción|Análisis lingüístico|Contexto|Interpretación|Enseñanza de Beit Hatzirah|Dato de Beit Hatzirah)\n/g, '')); },
     'mc-sayhe': el => { if (EXT.speak) EXT.speak(el.dataset.h); },
+    'mc-confirm': el => {
+      const d = el.dataset.do; el.parentNode.querySelectorAll('button').forEach(b => b.disabled = true);
+      if (d === 'save') { const L = D.LX[el.dataset.k]; if (EXT.saveWord) EXT.saveWord({ id: 'lx-' + el.dataset.k, he: L[0], tr: pron(el.dataset.k), es: L[3] || L[4] }); B.toast('Palabra guardada en tus palabras para repasar'); }
+      else if (d === 'studied') { const s = B.Store.get('studied', {}) || {}; s[el.dataset.n] = Date.now(); B.Store.set('studied', s); B.toast('Parashá marcada como estudiada'); }
+      else B.toast('De acuerdo, no hice ningún cambio');
+    },
     'mc-clear': () => { saveHist([]); CH.last = null; vChat(); },
     'mc-quiz': el => {
       const Q = CH.quiz; if (!Q) return; const q = Q.qs[Q.i]; const chosen = q.opts[+el.dataset.j]; const ok = chosen === q.ok; const head = document.querySelector('.mc-head');
