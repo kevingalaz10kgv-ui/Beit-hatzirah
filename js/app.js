@@ -2,7 +2,7 @@
    Aplicación principal (JavaScript sin dependencias). */
 (function () {
   'use strict';
-  const VERSION = '0.17.0';
+  const VERSION = '0.18.0';
   const EMBED = window.__BH_EMBED || null;
   const LOGO = (EMBED && EMBED.logo) || 'img/logo.webp';
   const LOGO_SM = (EMBED && (EMBED.logoSm || EMBED.logo)) || 'img/logo-sm.webp';
@@ -478,7 +478,7 @@
       '<section class="hero2"><img src="' + LOGO + '" alt="Logotipo de Beit Hatzirah" width="150" height="157"><p class="he" lang="he">בית הצרעה</p><h2>BEIT HATZIRAH</h2>' +
       '<p class="tagline">Una plataforma de estudio de las Escrituras, aprendizaje del hebreo bíblico y conocimiento de las raíces de nuestra fe.</p>' +
       '<a class="credits-mini" href="#acerca"><span>Pertenece a Ha’roeh Eliyah ben Eleazar</span><span>Desarrollado por Moreh Gabriel ben Eliyah</span></a></section>' +
-      (cont.length ? '<section class="cont-row">' + cont.join('') + '</section>' : '') +
+      (cont.length ? '<section class="cont-row">' + cont.join('') + '</section>' : '') + '<div id="home-vdd"></div>' +
       (EXT.moreh && EXT.moreh.presenter ? (!EXT.moreh.presSeen('v014') ? EXT.moreh.presenter({ title: 'Nuevo: los Compañeros de Beit Hatzirah', text: 'El Moreh y su compañera te acompañan en la aplicación. Tócalos para ver cómo interactúan; tócalos dos veces seguidas para una sorpresa.', cta: ['Conversar con el Moreh', 'moreh'], close: 'v014' }) : (w ? EXT.moreh.presenter({ title: 'Parashá de la semana: ' + w.list.map(p => p.tr).join('–'), text: '«' + w.list.map(p => p.sig).join(' / ') + '». Estudiémosla juntos, paso a paso.', cta: ['Estudiemos juntos', 'estudiemos-' + w.list[0].n] }) : '')) : '') +
       parHTML +
       '<section class="section"><h3 class="h-sec">Explorar</h3><div class="mod-grid">' + MODS.map(([r, i, t, sub, h]) => '<a class="mod" href="#' + r + '"><span class="mod-ic">' + ic(i) + '</span><b>' + esc(t) + '</b><small>' + esc(sub) + '</small><span class="he mod-he" lang="he">' + esc(h) + '</span></a>').join('') + '</div></section>' +
@@ -728,7 +728,7 @@
 
   /* ----- Menú ----- */
   function vMenu() {
-    const items = [['biblioteca', 'study', 'Biblioteca del Moreh', 'סִפְרִיָּה'], ['camino', 'star', 'Mi camino de aprendizaje', 'דֶּרֶךְ'], ['buscar-todo', 'search', 'Buscar en toda la aplicación', 'חִפּוּשׂ'], ['diccionario', 'dict', 'Diccionario bíblico', 'מִלּוֹן'], ['gematria', 'hash', 'Gematría', 'גִּימַטְרִיָּה'], ['tefilot', 'pray', 'Tefilot: oraciones y bendiciones', 'תְּפִלּוֹת'], ['besora', 'chat', 'Besorá: evangelización y raíces hebreas', 'בְּשׂוֹרָה'], ['audio', 'play', 'Audio libro', 'ספר שמע'], ['estudios', 'study', 'Estudios', 'בֵּית מִדְרָשׁ'], ['aprender', 'alef', 'Yo aprendo hebreo con la Torá', 'עִבְרִית'], ['pealim', 'text', 'PEALIM: verbos hebreos', 'פְּעָלִים'], ['guardados-destacados', 'star', 'Mis versículos destacados', ''], ['guardados-notas', 'copy', 'Mis notas bíblicas', ''], ['mensaje', 'day', 'Mensaje diario', 'דְּבַר הַיּוֹם'], ['calendario', 'cal', 'Calendario bíblico', 'לוּחַ'], ['vocabulario', 'alef', 'Vocabulario del curso', ''], ['historial', 'hist', 'Historial de lectura', ''], ['acerca', 'info', 'Acerca de Beit Hatzirah', ''], ['ajustes', 'gear', 'Configuración', '']];
+    const items = [['versiculo-hoy', 'star', 'Versículo del día', 'פָּסוּק הַיּוֹם'], ['biblioteca', 'study', 'Biblioteca del Moreh', 'סִפְרִיָּה'], ['camino', 'star', 'Mi camino de aprendizaje', 'דֶּרֶךְ'], ['buscar-todo', 'search', 'Buscar en toda la aplicación', 'חִפּוּשׂ'], ['diccionario', 'dict', 'Diccionario bíblico', 'מִלּוֹן'], ['gematria', 'hash', 'Gematría', 'גִּימַטְרִיָּה'], ['tefilot', 'pray', 'Tefilot: oraciones y bendiciones', 'תְּפִלּוֹת'], ['besora', 'chat', 'Besorá: evangelización y raíces hebreas', 'בְּשׂוֹרָה'], ['audio', 'play', 'Audio libro', 'ספר שמע'], ['estudios', 'study', 'Estudios', 'בֵּית מִדְרָשׁ'], ['aprender', 'alef', 'Yo aprendo hebreo con la Torá', 'עִבְרִית'], ['pealim', 'text', 'PEALIM: verbos hebreos', 'פְּעָלִים'], ['guardados-destacados', 'star', 'Mis versículos destacados', ''], ['guardados-notas', 'copy', 'Mis notas bíblicas', ''], ['mensaje', 'day', 'Mensaje diario', 'דְּבַר הַיּוֹם'], ['calendario', 'cal', 'Calendario bíblico', 'לוּחַ'], ['vocabulario', 'alef', 'Vocabulario del curso', ''], ['historial', 'hist', 'Historial de lectura', ''], ['acerca', 'info', 'Acerca de Beit Hatzirah', ''], ['ajustes', 'gear', 'Configuración', '']];
     view().innerHTML = top('Menú', { back: 'inicio' }) + '<div class="wrap"><div class="menu-brand"><img src="' + LOGO + '" alt="Logotipo de Beit Hatzirah" width="110" height="115"><div><p class="he" lang="he">בית הצרעה</p><b>Beit Hatzirah</b></div></div><div class="rows" style="margin-top:12px">' +
       items.map(([r, i, t, h]) => '<a class="row" href="#' + r + '"><span style="color:var(--accent)">' + ic(i, ' width="22" height="22"') + '</span><span class="t"><b>' + t + '</b></span>' + (h ? '<span class="he" lang="he">' + h + '</span>' : '') + '</a>').join('') +
       '</div><p class="muted center" style="font-size:.85rem;margin-top:24px">Versión ' + VERSION + '</p></div>';
@@ -857,7 +857,7 @@
       '<div class="group-title"><h3>Lectura</h3></div>' +
       '<div class="opt"><span class="t">Tamaño de letra<span>' + Math.round(prefs.scale * 100) + '%</span></span><span class="size-ctl"><button data-act="size-" aria-label="Reducir">A−</button><button data-act="size+" aria-label="Aumentar">A+</button></span></div>' +
       '<div class="opt"><span class="t">Idioma visible<span>Hebreo y español, solo hebreo o solo español</span></span><select data-act="set-view"><option value="ambos"' + (prefs.view === 'ambos' ? ' selected' : '') + '>Ambos</option><option value="he"' + (prefs.view === 'he' ? ' selected' : '') + '>Hebreo</option><option value="es"' + (prefs.view === 'es' ? ' selected' : '') + '>Español</option></select></div>' +
-      (EXT.moreh && EXT.moreh.settingsHTML ? EXT.moreh.settingsHTML(sw) : '') +
+      (EXT.vddSettings ? EXT.vddSettings(sw) : '') + (EXT.moreh && EXT.moreh.settingsHTML ? EXT.moreh.settingsHTML(sw) : '') +
       '<div class="opt"><span class="t">Signos de cantilación<span>Mostrar los te\'amim además de las vocales</span></span>' + sw(prefs.teamim, 'tg-teamim', 'Signos de cantilación') + '</div>' +
       '<div class="opt"><span class="t">Nombres hebreos<span>Adaptación de nombres sobre la Reina-Valera 1909</span></span>' + sw(prefs.nombres, 'tg-nombres', 'Nombres hebreos') + '</div>' +
       '<div class="opt"><span class="t">Traducción al español<span>' + esc(VERDESC[prefs.ver]) + '</span></span><select data-act="set-ver-sel">' + Object.keys(VERS).map(k => '<option value="' + k + '"' + (prefs.ver === k ? ' selected' : '') + '>' + esc(VERS[k].short) + '</option>').join('') + '</select></div>' +

@@ -1,0 +1,16 @@
+name = "beit-hatzirah-notificaciones"
+main = "worker.js"
+compatibility_date = "2024-09-01"
+
+[[kv_namespaces]]
+binding = "SUBS"
+id = "REEMPLAZAR_CON_EL_ID_DEL_ESPACIO_KV"
+
+[triggers]
+crons = ["*/15 * * * *"]
+
+[vars]
+ORIGEN = "https://kevingalaz10kgv-ui.github.io"
+CONTACTO = "REEMPLAZAR@correo.com"
+VAPID_PUBLIC = "REEMPLAZAR_CON_LA_CLAVE_PUBLICA"
+# Secretos (no van en este archivo): wrangler secret put VAPID_PRIVATE_JWK  y  wrangler secret put ADMIN_TOKEN

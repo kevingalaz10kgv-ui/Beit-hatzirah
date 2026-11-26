@@ -4,7 +4,7 @@ Biblioteca digital de las Sagradas Escrituras en hebreo y español.
 Proyecto y dirección de contenido: **Moreh Gabriel ben Eliyah**
 Autoridad rabínica: **Rab Eliyah ben Eleazar**
 
-Versión 0.17.0. Incluye el módulo «Yo aprendo hebreo con la Torá».
+Versión 0.18.0. Incluye el módulo «Yo aprendo hebreo con la Torá».
 
 ---
 
@@ -400,3 +400,17 @@ El Moreh y la avispa interactúan como un equipo.
 **Ruta de aprendizaje** (`#ruta`): 36 pasos que conectan curso, biblioteca y herramientas, con registro de pasos visitados y constancia interna (no es un título académico). Se registra el tiempo de estudio.
 
 **Informe del conocimiento** (`#informe-moreh`): totales de lemas, formas, raíces, verbos, paradigmas, categorías, expresiones, referencias, nikud, pronunciación y fuentes, con cobertura por libro y por parashá. Evaluación: 62 de 62 (incluidas las pruebas A a L del documento maestro).
+
+## 27. El Versículo del día (versión 0.18)
+
+**Contenido.** 57 entradas verificadas (`data/versiculo.json`): 42 para días ordinarios (Torá 15, Profetas 10, Escritos 9, Brit Hadashá 8, intercaladas), 4 de Shabat y 11 de fiestas y Rosh Jodesh. Cada una tiene contexto del pasaje, palabra hebrea (comprobada en el texto del versículo), reflexión marcada como aplicación devocional, pregunta para meditar y oración guiada; las fiestas indican si son mandamiento de la Torá o tradición posterior. El texto hebreo, la transliteración y la traducción se toman del texto bíblico de la app (con YAH).
+
+**Selección diaria** (`js/vdd-core.js`, la misma en la app y en el service worker): programación del administrador → primer día de cada fiesta de la Torá → Januká, Purim y Rosh Jodesh (fechas 2025-2036 calculadas con Hebcal en `data/calendario-extra.json`) → Shabat → rotación de días ordinarios sin repeticiones hasta completar el ciclo, filtrada por los temas del usuario. Comprobado sobre 2026: 0 repeticiones y fiestas en sus fechas.
+
+**Experiencia.** Pantalla del día (fecha civil y hebrea, hebreo, transliteración, traducción, contexto, palabra hebrea, reflexión, pregunta, oración, escuchar en español y en hebreo, favorito, compartir con el estudio de imágenes, capítulo, análisis palabra por palabra, Moreh, diccionario, tefilot); «Mi momento con YAH» en cinco pasos con reflexión, gratitud, petición y oración propia, guardadas solo en el dispositivo; «Hoy medité en la Palabra»; historial y calendario sin competencia; tarjeta en el inicio; bienvenida que explica antes de pedir el permiso.
+
+**Configuración «Mi encuentro diario con YAH».** Activar o desactivar, hora (09:00 por defecto), versículo o solo recordatorio, recordatorio adicional, temas de interés y pruebas inmediatas.
+
+**Notificaciones.** El service worker recibe avisos Web Push, muestra la notificación con el versículo del día (una por día), abre la pantalla de esa fecha al tocarla y no muestra nada si el usuario la desactivó. Respaldo sin servidor: sincronización periódica (Chrome Android instalado) y aviso al abrir la app. El envío a todos los usuarios a las 09:00 locales requiere el servidor de `herramientas/notificaciones` (guía incluida; 20 pruebas locales correctas).
+
+**Administración** (`#versiculo-admin`): calendario mensual de publicación, programación de fechas, creación y edición de entradas con validación (referencia y palabra hebrea presente en el versículo), vista previa de la notificación, exportación de `versiculo.json` y estadísticas del servidor.
