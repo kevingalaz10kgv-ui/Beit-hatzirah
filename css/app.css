@@ -1063,3 +1063,29 @@ main>*{animation:pagein .28s ease-out both}
 .ev-r{padding:8px 10px;border-radius:10px;margin:6px 0;font-size:.88rem}.ev-r.ok{background:color-mix(in srgb,#3D9970 14%,transparent)}.ev-r.bad{background:color-mix(in srgb,#C0504D 16%,transparent)}.ev-r small{display:block;color:var(--muted);margin-top:2px}
 .pl-class{margin:10px 0;display:flex;flex-wrap:wrap;gap:6px;align-items:center}.pl-class span{font-size:.75rem;color:var(--muted);width:100%}.pl-class b{padding:3px 10px;border-radius:999px;background:color-mix(in srgb,var(--dorado) 20%,transparent);font-size:.82rem}.pl-class p{margin:4px 0 0;font-size:.85rem;color:var(--muted)}
 .mo-ia{display:flex;gap:6px}.mo-ia input{flex:1;font:inherit;padding:9px 11px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--text)}
+/* ===== Avispón amarillo: estados propios (0.16) ===== */
+.mo-wasp[data-ws="happy"] .mo-wbody{animation:whappy .7s ease-in-out 3}
+@keyframes whappy{50%{transform:translateY(-12%) rotate(-6deg)}}
+.mo-wasp[data-ws="thinking"] .mo-wbody{animation:wthink 3s ease-in-out infinite}
+@keyframes wthink{0%,100%{transform:rotate(0)}40%,60%{transform:rotate(14deg) translateX(-3%)}}
+.mo-wasp[data-ws="thinking"] .wsp-wing{animation:wtwitch 4s ease-in-out infinite}
+.mo-wasp[data-ws="surprised"] .mo-wbody{animation:wsurp .55s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes wsurp{0%{transform:none}40%{transform:translate(8%,-16%) scale(1.12)}100%{transform:translate(4%,-8%) scale(1.04)}}
+.mo-wasp[data-ws="surprised"] .wsp-eye{transform-box:fill-box;transform-origin:center;transform:scale(1.12)}
+.mo-explorer .wsp-wing{animation:wflut .06s linear infinite alternate}
+.mo-explorer[data-face="l"] .wsp-art{transform:scaleX(-1)}
+.mo-shown{box-shadow:0 0 0 3px color-mix(in srgb,var(--dorado) 70%,transparent)!important;transition:box-shadow .3s}
+/* ===== Sistema verbal (0.16) ===== */
+.pl-tools{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:14px 0}
+.pl-tool{display:block;padding:12px;border-radius:14px;background:var(--surface);border:1px solid color-mix(in srgb,var(--dorado) 40%,transparent);text-decoration:none;color:var(--text)}.pl-tool b{display:block;font-size:.92rem}.pl-tool small{color:var(--muted);font-size:.78rem}
+.an-form{background:var(--surface);border-radius:16px;padding:12px 14px;margin:12px 0;box-shadow:var(--sh-card)}
+.an-he{font-size:2rem;text-align:center;color:var(--accent);margin:2px 0 6px}
+.an-an{border-top:1px solid var(--line);padding:8px 0}.an-an:first-of-type{border-top:0}
+.an-segs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
+.an-seg{font-size:.8rem;padding:3px 9px;border-radius:999px;background:color-mix(in srgb,var(--dorado) 16%,transparent)}.an-seg.k-verbo{background:color-mix(in srgb,#2E86AB 18%,transparent)}.an-seg.k-sufijo{background:color-mix(in srgb,#9C6ADE 18%,transparent)}
+.an-verb{font-size:.92rem}
+.lab-in{display:flex;gap:6px;margin:12px 0}.lab-in input,.lab-in select{font:inherit;padding:9px 11px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--text)}.lab-in input{flex:1;font-size:1.2rem}
+.lab-tbl{overflow-x:auto;margin:8px 0}.lab-tbl table{border-collapse:collapse;width:100%;font-size:.88rem}.lab-tbl th,.lab-tbl td{border-bottom:1px solid var(--line);padding:6px;text-align:left;vertical-align:top}.lab-tbl td.he{font-size:1.15rem}
+.lab-ok{color:#2f7d5b;font-weight:600;font-size:.8rem}.lab-gen{color:#B07D1F;font-size:.8rem}
+.mc-lvl{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:4px 0}.mc-lvl span{font-size:.8rem;color:var(--muted)}.mc-lvl .chip[aria-pressed="true"]{background:var(--accent);color:var(--bg)}
+.bb-list li{margin:4px 0}

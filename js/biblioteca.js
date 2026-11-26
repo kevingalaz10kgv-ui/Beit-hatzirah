@@ -41,7 +41,8 @@
       '<div class="bb-hero">' + (EXT.moreh ? EXT.moreh.fig('teach', '', 'entusiasmado', { wasp: 'rest' }) : '') + '<div><p class="he" lang="he">סִפְרִיַּת הַמּוֹרֶה</p><h2>Biblioteca del Moreh</h2><p>El conocimiento con que el Moreh responde: ' + all().length + ' registros propios, más la Biblia, el diccionario de ' + Object.keys(LX).length.toLocaleString('es') + ' palabras, ' + Object.keys(RA).length.toLocaleString('es') + ' raíces, ' + PI.length.toLocaleString('es') + ' verbos y las 54 parashiot.</p></div></div>' +
       '<div class="field">' + B.ic('search') + '<input type="search" id="bbq" placeholder="Buscar en la biblioteca" aria-label="Buscar en la biblioteca" autocomplete="off"></div><div id="bbres"></div>' +
       '<div class="bb-cats">' + BIB.cats.map(c => { const n = cnt(c.id); const href = c.ruta && !n ? '#' + c.ruta : '#bibcat-' + c.id; return '<a class="bb-cat" href="' + href + '"><b>' + esc(c.t) + '</b><small>' + (n ? n + ' registros' : c.ruta ? 'Módulo de la app' : 'En preparación') + '</small></a>'; }).join('') + '</div>' +
-      '<div class="btns" style="margin:16px 0"><a class="btn" href="#fuentes">Fuentes y licencias</a><a class="btn" href="#dices">Diccionario español-hebreo</a><a class="btn" href="#biblioteca-admin">Ampliar la biblioteca</a><a class="btn" href="#moreh-evaluacion">Evaluación del Moreh</a></div></div>';
+      '<h3 class="h-sec" style="margin-top:16px">Estudiemos juntos: clases completas</h3><div class="chips">' + Object.entries(CLASES).map(([k, c]) => '<a class="chip" href="#clase-' + k + '">' + esc(c[0]) + '</a>').join('') + '</div>' +
+      '<div class="btns" style="margin:16px 0"><a class="btn" href="#fundamentales">Palabras fundamentales</a><a class="btn" href="#analizador">Analizador de formas</a><a class="btn" href="#estado-moreh">Estado del conocimiento</a><a class="btn" href="#fuentes">Fuentes y licencias</a><a class="btn" href="#dices">Diccionario español-hebreo</a><a class="btn" href="#biblioteca-admin">Ampliar la biblioteca</a><a class="btn" href="#moreh-evaluacion">Evaluación del Moreh</a></div></div>';
   }
   document.addEventListener('input', e => {
     if (e.target.id !== 'bbq') return; const q = norm(e.target.value); const out = document.getElementById('bbres'); if (!out) return;
@@ -203,6 +204,20 @@
     ['Avanzado', 'Agente', 'Moreh, quiero estudiar el significado de la palabra Shalom', a => /paz/.test(a) && /Estudio completo/.test(a)],
     ['Avanzado', 'Conceptos', '¿Qué es el Mishkán?', a => /tabernáculo/i.test(a)],
     ['Avanzado', 'Verbos', 'Explícame el verbo נָתַן', a => /Primera נ/.test(a)],
+    ['Intermedio', 'Análisis morfológico', 'Analiza la forma וַיֹּאמֶר', a => /Qal/.test(a) && /vayiqtol/.test(a) && /él/.test(a)],
+    ['Avanzado', 'Análisis morfológico', '¿De qué raíz viene וְאָהַבְתָּ?', a => /א־ה־ב/.test(a) && /veqatal/.test(a)],
+    ['Avanzado', 'Análisis morfológico', 'Analiza שְׁמָרֵנִי', a => /imperativo/.test(a) && /a mí/.test(a)],
+    ['Intermedio', 'Binyanim', '¿Qué es el binyán Nifal?', a => /pasivo|reflexivo/i.test(a)],
+    ['Intermedio', 'Binyanim', 'Explícame el Hitpael', a => /reflexivo|recíproco/i.test(a)],
+    ['Intermedio', 'Torá', '¿Cuántos capítulos tiene Bereshit?', a => /50 capítulos/.test(a)],
+    ['Intermedio', 'Historia', '¿Qué pasó con el reino de Israel del norte?', a => /722/.test(a)],
+    ['Avanzado', 'Historia', '¿Cuándo fue el Éxodo?', a => /XV|XIII/.test(a) && /debate/i.test(a)],
+    ['Intermedio', 'Arqueología', '¿Qué se encontró en Cesarea?', a => /Pilato/.test(a)],
+    ['Intermedio', 'Geografía', '¿Qué era Moav?', a => /Rut/.test(a)],
+    ['Intermedio', 'Cultura', '¿Qué eran los sacrificios en la Torá?', a => /olá/i.test(a)],
+    ['Intermedio', 'Fiestas', '¿Qué es Januká?', a => /164/.test(a) && /no está mandada/i.test(a)],
+    ['Avanzado', 'Fiestas', '¿Qué es Yom Kipur?', a => /Tradición|tradición/.test(a)],
+    ['Avanzado', 'Gramática', '¿Qué diferencia hay entre hebreo bíblico y hebreo moderno?', a => /vav consecutiva/i.test(a)],
     ['Avanzado', 'Reconocer lo que no sabe', '¿Qué es la astronomía?', a => /no encontr|no tengo|conocimiento general/i.test(a)],
     ['Avanzado', 'Reconocer lo que no sabe', '¿Cuál es la capital de Australia?', a => /no encontr|no tengo|conocimiento general/i.test(a)],
     ['Avanzado', 'Reconocer lo que no sabe', '¿Quién ganó el mundial de fútbol de 1978?', a => /no encontr|no tengo|conocimiento general/i.test(a)]
@@ -213,8 +228,53 @@
   async function runEval() {
     const out = document.getElementById('ev-out'); out.innerHTML = '<div class="loading">Evaluando…</div>'; const res = [];
     for (const [lvl, area, q, ok] of TESTS) { let a = null, txt = ''; try { a = await EXT.morehChat.respond(q); const d = document.createElement('div'); d.innerHTML = (a.title || '') + ' ' + (a.blocks || []).map(b => b.html).join(' ') + ' ' + (a.sources || []).map(s => s[0]).join(' '); txt = d.textContent; } catch (e) { txt = 'ERROR ' + e.message; } res.push([lvl, area, q, ok(txt), txt.slice(0, 160)]); }
-    const pass = res.filter(r => r[3]).length; window.__evalResult = { pass, total: res.length, res };
+    const pass = res.filter(r => r[3]).length; window.__evalResult = { pass, total: res.length, res }; B.Store.set('moreh:eval', { pass, total: res.length, fecha: new Date().toLocaleDateString('es') });
     out.innerHTML = '<h3>Resultado: ' + pass + ' de ' + res.length + ' correctas</h3>' + ['Fácil', 'Intermedio', 'Avanzado'].map(l => '<h4 class="bb-h">' + l + '</h4>' + res.filter(r => r[0] === l).map(r => '<div class="ev-r ' + (r[3] ? 'ok' : 'bad') + '"><b>' + (r[3] ? '✓' : '✗') + ' ' + esc(r[1]) + ':</b> ' + esc(r[2]) + '<small>' + esc(r[4]) + '…</small></div>').join('')).join('');
+  }
+
+  /* ---------- Palabras fundamentales ---------- */
+  async function vFund() {
+    await data();
+    B.view().innerHTML = B.top('Palabras fundamentales', { back: 'biblioteca' }) + '<div class="wrap bb"><p style="margin-top:14px">La colección básica del hebreo bíblico, organizada por temas. Cada palabra abre su ficha completa en el diccionario.</p>' +
+      (BIB.fundamentales || []).map(([cat, items]) => '<h3 class="h-sec" style="margin-top:16px">' + esc(cat) + '</h3><div class="rows">' + items.map(([k, nota]) => word(k).replace('</span></span>', (nota ? ' · ' + esc(nota) : '') + '</span></span>')).join('') + '</div>').join('') + '</div>';
+  }
+
+  /* ---------- Clases: «Estudiemos juntos» por temas ---------- */
+  const CLASES = {
+    hebreo: ['Hebreo desde cero', ['g-alefbet', 'g-finales', 'g-nikud', 'g-shva', 'g-daguesh', 'g-begadkefat', 'g-guturales', 'g-articulo', 'g-prefijos', 'g-genero-numero', 'g-pronombres', 'g-oracion-nominal']],
+    binyanim: ['Los siete binyanim', ['g-binyanim', 'b-qal', 'b-nifal', 'b-piel', 'b-pual', 'b-hifil', 'b-hofal', 'b-hitpael']],
+    conjugar: ['Aprender a conjugar', ['g-aspectos', 'g-personas', 'g-vav-consecutiva', 'g-binyanim', 'g-verbos-debiles']],
+    gramatica: ['Gramática intermedia', ['g-constructo', 'g-sufijos', 'g-adjetivo', 'g-et', 'g-posesion', 'g-negacion', 'g-interrogativas', 'g-mishkal', 'g-dual', 'g-subordinadas', 'g-discursivas', 'g-ketiv-qere', 'g-biblico-moderno']],
+    historia: ['Historia del antiguo Israel', ['h-cercano-oriente', 'h-patriarcas', 'h-egipto', 'h-exodo', 'h-desierto', 'h-canaan', 'h-jueces', 'h-monarquia', 'h-israel-norte', 'h-juda', 'h-babilonia', 'h-persia', 'h-helenistico', 'h-roma', 'h-posterior']],
+    profetas: ['El contexto histórico de los profetas', ['profetas', 'h-monarquia', 'h-israel-norte', 'h-juda', 'exilio', 'h-babilonia', 'h-persia', 'restauracion']],
+    bereshit: ['Estudiemos Bereshit', ['libro-gen', 'creacion', 'adam-java', 'noaj', 'avraham', 'yitzjak', 'yaakov', 'yosef']],
+    tora: ['Los cinco libros de la Torá', ['libro-gen', 'libro-exo', 'libro-lev', 'libro-num', 'libro-deu']],
+    fiestas: ['Las fiestas bíblicas', ['moed-shabat', 'moed-pesaj', 'moed-matzot', 'moed-bikurim', 'moed-shavuot', 'moed-yomTeruah', 'moed-yomKippur', 'moed-sukkot', 'moed-sheminiAtzeret', 'moed-januka', 'moed-purim']],
+    arqueologia: ['Arqueología bíblica', ['sitio-jerusalen-arq', 'sitio-meguido', 'sitio-lajish', 'sitio-shomron', 'sitio-qumran', 'sitio-cesarea', 'rollos-mar-muerto', 'estela-tel-dan', 'inscripcion-siloe']]
+  };
+  let CL = null;
+  async function vClase(p) {
+    await data(); const id = p[1]; const C = CLASES[id]; if (!C) return B.go('biblioteca');
+    if (!CL || CL.id !== id) { const recs = C[1].map(rec).filter(Boolean); const sh = a => a.map(x => [Math.random(), x]).sort((a, b) => a[0] - b[0]).map(x => x[1]);
+      const qs = sh(recs).slice(0, 4).map(r => ({ q: '¿Qué afirmación corresponde a «' + r.t.replace(/\s*\(.*\)/, '') + '»?', ok: r.directa, opts: sh([r.directa].concat(sh(recs.filter(x => x !== r)).slice(0, 2).map(x => x.directa))) }));
+      CL = { id, recs, i: 0, qs, ans: {} }; }
+    const n = CL.recs.length + 1; const last = CL.i >= CL.recs.length;
+    const r = CL.recs[CL.i]; let refs = ''; if (r) for (const x of r.refs.slice(0, 2)) refs += await verseHTML(x);
+    const body = last ? '<h4>Comprobemos lo aprendido</h4>' + CL.qs.map((q, qi) => '<div class="st-q"><p><b>' + esc(q.q) + '</b></p><div class="mc-opts">' + q.opts.map((o, j) => { const st = CL.ans[qi]; const cls = st === undefined ? '' : o === q.ok ? ' ok' : st === j ? ' bad' : ''; return '<button class="btn' + cls + '" data-act="cl-ans" data-q="' + qi + '" data-j="' + j + '"' + (st !== undefined ? ' disabled' : '') + '>' + esc(o) + '</button>'; }).join('') + '</div></div>').join('') + (Object.keys(CL.ans).length === CL.qs.length ? '<p class="st-fb">Resultado: ' + CL.qs.filter((q, i) => q.opts[CL.ans[i]] === q.ok).length + ' de ' + CL.qs.length + '.</p>' : '')
+      : '<h4>' + esc(r.t) + '</h4>' + (r.he ? '<p class="he mc-big" lang="he">' + esc(r.he) + '</p>' : '') + '<p>' + esc(r.directa) + '</p>' + (r.sencillo !== r.directa ? '<p>' + esc(r.sencillo) + '</p>' : '') + (r.profundo || []).map(x => '<p>' + esc(x) + '</p>').join('') + (r.ejemplo ? '<p class="he mc-he" lang="he" dir="rtl">' + esc(r.ejemplo[0]) + '</p><p><i>' + esc(r.ejemplo[1]) + '</i> — «' + esc(r.ejemplo[2]) + '»</p>' : '') + refs + '<p><a href="#bib-' + r.id + '">Abrir en la biblioteca</a></p>';
+    B.view().innerHTML = B.top('Estudiemos juntos', { back: 'biblioteca' }) + '<div class="wrap mo-learnv"><div class="mo-stage">' + (EXT.moreh ? EXT.moreh.fig(last ? 'idle' : CL.i % 2 ? 'explain' : 'teach', '', last ? 'atento' : CL.i % 3 === 2 ? 'reflexivo' : 'explicativo', { wasp: r && (r.he || r.ejemplo) ? 'curious' : 'rest' }) : '') + '<div class="mo-board"><small>' + esc(C[0]) + ' · ' + (CL.i + 1) + ' de ' + n + '</small>' + body + '</div></div>' +
+      '<div class="mo-steps"><button class="btn" data-act="cl-step" data-d="-1"' + (CL.i ? '' : ' disabled') + '>Anterior</button><div class="mo-dots">' + Array.from({ length: n }, (_, k) => '<i' + (k === CL.i ? ' class="on"' : '') + '></i>').join('') + '</div><button class="btn solid" data-act="cl-step" data-d="1"' + (CL.i < n - 1 ? '' : ' disabled') + '>Siguiente</button></div></div>';
+  }
+  /* ---------- Estado real del conocimiento del Moreh ---------- */
+  async function vEstado() {
+    await data(); const L = Object.values(LX); const toks = L.reduce((s, v) => s + v[5], 0); const es = L.filter(v => v[3]); const cov = es.reduce((s, v) => s + v[5], 0) / toks * 100;
+    const byCat = {}; all().forEach(r => { byCat[r.cat] = (byCat[r.cat] || 0) + 1; }); const ev = B.Store.get('moreh:eval', null);
+    const row = (a, b) => '<tr><th>' + a + '</th><td>' + b + '</td></tr>';
+    B.view().innerHTML = B.top('Estado del conocimiento', { back: 'biblioteca' }) + '<div class="wrap bb"><p style="margin-top:14px">Datos calculados en este momento sobre los archivos de la app. El conocimiento <b>no está completo</b>: aquí se ve el avance real.</p>' +
+      '<div class="lab-tbl"><table>' + row('Palabras del texto hebreo (corpus)', '306.774') + row('Lemas en el diccionario', L.length.toLocaleString('es')) + row('Lemas con significado en español', es.length.toLocaleString('es') + ' (' + cov.toFixed(1) + ' % de las apariciones)') + row('Familias de raíces (índice BDB)', Object.keys(RA).length.toLocaleString('es')) + row('Lemas verbales con tablas (PEALIM)', PI.length.toLocaleString('es') + ' de 1.614 lemas verbales del léxico') + row('Formas distintas indexadas (analizador)', '53.915 (todas las del texto hebreo)') + row('Palabras verbales del corpus', '74.101') + row('Registros de la Biblioteca del Moreh', all().length) + '</table></div>' +
+      '<h3 class="h-sec" style="margin-top:16px">Biblioteca por categoría</h3><div class="lab-tbl"><table>' + Object.entries(byCat).sort((a, b) => b[1] - a[1]).map(([c, n]) => row(esc(catName(c)), n)).join('') + '</table></div>' +
+      '<h3 class="h-sec" style="margin-top:16px">Evaluación</h3><p>' + (ev ? 'Última evaluación: <b>' + ev.pass + ' de ' + ev.total + '</b> (' + esc(ev.fecha) + ').' : 'Todavía no se ejecutó la evaluación en este dispositivo.') + ' <a href="#moreh-evaluacion">Ejecutar</a></p>' +
+      '<h3 class="h-sec" style="margin-top:16px">Limitaciones actuales</h3><ul class="bb-list"><li>' + (L.length - es.length).toLocaleString('es') + ' lemas (sobre todo poco frecuentes y nombres propios) tienen solo la definición de Strong en inglés.</li><li>Sinónimos, antónimos, singular/plural y estado constructo no están registrados palabra por palabra; se ven en las formas reales del analizador.</li><li>El paradigma generado por reglas cubre los verbos regulares; los débiles muestran solo sus formas documentadas.</li><li>No hay mapas interactivos todavía.</li><li>El conocimiento general fuera de la biblioteca requiere el servidor opcional de IA.</li><li>No hay diccionario de hebreo moderno; el vocabulario moderno se señala solo en explicaciones puntuales.</li><li>Las redacciones de Beit Hatzirah están pendientes de revisión por la dirección de contenido.</li></ul></div>';
   }
 
   /* ---------- Acciones y rutas ---------- */
@@ -231,9 +291,11 @@
     'ad-edit': el => { const r = (B.Store.get('biblioteca:local', []) || [])[+el.dataset.i]; const f = document.getElementById('ad-f'); if (!r || !f) return; const set = (n, v) => { if (f.elements[n]) f.elements[n].value = v || ''; }; set('id', r.id); set('cat', r.cat); set('t', r.t); set('he', r.he); set('directa', r.directa); set('sencillo', r.sencillo); set('profundo', (r.profundo || []).join('\n')); set('refs', (r.refs || []).join(', ')); set('palabras', (r.palabras || []).join(', ')); set('autor', (r.fuente || {}).autor); set('confiabilidad', (r.fuente || {}).confiabilidad); f.scrollIntoView({ behavior: 'smooth' }); },
     'ad-del': el => { if (!confirm('¿Borrar este registro local?')) return; const L = B.Store.get('biblioteca:local', []) || []; L.splice(+el.dataset.i, 1); B.Store.set('biblioteca:local', L); BIB = null; vAdmin(); },
     'ad-export': () => { const L = B.Store.get('biblioteca:local', []) || []; const b = new Blob([JSON.stringify({ registros: L }, null, 2)], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'biblioteca-local.json'; document.body.appendChild(a); a.click(); setTimeout(() => a.remove(), 1000); },
-    'ev-run': () => runEval()
+    'ev-run': () => runEval(),
+    'cl-step': el => { CL.i = Math.max(0, Math.min(CL.recs.length, CL.i + +el.dataset.d)); vClase(['clase', CL.id]); window.scrollTo({ top: 0, behavior: 'smooth' }); },
+    'cl-ans': el => { CL.ans[+el.dataset.q] = +el.dataset.j; const q = CL.qs[+el.dataset.q]; vClase(['clase', CL.id]); const st = document.querySelector('.mo-stage'); if (st && EXT.moreh) EXT.moreh.expr(st, q.opts[+el.dataset.j] === q.ok ? 'celebracion' : 'comprensivo'); if (Object.keys(CL.ans).length === CL.qs.length) { const c = B.Store.get('clases', {}) || {}; c[CL.id] = Date.now(); B.Store.set('clases', c); } }
   });
-  Object.assign(EXT.routes, { biblioteca: vHome, bibcat: vCat, bib: vRec, fuentes: vFuentes, dices: vDicEs, 'biblioteca-admin': vAdmin, estudio: p => p[1] === 'palabra' ? vEstudioPalabra(['x', p[2]]) : B.go('estudios'), 'moreh-evaluacion': vEval });
-  ['biblioteca', 'bibcat', 'bib', 'fuentes', 'dices', 'biblioteca-admin', 'estudio', 'moreh-evaluacion'].forEach(r => { EXT.tabs[r] = ''; });
+  Object.assign(EXT.routes, { fundamentales: vFund, clase: vClase, 'estado-moreh': vEstado, biblioteca: vHome, bibcat: vCat, bib: vRec, fuentes: vFuentes, dices: vDicEs, 'biblioteca-admin': vAdmin, estudio: p => p[1] === 'palabra' ? vEstudioPalabra(['x', p[2]]) : B.go('estudios'), 'moreh-evaluacion': vEval });
+  ['fundamentales', 'clase', 'estado-moreh', 'biblioteca', 'bibcat', 'bib', 'fuentes', 'dices', 'biblioteca-admin', 'estudio', 'moreh-evaluacion'].forEach(r => { EXT.tabs[r] = ''; });
   EXT.biblioteca = { data, all: () => all(), rec: id => rec(id), connections, mapHTML, eshe: () => BIB && BIB.eshe };
 })();

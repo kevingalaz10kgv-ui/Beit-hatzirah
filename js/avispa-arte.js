@@ -1,4 +1,4 @@
-/* BEIT HATZIRAH — Sistema gráfico de la avispa (inspirada en el emblema oficial).
+/* BEIT HATZIRAH — Sistema gráfico del avispón amarillo de Beit Hatzirah (mismo personaje y anatomía; paleta amarilla, negra y dorada).
    Una sola anatomía, cuatro versiones: 'main' (detallada, metálica), 'simple' (espacios pequeños),
    'mono' (monocromática, usa currentColor) e 'badge' (para insignias y logros). */
 (function () {
@@ -24,24 +24,24 @@
   };
   function defs(id) {
     return '<defs>' +
-      '<linearGradient id="m' + id + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F4F6F7"/><stop offset=".35" stop-color="#C3C8CC"/><stop offset=".7" stop-color="#7A8087"/><stop offset="1" stop-color="#3B4046"/></linearGradient>' +
-      '<linearGradient id="d' + id + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9AA0A6"/><stop offset=".45" stop-color="#4A4F55"/><stop offset="1" stop-color="#1B1D20"/></linearGradient>' +
-      '<linearGradient id="w' + id + '" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity=".7"/><stop offset=".6" stop-color="#D5DADE" stop-opacity=".45"/><stop offset="1" stop-color="#9EA6AD" stop-opacity=".35"/></linearGradient>' +
-      '<radialGradient id="e' + id + '" cx=".38" cy=".3" r=".8"><stop offset="0" stop-color="#6B7178"/><stop offset=".35" stop-color="#2A2E33"/><stop offset="1" stop-color="#0B0C0E"/></radialGradient>' +
+      '<linearGradient id="m' + id + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFE680"/><stop offset=".35" stop-color="#FFD22E"/><stop offset=".72" stop-color="#E8A600"/><stop offset="1" stop-color="#A86F00"/></linearGradient>' +
+      '<linearGradient id="d' + id + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5A4A36"/><stop offset=".45" stop-color="#241C14"/><stop offset="1" stop-color="#0E0A07"/></linearGradient>' +
+      '<linearGradient id="w' + id + '" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity=".72"/><stop offset=".6" stop-color="#FFF1C9" stop-opacity=".42"/><stop offset="1" stop-color="#E9C46A" stop-opacity=".32"/></linearGradient>' +
+      '<radialGradient id="e' + id + '" cx=".38" cy=".3" r=".8"><stop offset="0" stop-color="#7A5A2A"/><stop offset=".35" stop-color="#2A1E12"/><stop offset="1" stop-color="#0A0705"/></radialGradient>' +
       '<pattern id="f' + id + '" width="3.2" height="3.2" patternUnits="userSpaceOnUse"><circle cx="1.6" cy="1.6" r=".75" fill="#FFFFFF" opacity=".10"/></pattern>' +
       '<filter id="s' + id + '" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="3" stdDeviation="2.4" flood-color="#000" flood-opacity=".35"/></filter>' +
       '</defs>';
   }
   function body(id, simple, mono) {
     const metal = mono ? 'currentColor' : 'url(#m' + id + ')', dark = mono ? 'currentColor' : 'url(#d' + id + ')', wing = mono ? 'none' : 'url(#w' + id + ')';
-    const line = mono ? 'currentColor' : '#2A2E33', vein = mono ? 'currentColor' : '#8E969D';
+    const line = mono ? 'currentColor' : '#1A1510', vein = mono ? 'currentColor' : '#B08A3C';
     const mOp = mono ? ' fill-opacity=".85"' : '', dOp = mono ? ' fill-opacity="1"' : '';
     let s = '';
     // alas
     s += '<g class="wsp-wing wsp-wing-b"><path d="' + P.wingBack + '" fill="' + wing + '" stroke="' + vein + '" stroke-width="1.1"' + (mono ? ' stroke-opacity=".8"' : '') + '/>' + (simple ? '' : '<path d="' + P.veinsBack + '" fill="none" stroke="' + vein + '" stroke-width=".7" stroke-opacity=".8"/>') + '</g>';
     s += '<g class="wsp-wing wsp-wing-f"><path d="' + P.wingFront + '" fill="' + wing + '" stroke="' + vein + '" stroke-width="1.1"' + (mono ? ' stroke-opacity=".8"' : '') + '/>' + (simple ? '' : '<path d="' + P.veinsFront + '" fill="none" stroke="' + vein + '" stroke-width=".7" stroke-opacity=".8"/>') + '</g>';
     // patas
-    s += '<g class="wsp-legs" fill="none" stroke-linecap="round" stroke-linejoin="round">' + P.legs.map((d, i) => '<path class="wsp-leg' + (i === 2 ? ' wsp-arm' : '') + '" d="' + d + '" stroke="' + (mono ? 'currentColor' : '#2E3236') + '" stroke-width="' + (simple ? 3 : 2.6) + '"/>' + (simple || mono ? '' : '<path d="' + d + '" stroke="#9AA0A6" stroke-width=".9" stroke-opacity=".7"/>')).join('') + '</g>';
+    s += '<g class="wsp-legs" fill="none" stroke-linecap="round" stroke-linejoin="round">' + P.legs.map((d, i) => '<path class="wsp-leg' + (i === 2 ? ' wsp-arm' : '') + '" d="' + d + '" stroke="' + (mono ? 'currentColor' : '#1A1510') + '" stroke-width="' + (simple ? 3 : 2.6) + '"/>' + (simple || mono ? '' : '<path d="' + d + '" stroke="#F2B705" stroke-width=".9" stroke-opacity=".7"/>')).join('') + '</g>';
     // abdomen liso y afilado, con bandas (recortadas a su silueta)
     s += '<path d="' + P.stinger + '" fill="' + dark + '"' + dOp + '/>';
     s += '<clipPath id="c' + id + '"><path d="' + P.abd + '"/></clipPath>';
@@ -52,15 +52,17 @@
     s += '<path d="' + P.petiole + '" fill="' + dark + '"' + dOp + '/>';
     // tórax
     s += '<path d="' + P.thorax + '" fill="' + dark + '"' + dOp + ' stroke="' + line + '" stroke-width="1.2"/>';
-    if (!simple && !mono) s += '<path d="M84 53 C90 48 99 48 105 52" fill="none" stroke="#E6E9EB" stroke-width="2.2" stroke-linecap="round" opacity=".7"/><path d="M85 66 C92 70 100 70 106 65" fill="none" stroke="#C9CED2" stroke-width="1" opacity=".5"/>' +
-      '<g stroke="#C4CACF" stroke-width=".6" opacity=".5">' + Array.from({ length: 12 }, (_, k) => '<path d="M' + (82 + k * 2.3) + ' ' + (52 - (k % 3) * 0.8) + ' l-.8 -3.2"/>').join('') + '</g>';
+    if (!simple && !mono) s += '<path d="M84 53 C90 48 99 48 105 52" fill="none" stroke="#E4C989" stroke-width="2.2" stroke-linecap="round" opacity=".7"/><path d="M85 66 C92 70 100 70 106 65" fill="none" stroke="#F2C94C" stroke-width="1" opacity=".5"/>' +
+      '<g stroke="#D9A93A" stroke-width=".6" opacity=".5">' + Array.from({ length: 12 }, (_, k) => '<path d="M' + (82 + k * 2.3) + ' ' + (52 - (k % 3) * 0.8) + ' l-.8 -3.2"/>').join('') + '</g>';
     // cabeza
     s += '<g class="wsp-head">';
-    s += '<path d="' + P.antenna1 + '" fill="none" stroke="' + (mono ? 'currentColor' : '#2E3236') + '" stroke-width="2" stroke-linecap="round"/><path d="' + P.antenna2 + '" fill="none" stroke="' + (mono ? 'currentColor' : '#2E3236') + '" stroke-width="2" stroke-linecap="round"/>';
+    s += '<path d="' + P.antenna1 + '" fill="none" stroke="' + (mono ? 'currentColor' : '#1A1510') + '" stroke-width="2" stroke-linecap="round"/><path d="' + P.antenna2 + '" fill="none" stroke="' + (mono ? 'currentColor' : '#1A1510') + '" stroke-width="2" stroke-linecap="round"/>';
     s += '<path d="' + P.head + '" fill="' + metal + '"' + mOp + ' stroke="' + line + '" stroke-width="1.2"/>';
+    if (!mono) s += '<path d="M106 50 C110 42 121 40 127 45 C129 47 130 49 131 52 C123 47 114 46 106 50 Z" fill="' + dark + '"/>';
+    s += '<circle cx="142" cy="21" r="2.4" fill="' + (mono ? 'currentColor' : '#C6A15B') + '"/><circle cx="150" cy="31" r="2.4" fill="' + (mono ? 'currentColor' : '#C6A15B') + '"/>';
     s += '<path class="wsp-eye" d="' + P.eye + '" fill="' + (mono ? 'currentColor' : 'url(#e' + id + ')') + '"/>';
     if (!simple && !mono) s += '<path d="' + P.eye + '" fill="url(#f' + id + ')"/><path d="M118 47 C122 45 126 47 127 51" fill="none" stroke="#FFFFFF" stroke-width="1.4" stroke-linecap="round" opacity=".55"/>';
-    s += '<path d="' + P.mandible + '" fill="none" stroke="' + (mono ? 'currentColor' : '#2E3236') + '" stroke-width="2" stroke-linecap="round"/>';
+    s += '<path d="' + P.mandible + '" fill="none" stroke="' + (mono ? 'currentColor' : '#1A1510') + '" stroke-width="2" stroke-linecap="round"/>';
     s += '</g>';
     return s;
   }

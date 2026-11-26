@@ -1,8 +1,8 @@
 /* Service Worker de Beit Hatzirah: funcionamiento sin conexión */
-const VERSION = 'bh-0.15.0';
+const VERSION = 'bh-0.16.0';
 const LIBROS = 'bh-libros-3'; // cambia este nombre cuando se actualicen los textos bíblicos
 const SHELL = [
-  './', 'index.html', 'manifest.webmanifest', 'css/app.css', 'js/books.js', 'js/aprender.js', 'js/pealim.js', 'js/audio.js', 'js/besora.js', 'js/tefilot.js', 'js/diccionario.js', 'js/avispa-arte.js', 'js/moreh.js', 'js/moreh-chat.js', 'js/biblioteca.js', 'data/biblioteca.json', 'img/moreh/body.webp', 'img/moreh/head.webp', 'img/moreh/arm.webp', 'img/moreh/avatar.webp', 'js/imagen.js', 'js/app.js',
+  './', 'index.html', 'manifest.webmanifest', 'css/app.css', 'js/books.js', 'js/aprender.js', 'js/pealim.js', 'js/audio.js', 'js/besora.js', 'js/tefilot.js', 'js/diccionario.js', 'js/avispa-arte.js', 'js/moreh.js', 'js/moreh-chat.js', 'js/biblioteca.js', 'js/analizador.js', 'data/biblioteca.json', 'img/moreh/body.webp', 'img/moreh/head.webp', 'img/moreh/arm.webp', 'img/moreh/avatar.webp', 'js/imagen.js', 'js/app.js',
   'img/logo.webp', 'img/logo-sm.webp', 'img/logo.png', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png', 'icons/apple-touch-icon.png', 'icons/favicon-32.png',
   'fonts/noto-serif-hebrew-hebrew-700-normal.woff2', 'fonts/spectral-latin-400-normal.woff2', 'fonts/spectral-latin-400-italic.woff2',
   'fonts/spectral-latin-600-normal.woff2', 'fonts/spectral-latin-ext-400-normal.woff2',

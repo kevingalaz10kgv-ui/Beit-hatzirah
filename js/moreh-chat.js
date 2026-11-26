@@ -188,10 +188,11 @@
     for (const r of RS) {
       let sc = 0;
       if (r.he && plain(q).length > 1 && plain(r.he) && plain(q).includes(plain(r.he))) sc = 20;
-      const tr = r.tr ? norm(r.tr) : ''; if (tr && tr.split(/[ /]+/).some(x => x.length > 2 && qt.has(x))) sc = Math.max(sc, 15);
+      const tr = r.tr ? norm(r.tr) : ''; const trHit = tr && tr.split(/[ /]+/).find(x => x.length > 2 && qt.has(x)); if (trHit) sc = Math.max(sc, 6 + trHit.length / 2);
       const toks = norm(r.t.replace(/\s*\(.*\)/, '')).split(' ').filter(x => x.length > 3 && !LSTOP.has(x));
       const hit = toks.filter(x => qt.has(x) || qt.has(x.replace(/s$/, '')) || [...qt].some(y => y.length > 5 && (y.startsWith(x) || x.startsWith(y))));
-      if (toks.length && hit.length && (hit.length / toks.length >= .5 || hit.some(x => x.length >= 7))) sc = Math.max(sc, hit.reduce((a, x) => a + x.length, 0) / toks.length + hit.length * 2);
+      const when = /cuando|fecha|siglo|cronolog|epoca|ano /.test(n) && r.cron;
+      if (toks.length && hit.length && (hit.length / toks.length >= .5 || hit.some(x => x.length >= 7) || when)) sc = Math.max(sc, hit.reduce((a, x) => a + x.length, 0) / toks.length + hit.length * 3 + (when ? 8 : 0));
       if (sc > bs) { bs = sc; best = r; }
     }
     return bs >= 5 ? best : null;
@@ -201,7 +202,7 @@
     const words = (r.palabras || []).filter(k => D.LX[k]);
     const blocks = [blk(t, '<p>' + esc(r.directa) + '</p>' + (r.sencillo && r.sencillo !== r.directa ? '<p>' + esc(r.sencillo) + '</p>' : ''))];
     if (r.ejemplo) blocks.push(blk('ling', '<p class="he mc-he" lang="he" dir="rtl">' + esc(r.ejemplo[0]) + '</p><p><i>' + esc(r.ejemplo[1]) + '</i> — «' + esc(r.ejemplo[2]) + '»</p>'));
-    if (level === 'deep' && (r.profundo || []).length) blocks.push(blk(r.cat === 'conceptos' ? 'texto' : t, r.profundo.map(x => '<p>' + esc(x) + '</p>').join('')));
+    if ((level === 'deep' || ['historia', 'arqueologia', 'fiestas', 'tora', 'verbos'].includes(r.cat)) && (r.profundo || []).length) blocks.push(blk(r.cat === 'conceptos' ? 'texto' : t, r.profundo.map(x => '<p>' + esc(x) + '</p>').join('')));
     if (words.length) blocks.push(blk('ling', '<p>Palabras hebreas: ' + words.map(k => '<a href="#dic-' + k + '"><span class="he" lang="he">' + esc(D.LX[k][0]) + '</span> «' + esc(gl(k)) + '»</a>').join(', ') + '.</p>'));
     if (refs) blocks.push(blk('trad', refs));
     if (r.interp) blocks.push(blk('trad2', '<p>' + esc(r.interp) + '</p>'));
@@ -240,6 +241,16 @@
     return { expr: 'comprensivo', blocks: [blk('dato', '<p>Esa pregunta es de conocimiento general y no está en la biblioteca de Beit Hatzirah, así que no tengo una respuesta respaldada. No la voy a inventar.</p><p class="mc-small">Puedo responder preguntas generales si la administración configura el servidor de IA del Moreh (Configuración → El Moreh). Mientras tanto, puedo ayudarte con las Escrituras, el hebreo, las parashiot, las fiestas, la historia y la arqueología bíblica de la biblioteca.</p>')], sources: [['Biblioteca del Moreh', 'biblioteca']] };
   }
 
+  async function aAnalyze(tok) {
+    if (!EXT.analizar) return null; const R = await EXT.analizar(tok); if (R.error) return { expr: 'comprensivo', blocks: [blk('dato', '<p>' + esc(R.error) + '</p>')] }; if (!R.forms.length) return null;
+    const F = R.forms[0]; const a = F.an[0]; const L = D.LX[a.lemma]; const verb = a.segs.find(x => x.kind === 'verbo'); const obj = a.segs.find(x => x.obj);
+    const blocks = [blk('ling', '<p class="he mc-he" lang="he" dir="rtl">' + esc(F.form) + '</p><p>' + a.segs.map(x => '<b>' + esc(x.txt) + '</b>').join(' + ') + '.</p>' + (L ? '<p>Viene del lema <a href="#dic-' + a.lemma + '"><b class="he" lang="he">' + esc(L[0]) + '</b></a> «' + esc(gl(a.lemma)) + '»' + (L[7] ? ', raíz <b class="he" lang="he">' + esc(rootStr(L[7])) + '</b>' : '') + '.</p>' : '') +
+      (verb ? '<p><b>' + esc(verb.binyan) + ', ' + esc(verb.forma) + '</b>: ' + esc(verb.formaInfo) + '. ' + (verb.persona ? 'Realiza la acción: <b>' + esc(verb.persona) + '</b>. ' : '') + (obj ? 'Se dirige: <b>' + esc(obj.obj) + '</b>.' : '') + '</p>' : '') + '<p>Esta forma aparece ' + a.n + (a.n === 1 ? ' vez' : ' veces') + '.</p>')];
+    if (F.an.length > 1) blocks.push(blk('ling', '<p>Otros análisis posibles de la misma forma: ' + F.an.slice(1).map(x => esc(x.segs.map(y => y.txt).join(' + ')) + ' (' + x.n + ')').join('; ') + '.</p>'));
+    blocks.push(blk('texto', '<p>Primera aparición:</p>' + await verseBlock(a.ref, true)));
+    return { expr: 'sorprendido', title: 'Análisis de ' + F.form, blocks, sources: [['Analizador de formas', 'analizador-' + encodeURIComponent(F.form)]].concat(L ? [['Ficha del lema', 'dic-' + a.lemma]] : []).concat(D.PI.some(v => v.id === a.lemma) ? [['Conjugaciones', 'pealim-' + a.lemma]] : []), ctx: { word: L ? a.lemma : CH.ctx.word, ref: a.ref }, hePron: F.form };
+  }
+
   /* ---------- Preguntas para comprobar lo aprendido ---------- */
   async function parashaWords(p) {
     const MO = await B.getJSON('morph/' + p.lec.b + '.json'); const cnt = {};
@@ -265,6 +276,15 @@
   async function respond(q) {
     await data(); const n = norm(q); const C = CH.ctx;
     const ctxWord = () => C.word || null;
+    // clases completas («Estudiemos juntos» por temas)
+    const CLS = [[/hebreo desde cero|empezar (con el )?hebreo|aprender hebreo desde/, 'hebreo'], [/(todos )?los binyanim|los siete binyanim/, 'binyanim'], [/aprender a conjugar|conjugar verbos|como se conjuga/, 'conjugar'], [/estudiar (el libro de )?bereshit|el libro de bereshit|estudiar genesis/, 'bereshit'], [/historia del antiguo israel|historia de israel/, 'historia'], [/contexto historico de los profetas|historia de los profetas/, 'profetas'], [/los cinco libros|libros de la tora/, 'tora'], [/(las )?fiestas biblicas|todas las fiestas/, 'fiestas'], [/arqueologia biblica/, 'arqueologia'], [/gramatica (hebrea )?intermedia|aprender gramatica/, 'gramatica']];
+    if (/ensename|ensenarme|quiero (aprender|estudiar|comprender)|estudiemos|clase|curso|desarrollemos/.test(n)) for (const [rx, id] of CLS) if (rx.test(n)) return { expr: 'entusiasmado', blocks: [blk('dato', '<p>¡Estudiemos juntos! Preparé una clase con lecciones ordenadas y preguntas al final para comprobar lo aprendido.</p>')], sources: [['Comenzar la clase', 'clase-' + id]], go: 'clase-' + id };
+    // análisis de una forma hebrea
+    const heTok = (q.match(/[\u05D0-\u05EA][\u05B0-\u05C7\u05D0-\u05EA\u05BE]*/g) || []).sort((a, b) => b.length - a.length)[0];
+    if (heTok && /analiza|que forma|de que (raiz|verbo|palabra) (viene|proviene)|que binyan|quien realiza|forma verbal|morfolog/.test(n)) { const r = await aAnalyze(heTok); if (r) return r; }
+    // libros de la Torá
+    const bk = /capitulos|el libro de|libro|cuantos versiculos/.test(n) && B.BOOKS.find(b => ['GEN', 'EXO', 'LEV', 'NUM', 'DEU'].includes(b.c) && [b.tr, b.es].some(x => n.includes(norm(x))));
+    if (bk && EXT.biblioteca) { const r = EXT.biblioteca.rec('libro-' + bk.c.toLowerCase()); if (r) return aRecord(r, 'deep'); }
     // niveles de respuesta sobre lo anterior
     if (/^(profundiza|ampl[ií]a|desarrolla mas|mas profundo|explica(me)? mas)/.test(n) && CH.last) { const L = CH.last; if (L.deep) { const r = EXT.biblioteca.rec(L.deep); if (r) return aRecord(r, 'deep'); } if (C.word) return Object.assign(await aConnections(C.word), { intro: 'Profundicemos en la palabra y sus conexiones:' }); if (C.parasha) return { expr: 'entusiasmado', blocks: [blk('dato', '<p>Para profundizar, estudiemos la parashá paso a paso.</p>')], sources: [['Estudiemos juntos', 'estudiemos-' + C.parasha]] }; }
     if (/muestrame las referencias|que referencias|dame las referencias|citas biblicas/.test(n) && CH.last && (CH.last.refsAll || C.ref)) { const refs = CH.last.refsAll || [C.ref]; let h = ''; for (const r of refs.slice(0, 8)) h += await verseBlock(r, false); return { expr: 'explicativo', title: 'Referencias', blocks: [blk('trad', h)], sources: CH.last.sources }; }
@@ -297,7 +317,7 @@
       return { expr: 'comprensivo', blocks: [blk('ling', '<p>Elegiste «' + esc(w.chosen) + '», pero <b class="he" lang="he">' + esc(w.he) + '</b>' + (w.tr ? ' (' + esc(w.tr) + ')' : '') + ' significa «' + esc(w.ok) + '».' + (w.k && D.LX[w.k][7] ? ' Su raíz es ' + esc(rootStr(D.LX[w.k][7])) + ': recordarla ayuda a distinguirla.' : '') + ' Es un error frecuente: con la repetición se fija.</p>')], sources: w.k ? [['Ficha de la palabra', 'dic-' + w.k]] : [] };
     }
     if (/mas sencill|mas simple|resumen|resumelo|en pocas palabras/.test(n)) { const L = CH.last; if (L && L.short) return { expr: 'sonriente', blocks: [blk('ense', '<p>' + esc(L.short) + '</p>')], sources: L.sources }; if (L) { const first = L.blocks && L.blocks[0]; return { expr: 'sonriente', blocks: [first || blk('dato', '<p>No tengo una versión más breve.</p>')], sources: L.sources }; } }
-    if (/estudi(ar|emos)/.test(n) && /parash/.test(n)) { const p = findParasha(q) || (C.parasha && D.PAR.find(x => +x.n === +C.parasha)) || await thisWeek(); return { expr: 'entusiasmado', blocks: [blk('dato', '<p>¡Estudiemos juntos la parashá ' + esc(p.tr) + '! Te guiaré en 8 pasos: presentación, estructura, pasajes, palabras hebreas, enseñanzas, referencias, preguntas y profundización.</p>')], sources: [['Comenzar «Estudiemos juntos»', 'estudiemos-' + p.n]], go: 'estudiemos-' + p.n }; }
+    if (/estudi(ar|emos)|desarroll/.test(n) && /parash/.test(n)) { const p = findParasha(q) || (C.parasha && D.PAR.find(x => +x.n === +C.parasha)) || await thisWeek(); return { expr: 'entusiasmado', blocks: [blk('dato', '<p>¡Estudiemos juntos la parashá ' + esc(p.tr) + '! Te guiaré en 8 pasos: presentación, estructura, pasajes, palabras hebreas, enseñanzas, referencias, preguntas y profundización.</p>')], sources: [['Comenzar «Estudiemos juntos»', 'estudiemos-' + p.n]], go: 'estudiemos-' + p.n }; }
     if (/ensena(me)? (las )?letras|alfabeto|alef ?bet/.test(n)) return { expr: 'entusiasmado', blocks: [blk('dato', '<p>El alef-bet tiene 22 letras, todas consonantes; las vocales se indican con el nikud. Te las presento una por una, con su sonido, su valor y un ejemplo de la Torá.</p>')], sources: [['Aprende con el Moreh: el alfabeto', 'aprende-alfabeto'], ['Curso «Yo aprendo hebreo»', 'aprender']] };
     if (/ayudame a (leer|estudiar)|palabra por palabra/.test(n)) { if (/palabra/.test(n) && ctxWord() && !/versiculo|leer/.test(n)) return aMeaning(ctxWord()); return { expr: 'entusiasmado', blocks: [blk('dato', '<p>Leamos juntos el versículo palabra por palabra: el texto, la transliteración, el significado y los prefijos de cada palabra.</p>')], sources: [['Comenzar la lectura', 'aprende-leer']] }; }
     if (/mashiaj|mesias/.test(n) && /tanaj|profec|dice|anuncia|antiguo/.test(n)) return aMashiaj();
@@ -315,7 +335,7 @@
     // diferencia entre dos palabras
     const dm = n.match(/diferencia (?:hay )?entre (.+?) y (.+)/); if (dm) { const a = findWords(dm[1])[0], b = findWords(dm[2])[0]; if (a && b && a !== b) return aDiff(a, b); }
     // fiestas
-    const moed = findMoed(q); if (moed) return aMoed(moed);
+    const moed = findMoed(q); if (moed) { const r = EXT.biblioteca && EXT.biblioteca.rec('moed-' + moed.id); return r ? aRecord(r, 'deep') : aMoed(moed); }
     // tefilot
     if (/bendic|oracion|tefil|rezar|bracha|beraja|shema|kidush|havdal|birkat|motzi|mode ani|modeh|netilat|kadish|alein|adon olam|salmo/.test(n)) { const t = findTefila(q); if (t) return aTefila(t); }
     // conceptos («¿dónde encontramos…?», «¿qué versículos hablan sobre…?»)
@@ -325,10 +345,11 @@
     if (/este estudio|esta ensenanza|este tema/.test(n) && C.topic) { const t = D.BS.temas.find(x => x.id === C.topic); if (/referencias|respald|textos/.test(n)) return { expr: 'explicativo', blocks: [blk('texto', '<p>Textos que respaldan «' + esc(t.t) + '»: ' + t.refs.map(refLink).join(', ') + '.</p>'), blk('interp', t.pos.map(p => '<p><b>' + esc(p.q) + ':</b> ' + p.refs.map(refLink).join(', ') + '</p>').join(''))], sources: [['Estudio completo', 'besora-tema-' + t.id]] }; return aTopic(t); }
     if (/referencias .*respald|que textos respaldan/.test(n) && C.topic) { const t = D.BS.temas.find(x => x.id === C.topic); return { expr: 'explicativo', blocks: [blk('texto', '<p>' + t.refs.map(refLink).join(', ') + '</p>')], sources: [['Estudio completo', 'besora-tema-' + t.id]] }; }
     // biblioteca central (conceptos, temas, mundo bíblico, gramática)
-    if (!/[\u05D0-\u05EA]/.test(q) || /que es|explica/.test(n)) { const r = await libFind(q); if (r && (/que es|que son|explica|que significa|que fue|quien|como|cual|habla|cuentame|historia/.test(n) || norm(r.t).length > 5)) return aRecord(r, /profund|detall|completo/.test(n) ? 'deep' : ''); }
+    if (!/[\u05D0-\u05EA]/.test(q) || /que es|explica/.test(n)) { const r = await libFind(q); if (r && (/que es|que son|que era|que eran|que paso|que se encontro|cuando|donde|explica|que significa|que fue|quien|como|cual|habla|cuentame|historia/.test(n) || norm(r.t).length > 5)) return aRecord(r, /profund|detall|completo/.test(n) ? 'deep' : ''); }
     // palabras
     const hasHe = /[\u05D0-\u05EA]/.test(q); const followUp = /^(y )?(cual es )?(su|esta|la) |^(como se pronuncia|donde aparece|cuantas veces)|su raiz|esta palabra/.test(n);
-    const words = (followUp && !hasHe && ctxWord()) ? [] : findWords(q); const wk = words[0] || (/esta palabra|la palabra|su raiz|se pronuncia|aparece|raiz/.test(n) ? ctxWord() : null);
+    const words = (followUp && !hasHe && ctxWord()) ? [] : findWords(q);
+    if (hasHe && !words.length && heTok) { const r = await aAnalyze(heTok); if (r) return r; } const wk = words[0] || (/esta palabra|la palabra|su raiz|se pronuncia|aparece|raiz/.test(n) ? ctxWord() : null);
     if (wk) { if (/raiz|shoresh/.test(n)) return aRoot(wk); if (/pronunci|se dice|se lee/.test(n)) return aPron(wk); if (/primera vez|primera aparicion|primer lugar/.test(n)) return aFirst(wk); if (/donde (mas )?aparece|cuantas veces|apariciones|donde se encuentra/.test(n)) return aOcc(wk); return aMeaning(wk); }
     const tops = findTopics(q); if (tops.length) return aTopic(tops[0]);
     if (ctxWord() && /raiz|pronuncia|aparece/.test(n)) return aRoot(ctxWord());
@@ -373,6 +394,7 @@
       '<div class="mc-quick"><a class="chip" href="#aprende-alfabeto">Aprende con el Moreh</a><button class="chip" data-act="mc-ask" data-q="quiero estudiar la parashá de esta semana">Estudiemos juntos</button><button class="chip" data-act="mc-ask" data-q="hazme preguntas">Hazme preguntas</button><button class="chip" data-act="mo-tourstart">Recorrido guiado</button><a class="chip" href="#camino">Mi camino</a><button class="chip" data-act="mo-hide">Ocultar al Moreh</button></div>' +
       '<div class="mc-log" id="mc-log" aria-live="polite">' + (H.length ? H.map(m => bubble(m.w, m.h)).join('') : bubble('m', '<p>' + esc(M().msgFor(c)) + '</p>')) + '</div>' +
       '<div class="mc-sug">' + sug.concat([['¿Qué significa Bereshit?', 'ask:¿qué significa Bereshit?'], ['¿Qué dice el Tanaj sobre el Mashíaj?', 'ask:¿qué dice el Tanaj sobre el Mashíaj?'], ['Contexto de Génesis 1', 'ask:¿cuál es el contexto de Génesis 1?']]).slice(0, 6).map(([l, a]) => chip(l, a)).join('') + '</div>' +
+      '<div class="mc-lvl"><span>Nivel:</span>' + ['principiante', 'intermedio', 'avanzado'].map(l => '<button class="chip" data-act="mc-lvl" data-l="' + l + '" aria-pressed="' + (((B.Store.get('moreh', {}) || {}).nivel || 'intermedio') === l) + '">' + l[0].toUpperCase() + l.slice(1) + '</button>').join('') + '</div>' +
       '<form class="mc-form" onsubmit="return false"><input id="mc-q" type="text" placeholder="Pregúntale al Moreh…" aria-label="Tu pregunta" autocomplete="off"><button class="btn solid" data-act="mc-send">Enviar</button></form></div>';
     const log = document.getElementById('mc-log'); log.scrollTop = log.scrollHeight;
     const inp = document.getElementById('mc-q'); const head = document.querySelector('.mc-head');
@@ -384,6 +406,12 @@
     log.insertAdjacentHTML('beforeend', '<div class="mc-msg m mc-think">' + M().avatar(36, '', 'pensativo', false) + '<div class="mc-b"><p>…</p></div></div>'); log.scrollTop = log.scrollHeight;
     M().expr(head, 'pensativo'); head.classList.add('w-attn');
     let a; try { a = await respond(q); } catch (e) { a = { expr: 'comprensivo', blocks: [blk('dato', '<p>No pude consultar esa información en este momento.</p>')] }; }
+    const lvl = (B.Store.get('moreh', {}) || {}).nivel || 'intermedio';
+    try {
+      if (lvl === 'avanzado' && a.deep && !a._deep) { const r = EXT.biblioteca.rec(a.deep); if (r) { a = Object.assign(await aRecord(r, 'deep'), { _deep: true }); } }
+      if (lvl === 'avanzado' && a.ctx && a.ctx.word && !a.deep && EXT.biblioteca && a.blocks.length && !/conexiones/i.test(a.title || '')) { const c = await EXT.biblioteca.connections(a.ctx.word); a.blocks.push(blk('ling', '<p>Conexiones de la palabra:</p>' + EXT.biblioteca.mapHTML(a.ctx.word, c))); }
+      if (lvl === 'principiante' && a.blocks.length > 2) { a.blocks = a.blocks.slice(0, 2); a.follow = [['Explícame más', 'profundiza más']].concat(a.follow || []).slice(0, 3); }
+    } catch (e) { }
     await new Promise(r => setTimeout(r, 450));
     log.querySelector('.mc-think') && log.querySelector('.mc-think').remove();
     if (a.ctx) { Object.assign(CH.ctx, a.ctx); B.Store.set('moreh:ctx', CH.ctx); } CH.last = a;
@@ -447,6 +475,7 @@
     'mc-ask': el => { if (el.dataset.go) return B.go(el.dataset.go); ask(el.dataset.q); },
     'mc-say': el => { const b = el.closest('.mc-b'); if (b) speakES(b.innerText.replace(/Ver fuente en Beit Hatzirah:[\s\S]*/, '').replace(/(Texto bíblico|Traducción|Análisis lingüístico|Contexto|Interpretación|Enseñanza de Beit Hatzirah|Dato de Beit Hatzirah)\n/g, '')); },
     'mc-sayhe': el => { if (EXT.speak) EXT.speak(el.dataset.h); },
+    'mc-lvl': el => { const p = B.Store.get('moreh', {}) || {}; p.nivel = el.dataset.l; B.Store.set('moreh', p); document.querySelectorAll('[data-act=mc-lvl]').forEach(b => b.setAttribute('aria-pressed', b.dataset.l === p.nivel)); B.toast('Nivel ' + p.nivel + ': adaptaré la profundidad de mis respuestas'); },
     'mc-confirm': el => {
       const d = el.dataset.do; el.parentNode.querySelectorAll('button').forEach(b => b.disabled = true);
       if (d === 'save') { const L = D.LX[el.dataset.k]; if (EXT.saveWord) EXT.saveWord({ id: 'lx-' + el.dataset.k, he: L[0], tr: pron(el.dataset.k), es: L[3] || L[4] }); B.toast('Palabra guardada en tus palabras para repasar'); }

@@ -4,7 +4,7 @@ Biblioteca digital de las Sagradas Escrituras en hebreo y español.
 Proyecto y dirección de contenido: **Moreh Gabriel ben Eliyah**
 Autoridad rabínica: **Rab Eliyah ben Eleazar**
 
-Versión 0.15.0. Incluye el módulo «Yo aprendo hebreo con la Torá».
+Versión 0.16.0. Incluye el módulo «Yo aprendo hebreo con la Torá».
 
 ---
 
@@ -366,3 +366,21 @@ El Moreh y la avispa interactúan como un equipo.
 **Panel para ampliar la biblioteca** (`#biblioteca-admin`): crear, editar, validar (referencias y lemas), importar y exportar registros en JSON. Los registros quedan en el dispositivo hasta que se agregan al proyecto.
 
 **Evaluación del Moreh** (`#moreh-evaluacion`): 35 preguntas fáciles, intermedias y avanzadas con comprobación automática del contenido, incluidas preguntas que debe reconocer que no puede responder. Resultado en esta versión: 35 de 35.
+
+## 25. Avispón amarillo y sistema verbal (versión 0.16)
+
+**Avispón amarillo.** El mismo personaje y la misma anatomía, con nueva paleta: amarillo con franjas negras, alas translúcidas de tono ámbar, rostro amarillo con la parte superior oscura, ojo con brillo y puntas doradas en las antenas. Nuevos estados (alegre, pensativo, sorprendido) que se suman a vuelo, reposo, curiosidad, atención, entusiasmo y celebración; reacciona a las expresiones del Moreh y, en el inicio, se adelanta volando a mostrar una sección y regresa.
+
+**Analizador de formas** (`#analizador`): cualquier forma del texto hebreo (con o sin vocales) → lema, raíz, binyán, forma verbal (qatal, vayiqtol, veqatal, yiqtol, imperativo, cohortativo, yusivo, infinitivos, participios), persona, género, número, sufijos (a quién se dirige o posesivo), otros análisis posibles, frecuencia y primera aparición. Índice de las 53.915 formas distintas del Westminster Leningrad Codex con la morfología del Open Scriptures Hebrew Bible. En la vista previa de Claude no está disponible por su tamaño.
+
+**Laboratorio de conjugación** (`#laboratorio`): raíz + binyán → formas documentadas (con referencia) y, para raíces regulares, el paradigma completo generado por reglas (qatal, yiqtol, imperativo, participio, infinitivo) marcado como «generado por reglas» o «documentada». Las raíces guturales, débiles, geminadas y las sibilantes del Hitpael se explican y no se generan.
+
+**Comparador de verbos** (`#comparar-verbos`): raíz, significado, binyanim con apariciones registradas, clase, frecuencia y primera aparición, de dos o tres verbos.
+
+**Biblioteca: 186 registros** (antes 92): los 7 binyanim con ejemplos reales del texto; 9 temas más de gramática con niveles; los 5 libros de la Torá (capítulos, versículos y parashiot calculados); 15 períodos de historia con cronología aproximada, fuentes y debates; 16 sitios arqueológicos; 14 temas de cultura y vida cotidiana; 17 regiones geográficas; 11 fiestas (mandamiento, contexto, tradición posterior y práctica actual, enseñanza, lectura mesiánica), incluidas Januká y Purim con su origen histórico. Palabras fundamentales (`#fundamentales`): 95 palabras en 5 temas, con notas para formas flexionadas o posteriores.
+
+**Clases «Estudiemos juntos»** (`#clase-…`): hebreo desde cero, los siete binyanim, aprender a conjugar, gramática intermedia, historia del antiguo Israel, contexto de los profetas, Bereshit, los cinco libros de la Torá, las fiestas y arqueología bíblica, con preguntas al final.
+
+**El Moreh**: tres niveles (principiante, intermedio, avanzado) que cambian la profundidad de las respuestas; analiza formas hebreas en la conversación; abre las clases; responde sobre libros de la Torá, períodos, sitios, cultura, geografía y fiestas con la distinción entre cronología bíblica, propuestas históricas, evidencia arqueológica, mandamiento y tradición.
+
+**Estado del conocimiento** (`#estado-moreh`): cifras reales calculadas en la app y limitaciones actuales. Evaluación: 49 de 49 preguntas correctas.

@@ -24,7 +24,13 @@
   const avatar = (size, cls, expr, wasp) => '<span class="mo-av ' + (cls || '') + '" data-expr="' + (expr || 'sonriente') + '" style="--ms:' + (size || 40) + 'px" aria-hidden="true"><span class="mo-avc"><img src="' + SRC('avatar') + '" alt="">' + feats(170, 0, 340, 340) + '</span>' + (wasp ? WASP('perch', 'mini') : '') + '</span>';
   const EXPR_OF = { idle: 'sonriente', nod: 'atento', teach: 'entusiasmado', point: 'entusiasmado', explain: 'explicativo', welcome: 'sonriente', reflect: 'reflexivo', celebrate: 'celebracion', walk: 'sonriente', enter: 'sonriente', leave: 'sonriente' };
   /* Expresiones: sonriente, serio, pensativo, sorprendido, entusiasmado, atento, reflexivo, comprensivo, celebracion, explicativo */
-  function expr(el, e) { if (!el) return; el.querySelectorAll('.mo-fig,.mo-av').forEach(f => f.dataset.expr = e); if (el.matches && el.matches('.mo-fig,.mo-av')) el.dataset.expr = e; }
+  const REACT = { sorprendido: 'surprised', pensativo: 'thinking', reflexivo: 'thinking', celebracion: 'excited', entusiasmado: 'curious', explicativo: 'attn', comprensivo: 'rest', sonriente: 'happy', atento: 'attn', serio: 'rest' };
+  function expr(el, e) {
+    if (!el) return; el.querySelectorAll('.mo-fig,.mo-av').forEach(f => f.dataset.expr = e); if (el.matches && el.matches('.mo-fig,.mo-av')) el.dataset.expr = e;
+    // el avispón reacciona a la expresión del Moreh (si no está volando)
+    const teams = el.matches && el.matches('.mo-team') ? [el] : [...el.querySelectorAll('.mo-team')];
+    teams.forEach(t => { const w = t.querySelector(':scope > .mo-wasp'); if (w && w.dataset.ws !== 'fly' && w.dataset.ws !== 'celebrate' && REACT[e]) { w.dataset.ws = REACT[e]; clearTimeout(w._rt); w._rt = setTimeout(() => { if (w.dataset.ws === REACT[e]) w.dataset.ws = 'rest'; }, 2600); } });
+  }
   /* Boca sincronizada con la voz: alterna formas mientras suena (y se reinicia con cada palabra) */
   const talkers = new Map();
   function talk(el, on) {
@@ -170,11 +176,23 @@
   });
   setInterval(() => {
     if (!B || !active() || !motionOn() || document.hidden || QUIET.test(location.hash) || P().freq === 'baja') return;
+    if ((location.hash === '' || location.hash === '#inicio') && Math.random() < .45) { const t = document.querySelector('.mo-present .mo-team'); const targets = [...document.querySelectorAll('.mods .mod, .mod')].filter(m => { const r = m.getBoundingClientRect(); return r.top > 60 && r.bottom < innerHeight - 70; }); if (t && targets.length) { explore(t, targets[Math.floor(Math.random() * targets.length)]); return; } }
     if (Math.random() > (P().freq === 'alta' ? .6 : .35)) return;
     const ts = [...document.querySelectorAll('.mo-team')].filter(t => { const r = t.getBoundingClientRect(); return r.bottom > 0 && r.top < innerHeight && r.width > 40 && Date.now() - (t._ts || 0) > 6000; });
     const t = ts[Math.floor(Math.random() * ts.length)]; if (!t) return;
     scene(t, ['tocarMoreh', 'tocarAvispa', 'complicidad', 'descubrimiento'][Math.floor(Math.random() * 4)]);
   }, 14000);
+
+  function explore(t, target) {
+    const w = wEl(t); if (!w || !target || !motionOn()) return; const a = w.getBoundingClientRect(), r = target.getBoundingClientRect(); if (r.bottom < 0 || r.top > innerHeight) return;
+    const c = w.cloneNode(true); c.classList.add('mo-explorer'); Object.assign(c.style, { position: 'fixed', left: a.left + 'px', top: a.top + 'px', width: a.width + 'px', transform: 'none', zIndex: 80, pointerEvents: 'none' }); c.dataset.ws = 'fly';
+    document.body.appendChild(c); w.style.visibility = 'hidden'; look(t, r.left > a.left ? 'right' : 'left');
+    const dx = r.left + r.width / 2 - a.left - a.width / 2, dy = r.top + r.height / 2 - a.top - a.height / 2;
+    target.classList.add('mo-shown'); c.dataset.face = dx < 0 ? 'l' : 'r';
+    const an = c.animate([{ transform: 'translate(0,0)' }, { transform: 'translate(' + dx * .5 + 'px,' + (dy * .5 - 40) + 'px)', offset: .35 }, { transform: 'translate(' + dx + 'px,' + dy + 'px)', offset: .5 }, { transform: 'translate(' + dx + 'px,' + (dy - 8) + 'px)', offset: .62 }, { transform: 'translate(0,0)' }], { duration: 3400, easing: 'ease-in-out' });
+    setTimeout(() => { c.dataset.ws = 'curious'; }, 1700); setTimeout(() => { c.dataset.ws = 'fly'; c.dataset.face = dx < 0 ? 'r' : 'l'; target.classList.remove('mo-shown'); }, 2100);
+    an.onfinish = () => { c.remove(); w.style.visibility = ''; look(t, null); wState(t, 'happy'); setTimeout(() => wState(t, 'rest'), 1500); };
+  }
 
   /* ---------- Los Compañeros presentan ---------- */
   function presenter(o) {
@@ -532,7 +550,7 @@
       '<div class="btns" style="margin:10px 0 18px"><button class="btn" data-act="mo-tourstart">Iniciar el recorrido guiado</button><button class="btn" data-act="moreh-open">Pedir ayuda al Moreh</button><a class="btn" href="#camino">Mi camino de aprendizaje</a></div>';
   };
   API.headerBtn = () => active() ? '<button class="icon-btn mo-hdr" data-act="moreh-open" aria-label="Conversar con el Moreh">' + avatar(30, '', 'sonriente', true) + '</button>' : '';
-  Object.assign(API, { fig, avatar, expr, talk, WASP, ctxOf, CTX, msgFor, LESSONS, active, P, scene, presenter, presSeen: k => !!((B.Store.get('moreh:pres', {}) || {})[k]) });
+  Object.assign(API, { explore, fig, avatar, expr, talk, WASP, ctxOf, CTX, msgFor, LESSONS, active, P, scene, presenter, presSeen: k => !!((B.Store.get('moreh:pres', {}) || {})[k]) });
 
   const prevInit = EXT.init;
   EXT.init = api => { if (prevInit) prevInit(api); B = api; apply(); };
