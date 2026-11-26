@@ -181,15 +181,15 @@
   /* ---------- Biblioteca central ---------- */
   const CATT = { conceptos: 'ling', gramatica: 'ling', teologia: 'ense', personajes: 'ense', culto: 'ense', historia: 'hist', arqueologia: 'hist', geografia: 'hist', cultura: 'hist' };
   TYPES.hist = 'Investigación histórica'; TYPES.trad2 = 'Tradición interpretativa'; TYPES.ext = 'Conocimiento general (fuente externa)';
-  const LSTOP = new Set('los las del de la el y en un una siete antiguo antigua biblico biblica biblicos hebreo hebrea israel mundo'.split(' '));
+  const LSTOP = new Set('los las del de la el y en un una que con por siete antiguo antigua biblico biblica biblicos hebreo hebrea israel mundo letra vocal signo'.split(' '));
   async function libFind(q) {
     if (!EXT.biblioteca) return null; await EXT.biblioteca.data(); const n = norm(q); const qt = new Set(n.split(' ')); const RS = EXT.biblioteca.all();
     let best = null, bs = 0;
     for (const r of RS) {
       let sc = 0;
-      if (r.he && plain(q).length > 1 && plain(r.he) && plain(q).includes(plain(r.he))) sc = 20;
+      const rhe = r.he || (r.t.match(/[\u05D0-\u05EA][\u05B0-\u05C7\u05D0-\u05EA]*/) || [])[0]; if (rhe && plain(q).length > 1 && plain(rhe).length > 1 && plain(q) === plain(rhe)) sc = 22; else if (rhe && plain(q).length > 1 && plain(rhe) && plain(q).includes(plain(rhe)) && plain(rhe).length > 2) sc = 20;
       const tr = r.tr ? norm(r.tr) : ''; const trHit = tr && tr.split(/[ /]+/).find(x => x.length > 2 && qt.has(x)); if (trHit) sc = Math.max(sc, 6 + trHit.length / 2);
-      const toks = norm(r.t.replace(/\s*\(.*\)/, '')).split(' ').filter(x => x.length > 3 && !LSTOP.has(x));
+      const toks = norm(r.t.replace(/\s*\([^)]*[\u05D0-\u05EA][^)]*\)/, '')).split(' ').filter(x => x.length > 2 && !LSTOP.has(x));
       const hit = toks.filter(x => qt.has(x) || qt.has(x.replace(/s$/, '')) || [...qt].some(y => y.length > 5 && (y.startsWith(x) || x.startsWith(y))));
       const when = /cuando|fecha|siglo|cronolog|epoca|ano /.test(n) && r.cron;
       if (toks.length && hit.length && (hit.length / toks.length >= .5 || hit.some(x => x.length >= 7) || when)) sc = Math.max(sc, hit.reduce((a, x) => a + x.length, 0) / toks.length + hit.length * 3 + (when ? 8 : 0));
@@ -251,6 +251,34 @@
     return { expr: 'sorprendido', title: 'Análisis de ' + F.form, blocks, sources: [['Analizador de formas', 'analizador-' + encodeURIComponent(F.form)]].concat(L ? [['Ficha del lema', 'dic-' + a.lemma]] : []).concat(D.PI.some(v => v.id === a.lemma) ? [['Conjugaciones', 'pealim-' + a.lemma]] : []), ctx: { word: L ? a.lemma : CH.ctx.word, ref: a.ref }, hePron: F.form };
   }
 
+  /* ---------- Versículo palabra por palabra, capítulo, paradigma, variantes ---------- */
+  async function aWordByWord(r) {
+    const ref = r.b + ' ' + r.c + ':' + (r.v || 1); const { C } = await EXT.chapterAnalysis(r.b, r.c); const V = C.verses.find(x => x.v === (r.v || 1)); if (!V) return null;
+    const rows = V.words.map(w => { const k = (w[1].split('/').map(x => x.replace(/[^\d]/g, '')).filter(Boolean).pop() || ''); const L = D.LX[k]; const segs = EXT.decodeMorph ? EXT.decodeMorph(w[2]) : []; const f = w[0].replace(/\//g, ''); return '<tr><td class="he" lang="he">' + esc(f) + '</td><td>' + esc(EXT.translit ? EXT.translit(f) : '') + '</td><td>' + (L ? '<a href="#dic-' + k + '">' + esc(L[3] || L[4]) + '</a>' : '—') + '</td><td>' + esc(segs.map(x => x.txt).join(' + ')) + '</td></tr>'; }).join('');
+    return { expr: 'explicativo', title: B.refLabel(ref) + ' palabra por palabra', blocks: [blk('texto', '<p class="he mc-he" lang="he" dir="rtl">' + esc(V.heT.replace(/[\u0591-\u05AF]/g, '')) + '</p>'), blk('ling', '<div class="mc-tbl"><table><tr><th>Hebreo</th><th>Transliteración</th><th>Significado</th><th>Análisis</th></tr>' + rows + '</table></div>'), blk('trad', '<p>' + esc(V.es) + '</p>')], sources: [['Análisis interlineal del capítulo', 'interlineal-' + r.b + '-' + r.c + '-' + (r.v || 1)]], ctx: { ref } };
+  }
+  async function aChapterStudy(r) {
+    const { C, S } = await EXT.chapterAnalysis(r.b, r.c); const top = Object.entries(S.lem).filter(([k]) => D.LX[k] && D.LX[k][3] && !/^(prep|conj|prt|d|art)/.test(D.LX[k][2])).sort((a, b) => b[1] - a[1]).slice(0, 8);
+    const ch = await aChapter(r);
+    return { expr: 'reflexivo', title: 'Estudio de ' + B.bookName(r.b) + ' ' + r.c, blocks: [blk('ling', '<p><b>Vocabulario:</b> ' + S.words + ' palabras y ' + Object.keys(S.lem).length + ' lemas distintos. Más frecuentes: ' + top.map(([k, n]) => '<span class="he" lang="he">' + esc(D.LX[k][0]) + '</span> «' + esc(D.LX[k][3]) + '» (' + n + ')').join(', ') + '.</p><p><b>Verbos por binyán:</b> ' + Object.entries(S.bin).sort((a, b) => b[1] - a[1]).map(([k, n]) => esc(k) + ' ' + n).join(', ') + '.</p>' + (S.reps.length ? '<p><b>Estructura (repeticiones):</b> ' + S.reps.slice(0, 3).map(([g, vs]) => '<span class="he" lang="he">' + esc(g) + '</span> en los v. ' + [...new Set(vs)].join(', ')).join('; ') + '. Las fórmulas que se repiten suelen marcar la estructura literaria del capítulo.</p>' : '') + (S.hapax.length ? '<p><b>Hápax:</b> ' + S.hapax.length + ' palabras que solo aparecen aquí en todo el Tanaj.</p>' : ''))].concat(ch.blocks), sources: [['Análisis palabra por palabra', 'interlineal-' + r.b + '-' + r.c]].concat(ch.sources), ctx: ch.ctx };
+  }
+  async function aParadigm(tok) {
+    const c = plain(tok); const vs = D.PI.filter(v => plain(v.r) === c || plain(v.he) === c); if (!vs.length) return null; const v = vs[0];
+    const SH = await B.getJSON('pealim/p' + (+v.id % 8) + '.json'); const F = (SH[v.id] || {}).f || {}; const BN = { q: 'Qal', N: 'Nifal', p: 'Piel', P: 'Pual', h: 'Hifil', H: 'Hofal', t: 'Hitpael' };
+    const by = {}; Object.entries(F).forEach(([code, l]) => { (by[code[0]] = by[code[0]] || []).push([code, l]); });
+    const cls = EXT.verbClass ? EXT.verbClass(v.r) : [];
+    return { expr: 'explicativo', title: 'Paradigma de ' + v.he, blocks: [blk('ling', '<p><b class="he" lang="he">' + esc(v.he) + '</b> «' + esc(v.es || gl(v.id)) + '», raíz ' + esc(v.r) + '. ' + (cls.length ? 'Clase: ' + cls.map(x => x[0]).join(', ') + '. ' + esc(cls[0][1]) : 'Verbo regular.') + '</p>'),
+      blk('texto', '<p><b>Formas documentadas en el Tanaj</b> (no generadas):</p>' + Object.entries(by).map(([b, l]) => '<p><b>' + (BN[b] || b) + ':</b> ' + l.sort((x, y) => y[1].reduce((s, z) => s + z[1], 0) - x[1].reduce((s, z) => s + z[1], 0)).slice(0, 6).map(([code, lst]) => '<span class="he" lang="he">' + esc(lst[0][0]) + '</span> (' + esc(((EXT.decodeMorph('HV' + code)[0] || {}).txt || '').replace(/^Verbo \S+, /, '')) + ')').join(', ') + '.</p>').join('')),
+      blk('ling', cls.length ? '<p>Como es un verbo débil, el laboratorio muestra solo sus formas documentadas y no genera un paradigma por reglas, para no inventar formas.</p>' : '<p>En el laboratorio puedes ver el paradigma regular completo, generado por reglas y marcado como tal.</p>')],
+      sources: [['Laboratorio de conjugación', 'laboratorio-' + c], ['Tablas de PEALIM', 'pealim-' + v.id]], ctx: { word: v.id } };
+  }
+  async function aVariants(q) {
+    const ref = findRef(q); const RS = (await EXT.biblioteca.data(), EXT.biblioteca.all()).filter(r => r.cat === 'critica');
+    const hit = ref ? RS.filter(r => r.refs.some(x => x.startsWith(ref.b + ' ' + ref.c + ':'))) : RS;
+    if (ref && !hit.length) return { expr: 'comprensivo', blocks: [blk('dato', '<p>La biblioteca de Beit Hatzirah no registra variantes textuales para ' + esc(B.bookName(ref.b) + ' ' + ref.c + (ref.v ? ':' + ref.v : '')) + '. Eso no significa que no existan: el aparato crítico completo de la Biblia Hebraica no está integrado por derechos de autor.</p>')], sources: [['Crítica textual en la biblioteca', 'bibcat-critica']] };
+    return { expr: 'reflexivo', title: 'Variantes textuales', blocks: hit.slice(0, 3).map(r => blk('trad2', '<p><b>' + esc(r.t) + ':</b> ' + esc(r.sencillo) + '</p>')).concat([blk('dato', '<p class="mc-small">Las variantes se presentan con su testimonio y grado de certeza; ninguna reconstrucción se presenta como el texto original indiscutible.</p>')]), sources: [['Crítica textual', 'bibcat-critica']] };
+  }
+
   /* ---------- Preguntas para comprobar lo aprendido ---------- */
   async function parashaWords(p) {
     const MO = await B.getJSON('morph/' + p.lec.b + '.json'); const cnt = {};
@@ -282,6 +310,14 @@
     // análisis de una forma hebrea
     const heTok = (q.match(/[\u05D0-\u05EA][\u05B0-\u05C7\u05D0-\u05EA\u05BE]*/g) || []).sort((a, b) => b.length - a.length)[0];
     if (heTok && /analiza|que forma|de que (raiz|verbo|palabra) (viene|proviene)|que binyan|quien realiza|forma verbal|morfolog/.test(n)) { const r = await aAnalyze(heTok); if (r) return r; }
+    // pruebas avanzadas: palabra por palabra, capítulo, paradigma, variantes, salmo, comparación semántica
+    const rf = findRef(q);
+    if (rf && /palabra por palabra|interlineal/.test(n)) { const r = await aWordByWord(rf); if (r) return r; }
+    if (rf && !rf.v && /(analiza|estudia|estudiemos|analisis de)( el)? capitulo/.test(n)) return aChapterStudy(rf);
+    const sm = n.match(/salmo (\d+)/); if (sm && /analiza|estudia|analisis|paralelismo|estructura/.test(n)) { const ps = +sm[1]; const rec = ps === 1 && EXT.biblioteca.rec('p-salmo1'); const st = await aChapterStudy({ b: 'PSA', c: ps }); if (rec) { const r0 = await aRecord(rec, 'deep'); st.blocks = r0.blocks.concat(st.blocks.slice(0, 1)); } st.blocks.push(blk('ling', '<p>En el análisis interlineal, cada versículo del salmo se muestra en sus dos miembros (divididos por el acento atnaj) para observar el paralelismo.</p>')); st.sources = [['Ver el salmo con sus paralelismos', 'interlineal-PSA-' + ps]].concat(st.sources); return st; }
+    if (/paradigma|conjuga(cion|r)? (de|el verbo)|tabla de conjugacion/.test(n) && heTok) { const r = await aParadigm(heTok); if (r) return r; }
+    if (/variante|manuscrito|critica textual|qumran/.test(n)) return aVariants(q);
+    const dif = n.match(/diferencia (?:hay |contextual )?entre (.+?) y (.+)/); if (dif && EXT.biblioteca) { const ka = findWords(dif[1])[0], kb = findWords(dif[2])[0]; const rec = ka && kb && EXT.biblioteca.all().find(r => r.pair && r.pair.includes(ka) && r.pair.includes(kb)); if (rec) { const r = await aRecord(rec, 'deep'); const t = await aDiff(ka, kb); r.blocks = r.blocks.concat(t.blocks); return r; } }
     // libros de la Torá
     const bk = /capitulos|el libro de|libro|cuantos versiculos/.test(n) && B.BOOKS.find(b => ['GEN', 'EXO', 'LEV', 'NUM', 'DEU'].includes(b.c) && [b.tr, b.es].some(x => n.includes(norm(x))));
     if (bk && EXT.biblioteca) { const r = EXT.biblioteca.rec('libro-' + bk.c.toLowerCase()); if (r) return aRecord(r, 'deep'); }

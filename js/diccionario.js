@@ -49,7 +49,7 @@
   /* ---------- Inicio del diccionario ---------- */
   async function vHome() {
     await data(); const s = ST();
-    const tiles = [['dicletras', 'א', 'Hebreo-español', Object.keys(LX).length.toLocaleString('es') + ' palabras del Tanaj'], ['dices', 'עב', 'Español-hebreo', 'Equivalentes según el contexto'], ['biblioteca', 'ספר', 'Biblioteca del Moreh', 'Conceptos, gramática y mundo bíblico'], ['dicraices', 'שׁרשׁ', 'Raíces (shóresh)', Object.keys(RA).length.toLocaleString('es') + ' familias de palabras'], ['dicnombres', 'יָהּ', 'Nombres divinos', DD.nombres.length + ' nombres y títulos'], ['dictemas', '@dict', 'Diccionario temático', Object.keys(DD.temas).length + ' categorías'], ['dicexpr', '@chat', 'Expresiones idiomáticas', DD.idiom.length + ' expresiones'], ['gematria', '18', 'Gematría', 'Calculadora y conexiones'], ['flashcards', '@cards', 'Flashcards', 'Practica tus favoritas']];
+    const tiles = [['dicletras', 'א', 'Hebreo-español', Object.keys(LX).length.toLocaleString('es') + ' palabras del Tanaj'], ['dices', 'עב', 'Español-hebreo', 'Equivalentes según el contexto'], ['propios', 'שֵׁם', 'Nombres propios', 'Personas, lugares y pueblos'], ['biblioteca', 'ספר', 'Biblioteca del Moreh', 'Conceptos, gramática y mundo bíblico'], ['dicraices', 'שׁרשׁ', 'Raíces (shóresh)', Object.keys(RA).length.toLocaleString('es') + ' familias de palabras'], ['dicnombres', 'יָהּ', 'Nombres divinos', DD.nombres.length + ' nombres y títulos'], ['dictemas', '@dict', 'Diccionario temático', Object.keys(DD.temas).length + ' categorías'], ['dicexpr', '@chat', 'Expresiones idiomáticas', DD.idiom.length + ' expresiones'], ['gematria', '18', 'Gematría', 'Calculadora y conexiones'], ['flashcards', '@cards', 'Flashcards', 'Practica tus favoritas']];
     B.view().innerHTML = B.top('Diccionario bíblico', { back: 'menu' }) + '<div class="wrap dc">' +
       '<div class="dc-hero"><img class="sec-logo" src="' + B.LOGO + '" alt=""><p class="he" lang="he">מִלּוֹן</p><h2>Diccionario bíblico</h2><p class="muted">Hebreo bíblico, raíces, nombres divinos y conceptos de las Escrituras</p></div>' +
       '<div class="field">' + B.ic('search') + '<input type="search" id="dcq" placeholder="Palabra en hebreo o español, transliteración, raíz o número" aria-label="Buscar en el diccionario" autocomplete="off"></div><div id="dcres"></div>' +
@@ -76,7 +76,7 @@
   let qt;
   document.addEventListener('input', e => {
     if (e.target.id !== 'dcq') return; clearTimeout(qt); const q = e.target.value;
-    qt = setTimeout(() => { const out = document.getElementById('dcres'); if (!out) return; if (q.trim().length < 2 && !/^\d+$/.test(q.trim())) { out.innerHTML = ''; return; } const r = search(q); out.innerHTML = r.length ? '<div class="rows">' + r.map(([k, sub]) => row(k, sub)).join('') + '</div>' : '<p class="muted">Sin resultados.</p>'; }, 200);
+    qt = setTimeout(() => { const out = document.getElementById('dcres'); if (!out) return; if (q.trim().length < 2 && !/^\d+$/.test(q.trim())) { out.innerHTML = ''; return; } const r = search(q); setTimeout(() => EXT.formaHint && EXT.formaHint(q, out), 0); out.innerHTML = r.length ? '<div class="rows">' + r.map(([k, sub]) => row(k, sub)).join('') + '</div>' : '<p class="muted">Sin resultados.</p>'; }, 200);
   });
 
   /* ---------- Ficha de una palabra ---------- */
@@ -96,7 +96,7 @@
       '<dt>Frecuencia</dt><dd>' + L[5].toLocaleString('es') + ' veces en el Tanaj</dd>' +
       '<dt>Primera aparición</dt><dd>' + (L[6] ? '<a href="#' + B.refRoute(L[6]) + '">' + esc(B.refLabel(L[6])) + '</a>' : '—') + '</dd>' +
       '<dt>Gematría</dt><dd><a href="#gematria" data-act="dc-gem" data-w="' + esc(plain(L[0])) + '">' + g.std + '</a> <span class="muted">(estándar) · ' + g.katan + ' (reducida) · ' + g.siduri + ' (ordinal)</span></dd>' +
-      '<dt>Strong</dt><dd>H' + k + '</dd></dl>' + '<div class="btns" style="margin:10px 0"><a class="btn solid" href="#estudio-palabra-' + k + '">Estudio completo con el Moreh</a></div>' + (EXT.moreh ? EXT.moreh.tip('diccionario', k, 'Consejo lingüístico') : '') +
+      '<dt>Strong</dt><dd>H' + k + '</dd></dl>' + '<div class="btns" style="margin:10px 0"><a class="btn solid" href="#estudio-palabra-' + k + '">Estudio completo con el Moreh</a></div><div id="dc-flex" data-k="' + k + '"></div>' + (EXT.moreh ? EXT.moreh.tip('diccionario', k, 'Consejo lingüístico') : '') +
       (concepts ? '<h2>Explicación</h2>' + concepts : '') +
       (fam.length ? '<h2>Familia de palabras</h2><div class="rows">' + fam.slice(0, 14).map(x => row(x)).join('') + '</div>' : '') +
       '<h2>Ejemplos en las Escrituras</h2><div id="dc-ex"><div class="loading">Cargando versículos…</div></div>' +

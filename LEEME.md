@@ -4,7 +4,7 @@ Biblioteca digital de las Sagradas Escrituras en hebreo y español.
 Proyecto y dirección de contenido: **Moreh Gabriel ben Eliyah**
 Autoridad rabínica: **Rab Eliyah ben Eleazar**
 
-Versión 0.16.0. Incluye el módulo «Yo aprendo hebreo con la Torá».
+Versión 0.17.0. Incluye el módulo «Yo aprendo hebreo con la Torá».
 
 ---
 
@@ -384,3 +384,19 @@ El Moreh y la avispa interactúan como un equipo.
 **El Moreh**: tres niveles (principiante, intermedio, avanzado) que cambian la profundidad de las respuestas; analiza formas hebreas en la conversación; abre las clases; responde sobre libros de la Torá, períodos, sitios, cultura, geografía y fiestas con la distinción entre cronología bíblica, propuestas históricas, evidencia arqueológica, mandamiento y tradición.
 
 **Estado del conocimiento** (`#estado-moreh`): cifras reales calculadas en la app y limitaciones actuales. Evaluación: 49 de 49 preguntas correctas.
+
+## 26. Academia del hebreo bíblico (versión 0.17)
+
+**Datos nuevos verificables.** Flexión documentada de los 8.638 lemas (hasta 40 formas reales de cada uno, con su análisis y primera aparición en orden canónico), distribución por los 39 libros del Tanaj y cobertura en español por libro y por parashá.
+
+**Diccionario.** Cada ficha muestra la flexión documentada (singular, plural, constructo, sufijos y prefijos tal como aparecen en el texto) y la distribución por libros. El buscador reconoce formas flexionadas y lleva al lema. Nuevo directorio de nombres propios (personas, lugares, pueblos).
+
+**Análisis interlineal** (`#interlineal-LIBRO-capítulo`, botón en el lector y en el Audio libro): cada palabra con transliteración, significado y análisis morfológico; al tocarla, su ficha completa. Resumen del capítulo: palabras, lemas, vocabulario frecuente, verbos por binyán, raíces, hápax del Tanaj y repeticiones que marcan la estructura literaria (por ejemplo, «וַיְהִי עֶרֶב וַיְהִי בֹקֶר» seis veces en Bereshit 1). En los libros poéticos, cada versículo se divide por el acento atnaj para ver el paralelismo.
+
+**Biblioteca: 300 registros.** Las 22 letras (sonido tradicional y moderno, valor, forma final, palabras frecuentes), 13 vocales y 9 signos masoréticos comprobados en el texto (la nun invertida se indica como ausente en la edición digital), 12 expresiones bíblicas y litúrgicas diferenciadas, 9 comparaciones de significado con frecuencias reales, 7 temas del texto masorético, 6 de crítica textual con su grado de certeza, 9 de poesía (incluido el análisis del Salmo 1), 8 etapas de la historia del hebreo, 5 lenguas semíticas y el arameo bíblico (4.948 palabras), 12 medidas con equivalencias aproximadas, los meses y los números.
+
+**El Moreh** analiza versículos palabra por palabra, estudia capítulos completos, muestra paradigmas distinguiendo formas documentadas y generadas, presenta variantes con su testimonio, analiza salmos y explica diferencias de significado con datos de uso.
+
+**Ruta de aprendizaje** (`#ruta`): 36 pasos que conectan curso, biblioteca y herramientas, con registro de pasos visitados y constancia interna (no es un título académico). Se registra el tiempo de estudio.
+
+**Informe del conocimiento** (`#informe-moreh`): totales de lemas, formas, raíces, verbos, paradigmas, categorías, expresiones, referencias, nikud, pronunciación y fuentes, con cobertura por libro y por parashá. Evaluación: 62 de 62 (incluidas las pruebas A a L del documento maestro).

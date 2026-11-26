@@ -2,7 +2,7 @@
    Aplicación principal (JavaScript sin dependencias). */
 (function () {
   'use strict';
-  const VERSION = '0.16.0';
+  const VERSION = '0.17.0';
   const EMBED = window.__BH_EMBED || null;
   const LOGO = (EMBED && EMBED.logo) || 'img/logo.webp';
   const LOGO_SM = (EMBED && (EMBED.logoSm || EMBED.logo)) || 'img/logo-sm.webp';
@@ -553,7 +553,7 @@
     const next = c < b.ch ? { b: code, c: c + 1 } : (() => { const i = BOOKS.indexOf(b); return i < BOOKS.length - 1 ? { b: BOOKS[i + 1].c, c: 1 } : null; })();
     const pg = '<nav class="pager">' + (prev ? '<a href="#leer-' + prev.b + '-' + prev.c + '"><small>Anterior</small>' + esc(bookName(prev.b)) + ' ' + prev.c + '</a>' : '<span></span>') +
       (next ? '<a class="next" href="#leer-' + next.b + '-' + next.c + '"><small>Siguiente</small>' + esc(bookName(next.b)) + ' ' + next.c + '</a>' : '<span></span>') + '</nav>';
-    view().innerHTML = top('<button data-act="chapters" data-b="' + code + '" style="font-weight:600">' + esc(b.tr) + ' ' + c + ' ▾</button>', { back: 'libro-' + code, right: '<a class="icon-btn" href="#audio-' + code + '-' + c + '" aria-label="Escuchar este capítulo">🎧</a>' + verBtn() + readerTools(code + '-' + c, b.tr + ' ' + c) }) +
+    view().innerHTML = top('<button data-act="chapters" data-b="' + code + '" style="font-weight:600">' + esc(b.tr) + ' ' + c + ' ▾</button>', { back: 'libro-' + code, right: (!b.nt ? '<a class="icon-btn" href="#interlineal-' + code + '-' + c + '" aria-label="Análisis palabra por palabra" title="Análisis palabra por palabra">' + ic('dict') + '</a>' : '') + '<a class="icon-btn" href="#audio-' + code + '-' + c + '" aria-label="Escuchar este capítulo">🎧</a>' + verBtn() + readerTools(code + '-' + c, b.tr + ' ' + c) }) +
       '<div class="wrap ' + viewClass() + '">' +
       '<div class="reader-head"><p class="he" lang="he">' + esc(b.he) + '</p><h2>' + esc(b.tr) + ' ' + c + '</h2>' + ctx + '</div>' + ntNote + title +
       '<div class="verses">' + ch.map((cell, i) => verseHTML(code, c, i + 1, cell)).join('') + '</div>' + pg +

@@ -1089,3 +1089,16 @@ main>*{animation:pagein .28s ease-out both}
 .lab-ok{color:#2f7d5b;font-weight:600;font-size:.8rem}.lab-gen{color:#B07D1F;font-size:.8rem}
 .mc-lvl{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:4px 0}.mc-lvl span{font-size:.8rem;color:var(--muted)}.mc-lvl .chip[aria-pressed="true"]{background:var(--accent);color:var(--bg)}
 .bb-list li{margin:4px 0}
+/* ===== Academia (0.17) ===== */
+.dist{display:grid;gap:3px;margin:8px 0}.dist-r{display:grid;grid-template-columns:110px 1fr 54px;gap:8px;align-items:center;font-size:.82rem;text-decoration:none;color:var(--text)}.dist-r i{display:block;height:9px;border-radius:5px;background:linear-gradient(90deg,var(--dorado) var(--w),color-mix(in srgb,var(--line) 70%,transparent) var(--w))}.dist-r b{text-align:right;font-weight:600}
+.il-sum{background:var(--surface);border-radius:16px;padding:12px 14px;margin:12px 0;box-shadow:var(--sh-card)}.il-sum p{margin:6px 0;line-height:1.55}
+.il-v{border-bottom:1px solid var(--line);padding:10px 0}.il-n{font-weight:700;color:var(--accent);font-size:.85rem}
+.il-ws{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.il-w{display:flex;flex-direction:column;align-items:center;padding:5px 7px;border-radius:10px;background:var(--surface);border:1px solid var(--line);min-width:52px;cursor:pointer}
+.il-w .he{font-size:1.25rem;line-height:1.5}.il-w small{font-size:.7rem;color:var(--muted)}.il-w em{font-style:normal;font-size:.7rem;color:var(--accent);max-width:90px;text-align:center;line-height:1.2}
+.il-es{font-size:.9rem;color:var(--muted);margin:4px 0}
+.il-cola{border-right:3px solid var(--dorado);padding-right:10px;margin:6px 0}.il-cola p{margin:2px 0;font-size:1.15rem}.il-cola p+p{padding-right:22px}
+.ruta{list-style:none;padding:0;margin:10px 0;display:grid;gap:6px}.ruta a{display:flex;gap:10px;align-items:center;padding:9px 12px;border-radius:12px;background:var(--surface);text-decoration:none;color:var(--text)}.ruta span{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--line);font-size:.8rem;font-weight:700}.ruta li.ok span{background:var(--accent);color:var(--bg)}
+.ruta-bar{height:10px;border-radius:5px;background:var(--line);overflow:hidden;margin:10px 0 4px}.ruta-bar i{display:block;height:100%;width:var(--w);background:var(--accent)}
+.cert{border:2px solid var(--dorado);border-radius:18px;padding:16px;text-align:center;margin:16px 0;background:color-mix(in srgb,var(--dorado) 10%,var(--surface))}
+.au-il{font-size:.78rem;color:var(--accent);margin-inline:6px}

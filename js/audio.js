@@ -231,6 +231,7 @@
     bar.style.width = Math.min(100, done / Math.max(1, total) * 100) + '%';
     const t = document.getElementById('au-time'); if (t) t.textContent = (exact ? '' : '≈ ') + fmt(done) + ' / ' + (exact ? '' : '≈ ') + fmt(total);
     const vn = document.getElementById('au-vn'); if (vn) vn.textContent = B.bookName(P.b) + ' ' + P.c + ':' + (P.v + 1);
+    const il = document.getElementById('au-il'); if (il) { il.hidden = !!B.BY[P.b].nt; il.href = '#interlineal-' + P.b + '-' + P.c + '-' + (P.v + 1); }
   }
   setInterval(() => { if (P.playing) updateProgress(); }, 500);
 
@@ -291,7 +292,7 @@
       '</div>' +
       '<div class="au-player" role="region" aria-label="Reproductor">' +
       '<div class="au-prog" data-act="au-seek" role="slider" aria-label="Progreso del capítulo" tabindex="0"><i id="au-bar"></i></div>' +
-      '<div class="au-row1">' + (EXT.moreh ? EXT.moreh.inline('still', 30, 'simple', 'au-wsp') : '') + '<span id="au-vn"></span><span id="au-time"></span></div>' +
+      '<div class="au-row1">' + (EXT.moreh ? EXT.moreh.inline('still', 30, 'simple', 'au-wsp') : '') + '<span id="au-vn"></span><a id="au-il" class="au-il" href="#">Analizar palabras</a><span id="au-time"></span></div>' +
       '<div class="au-ctrls"><button data-act="au-prev" aria-label="Versículo anterior">⏮</button><button id="au-play" class="au-main" data-act="au-toggle" aria-label="Reproducir">▶</button><button data-act="au-next" aria-label="Versículo siguiente">⏭</button></div>' +
       '<div class="au-row2"><div class="au-rates" role="group" aria-label="Velocidad">' + [0.75, 1, 1.25, 1.5].map(r => '<button data-act="au-rate" data-r="' + r + '">' + r + 'x</button>').join('') + '</div>' +
       '<label class="au-vol"><span aria-hidden="true">🔊</span><input type="range" min="0" max="1" step="0.1" value="' + pr.vol + '" data-act="au-vol" aria-label="Volumen de la voz"></label></div>' +

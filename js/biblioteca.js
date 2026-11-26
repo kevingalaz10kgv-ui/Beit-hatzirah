@@ -42,7 +42,7 @@
       '<div class="field">' + B.ic('search') + '<input type="search" id="bbq" placeholder="Buscar en la biblioteca" aria-label="Buscar en la biblioteca" autocomplete="off"></div><div id="bbres"></div>' +
       '<div class="bb-cats">' + BIB.cats.map(c => { const n = cnt(c.id); const href = c.ruta && !n ? '#' + c.ruta : '#bibcat-' + c.id; return '<a class="bb-cat" href="' + href + '"><b>' + esc(c.t) + '</b><small>' + (n ? n + ' registros' : c.ruta ? 'Módulo de la app' : 'En preparación') + '</small></a>'; }).join('') + '</div>' +
       '<h3 class="h-sec" style="margin-top:16px">Estudiemos juntos: clases completas</h3><div class="chips">' + Object.entries(CLASES).map(([k, c]) => '<a class="chip" href="#clase-' + k + '">' + esc(c[0]) + '</a>').join('') + '</div>' +
-      '<div class="btns" style="margin:16px 0"><a class="btn" href="#fundamentales">Palabras fundamentales</a><a class="btn" href="#analizador">Analizador de formas</a><a class="btn" href="#estado-moreh">Estado del conocimiento</a><a class="btn" href="#fuentes">Fuentes y licencias</a><a class="btn" href="#dices">Diccionario español-hebreo</a><a class="btn" href="#biblioteca-admin">Ampliar la biblioteca</a><a class="btn" href="#moreh-evaluacion">Evaluación del Moreh</a></div></div>';
+      '<div class="btns" style="margin:16px 0"><a class="btn solid" href="#ruta">Ruta de aprendizaje (36 pasos)</a><a class="btn" href="#informe-moreh">Informe del conocimiento</a><a class="btn" href="#propios">Nombres propios</a><a class="btn" href="#fundamentales">Palabras fundamentales</a><a class="btn" href="#analizador">Analizador de formas</a><a class="btn" href="#estado-moreh">Estado del conocimiento</a><a class="btn" href="#fuentes">Fuentes y licencias</a><a class="btn" href="#dices">Diccionario español-hebreo</a><a class="btn" href="#biblioteca-admin">Ampliar la biblioteca</a><a class="btn" href="#moreh-evaluacion">Evaluación del Moreh</a></div></div>';
   }
   document.addEventListener('input', e => {
     if (e.target.id !== 'bbq') return; const q = norm(e.target.value); const out = document.getElementById('bbres'); if (!out) return;
@@ -218,6 +218,19 @@
     ['Intermedio', 'Fiestas', '¿Qué es Januká?', a => /164/.test(a) && /no está mandada/i.test(a)],
     ['Avanzado', 'Fiestas', '¿Qué es Yom Kipur?', a => /Tradición|tradición/.test(a)],
     ['Avanzado', 'Gramática', '¿Qué diferencia hay entre hebreo bíblico y hebreo moderno?', a => /vav consecutiva/i.test(a)],
+    ['Prueba A', 'Alfabeto', '¿Qué es la letra Kaf?', a => /ך/.test(a) && /20/.test(a)],
+    ['Prueba B', 'Nikud', '¿Qué es el qamatz qatán?', a => /kol/i.test(a)],
+    ['Prueba C', 'Diccionario', '¿Qué significa שלום?', a => /paz/.test(a)],
+    ['Prueba C', 'Diccionario', '¿Qué significa שָׁלוֹם?', a => /paz/.test(a)],
+    ['Prueba D', 'Raíz', '¿Cuál es la raíz de שמר?', a => /ש־?ׁ?־?מ־ר|שׁ־מ־ר/.test(a) && /guardia|custodia/.test(a)],
+    ['Prueba E', 'Verbo', 'Analiza la forma וַיִּקְרָא', a => /Qal/.test(a) && /vayiqtol/.test(a) && /llamar/.test(a)],
+    ['Prueba F', 'Partícula', '¿Qué es אֵת?', a => /complemento directo/.test(a) && /interpretación/.test(a)],
+    ['Prueba G', 'Versículo', 'Analiza Bereshit 1:1 palabra por palabra', a => /רֵאשִׁית|ראשית/.test(a) && /Qal/.test(a)],
+    ['Prueba H', 'Comparación', '¿Qué diferencia hay entre jésed y rajamim?', a => /pacto/.test(a) && /compasi/.test(a)],
+    ['Prueba I', 'Conjugación', 'Muéstrame el paradigma de אמר', a => /documentadas/.test(a) && /Primera א/.test(a)],
+    ['Prueba J', 'Poesía', 'Analiza el Salmo 1', a => /inclusio/i.test(a) && /paralelismo/i.test(a)],
+    ['Prueba K', 'Crítica textual', '¿Qué variantes hay en Deuteronomio 32:8?', a => /Qumrán/.test(a)],
+    ['Prueba L', 'Capítulo completo', 'Estudia el capítulo Génesis 1', a => /Vocabulario/.test(a) && /binyán/.test(a) && /Estructura/.test(a)],
     ['Avanzado', 'Reconocer lo que no sabe', '¿Qué es la astronomía?', a => /no encontr|no tengo|conocimiento general/i.test(a)],
     ['Avanzado', 'Reconocer lo que no sabe', '¿Cuál es la capital de Australia?', a => /no encontr|no tengo|conocimiento general/i.test(a)],
     ['Avanzado', 'Reconocer lo que no sabe', '¿Quién ganó el mundial de fútbol de 1978?', a => /no encontr|no tengo|conocimiento general/i.test(a)]
@@ -229,7 +242,7 @@
     const out = document.getElementById('ev-out'); out.innerHTML = '<div class="loading">Evaluando…</div>'; const res = [];
     for (const [lvl, area, q, ok] of TESTS) { let a = null, txt = ''; try { a = await EXT.morehChat.respond(q); const d = document.createElement('div'); d.innerHTML = (a.title || '') + ' ' + (a.blocks || []).map(b => b.html).join(' ') + ' ' + (a.sources || []).map(s => s[0]).join(' '); txt = d.textContent; } catch (e) { txt = 'ERROR ' + e.message; } res.push([lvl, area, q, ok(txt), txt.slice(0, 160)]); }
     const pass = res.filter(r => r[3]).length; window.__evalResult = { pass, total: res.length, res }; B.Store.set('moreh:eval', { pass, total: res.length, fecha: new Date().toLocaleDateString('es') });
-    out.innerHTML = '<h3>Resultado: ' + pass + ' de ' + res.length + ' correctas</h3>' + ['Fácil', 'Intermedio', 'Avanzado'].map(l => '<h4 class="bb-h">' + l + '</h4>' + res.filter(r => r[0] === l).map(r => '<div class="ev-r ' + (r[3] ? 'ok' : 'bad') + '"><b>' + (r[3] ? '✓' : '✗') + ' ' + esc(r[1]) + ':</b> ' + esc(r[2]) + '<small>' + esc(r[4]) + '…</small></div>').join('')).join('');
+    out.innerHTML = '<h3>Resultado: ' + pass + ' de ' + res.length + ' correctas</h3>' + ['Fácil', 'Intermedio', 'Avanzado', 'Prueba A', 'Prueba B', 'Prueba C', 'Prueba D', 'Prueba E', 'Prueba F', 'Prueba G', 'Prueba H', 'Prueba I', 'Prueba J', 'Prueba K', 'Prueba L'].map(l => '<h4 class="bb-h">' + l + '</h4>' + res.filter(r => r[0] === l).map(r => '<div class="ev-r ' + (r[3] ? 'ok' : 'bad') + '"><b>' + (r[3] ? '✓' : '✗') + ' ' + esc(r[1]) + ':</b> ' + esc(r[2]) + '<small>' + esc(r[4]) + '…</small></div>').join('')).join('');
   }
 
   /* ---------- Palabras fundamentales ---------- */
